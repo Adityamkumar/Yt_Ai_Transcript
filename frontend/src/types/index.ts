@@ -1,13 +1,9 @@
-// ─── API Response ────────────────────────────────────────────────────────────
-
 export interface ApiResponse<T = unknown> {
   statusCode: number;
   data: T;
   message: string;
   success: boolean;
 }
-
-// ─── Video / Transcript ───────────────────────────────────────────────────────
 
 export interface VideoData {
   _id: string;
@@ -19,8 +15,6 @@ export interface VideoData {
 }
 
 export interface TranscriptResponse extends ApiResponse<VideoData | string> {}
-
-// ─── Chat ─────────────────────────────────────────────────────────────────────
 
 export type MessageRole = 'user' | 'assistant';
 
@@ -49,8 +43,6 @@ export interface AskQuestionPayload {
 }
 
 export interface AskQuestionResponse extends ApiResponse<string> {}
-
-// ─── UI State ─────────────────────────────────────────────────────────────────
 
 export type AppState = 'idle' | 'extracting' | 'ready' | 'error';
 

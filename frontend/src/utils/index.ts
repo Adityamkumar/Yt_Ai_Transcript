@@ -1,7 +1,3 @@
-/**
- * Extract YouTube video ID from various URL formats.
- * Supports: youtube.com/watch?v=ID, youtu.be/ID, youtube.com/embed/ID, youtube.com/shorts/ID
- */
 export function extractVideoId(url: string): string | null {
   try {
     const patterns = [
@@ -18,30 +14,18 @@ export function extractVideoId(url: string): string | null {
   }
 }
 
-/**
- * Check if a string is a valid YouTube URL.
- */
 export function isValidYouTubeUrl(url: string): boolean {
   return extractVideoId(url) !== null;
 }
 
-/**
- * Get YouTube thumbnail URL from video ID.
- */
 export function getYouTubeThumbnail(videoId: string): string {
   return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
 }
 
-/**
- * Generate a unique ID.
- */
 export function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
-/**
- * Format a date to relative time (e.g., "2 hours ago").
- */
 export function formatRelativeTime(date: Date): string {
   const now = new Date();
   const diff = now.getTime() - new Date(date).getTime();
@@ -56,23 +40,14 @@ export function formatRelativeTime(date: Date): string {
   return new Date(date).toLocaleDateString();
 }
 
-/**
- * Truncate a string to a max length with ellipsis.
- */
 export function truncate(str: string, max: number): string {
   return str.length > max ? `${str.slice(0, max).trim()}...` : str;
 }
 
-/**
- * Derive a short chat title from the first user message.
- */
 export function deriveTitle(message: string): string {
   return truncate(message, 42);
 }
 
-/**
- * Debounce a function.
- */
 export function debounce<T extends (...args: unknown[]) => void>(fn: T, ms: number): (...args: Parameters<T>) => void {
   let timer: ReturnType<typeof setTimeout>;
   return (...args: Parameters<T>) => {

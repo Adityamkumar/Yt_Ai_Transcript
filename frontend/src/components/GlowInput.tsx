@@ -19,7 +19,6 @@ export const GlowInput = forwardRef<HTMLTextAreaElement, GlowInputProps>(
           containerClassName
         )}
       >
-        {/* Inner glow layer */}
         <div
           className={cn(
             'absolute inset-0 rounded-2xl pointer-events-none transition-opacity duration-300 bg-gradient-to-r from-violet-600/5 via-indigo-600/5 to-blue-600/5',

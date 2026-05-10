@@ -3,15 +3,11 @@ import type { ChatSession, ChatMessage } from '@/types';
 import { generateId, deriveTitle } from '@/utils';
 import { STORAGE_KEYS } from '@/constants';
 
-// ─── State ────────────────────────────────────────────────────────────────────
-
 interface StoreState {
   sessions: ChatSession[];
   activeSessionId: string | null;
   sidebarOpen: boolean;
 }
-
-// ─── Actions ──────────────────────────────────────────────────────────────────
 
 type Action =
   | { type: 'CREATE_SESSION'; payload: { videoId: string; videoUrl: string; videoTitle?: string } }
@@ -22,8 +18,6 @@ type Action =
   | { type: 'TOGGLE_SIDEBAR' }
   | { type: 'SET_SIDEBAR'; payload: boolean }
   | { type: 'HYDRATE'; payload: Partial<StoreState> };
-
-// ─── Reducer ──────────────────────────────────────────────────────────────────
 
 function reducer(state: StoreState, action: Action): StoreState {
   switch (action.type) {
@@ -66,7 +60,6 @@ function reducer(state: StoreState, action: Action): StoreState {
         sessions: state.sessions.map((s) => {
           if (s.id !== action.payload.sessionId) return s;
           const messages = [...s.messages, action.payload.message];
-          // Update title from first user message
           const title =
             s.messages.length === 0 && action.payload.message.role === 'user'
               ? deriveTitle(action.payload.message.content)
@@ -100,8 +93,6 @@ function reducer(state: StoreState, action: Action): StoreState {
   }
 }
 
-// ─── Context ──────────────────────────────────────────────────────────────────
-
 interface StoreContextValue {
   state: StoreState;
   activeSession: ChatSession | null;
@@ -115,8 +106,6 @@ interface StoreContextValue {
 }
 
 const StoreContext = createContext<StoreContextValue | null>(null);
-
-// ─── Provider ─────────────────────────────────────────────────────────────────
 
 function loadPersistedState(): Partial<StoreState> {
   try {
@@ -142,21 +131,17 @@ const initialState: StoreState = {
 export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(reducer, initialState);
 
-  // Hydrate from localStorage on mount
   useEffect(() => {
     const persisted = loadPersistedState();
     dispatch({ type: 'HYDRATE', payload: persisted });
   }, []);
 
-  // Persist to localStorage on state change
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEYS.SESSIONS, JSON.stringify(state.sessions));
       localStorage.setItem(STORAGE_KEYS.ACTIVE_SESSION, state.activeSessionId ?? '');
       localStorage.setItem(STORAGE_KEYS.SIDEBAR_OPEN, JSON.stringify(state.sidebarOpen));
-    } catch {
-      // Storage quota exceeded — ignore
-    }
+    } catch {}
   }, [state.sessions, state.activeSessionId, state.sidebarOpen]);
 
   const activeSession = state.sessions.find((s) => s.id === state.activeSessionId) ?? null;

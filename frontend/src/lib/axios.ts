@@ -7,7 +7,6 @@ const axiosInstance = axios.create({
   },
 });
 
-// Response interceptor for consistent error handling
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {

@@ -20,12 +20,10 @@ export function useTranscript(): UseTranscriptResult {
       const response = await videoService.extractTranscript(youtubeUrl);
       const rawData = response.data;
 
-      // Backend returns either the full VideoData object (new video) or the transcript string (cached)
       let videoId: string;
       let videoData: VideoData;
 
       if (typeof rawData === 'string') {
-        // Cached case: rawData is just the transcript string
         const id = extractVideoId(youtubeUrl);
         if (!id) throw new Error('Could not extract video ID from URL');
         videoId = id;
@@ -38,7 +36,6 @@ export function useTranscript(): UseTranscriptResult {
           updatedAt: new Date().toISOString(),
         };
       } else {
-        // New video case: rawData is the VideoData object
         videoId = rawData.youtubeVideoId;
         videoData = rawData;
       }

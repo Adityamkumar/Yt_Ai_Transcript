@@ -23,7 +23,6 @@ export function MessageBubble({ message }: MessageBubbleProps) {
       setCopied(true);
       window.setTimeout(() => setCopied(false), 1800);
     } catch {
-      // Clipboard access can fail in insecure browser contexts.
     }
   }, [message.content]);
 

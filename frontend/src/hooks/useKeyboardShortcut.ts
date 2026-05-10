@@ -11,12 +11,6 @@ type KeyCombo = {
 export function useKeyboardShortcut(combo: KeyCombo, callback: () => void) {
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      const meta = combo.meta ? e.metaKey : true;
-      const ctrl = combo.ctrl ? e.ctrlKey : true;
-      const shift = combo.shift ? e.shiftKey : !e.shiftKey || combo.shift === undefined;
-      const alt = combo.alt ? e.altKey : true;
-
-      // For combos that require Ctrl or Meta but not the other
       const modifierMatch =
         (combo.ctrl && e.ctrlKey && !combo.meta) ||
         (combo.meta && e.metaKey && !combo.ctrl) ||
@@ -30,7 +24,6 @@ export function useKeyboardShortcut(combo: KeyCombo, callback: () => void) {
           callback();
         }
       }
-      void meta; void ctrl; void shift; void alt;
     };
 
     window.addEventListener('keydown', handler);
