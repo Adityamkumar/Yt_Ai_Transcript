@@ -275,6 +275,31 @@ p {
   padding: 0;
 }
 
+.streaming-content {
+  position: relative;
+}
+
+.streaming-cursor {
+  display: inline-block;
+  width: 0.5rem;
+  height: 1rem;
+  margin-left: 0.2rem;
+  transform: translateY(0.15rem);
+  border-radius: 999px;
+  background: var(--accent);
+  animation: cursorBlink 0.9s ease-in-out infinite;
+}
+
+@keyframes cursorBlink {
+  0%, 100% {
+    opacity: 0.25;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
 @media (max-width: 767px) {
   :root {
     --header-height: 56px;

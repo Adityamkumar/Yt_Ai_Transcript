@@ -22,8 +22,15 @@ export interface ChatMessage {
   id: string;
   role: MessageRole;
   content: string;
-  timestamp: Date;
+  createdAt: string;
   isLoading?: boolean;
+  error?: string;
+}
+
+export interface ConversationMessage {
+  role: MessageRole;
+  content: string;
+  createdAt: string;
 }
 
 export interface ChatSession {
@@ -40,6 +47,8 @@ export interface ChatSession {
 export interface AskQuestionPayload {
   videoId: string;
   question: string;
+  recentMessages?: ConversationMessage[];
+  stream?: boolean;
 }
 
 export interface AskQuestionResponse extends ApiResponse<string> {}

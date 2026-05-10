@@ -113,13 +113,28 @@ function loadPersistedState(): Partial<StoreState> {
     const activeSessionId = localStorage.getItem(STORAGE_KEYS.ACTIVE_SESSION);
     const sidebarOpen = localStorage.getItem(STORAGE_KEYS.SIDEBAR_OPEN);
     return {
-      sessions: sessions ? JSON.parse(sessions) : [],
+      sessions: sessions ? normalizeSessions(JSON.parse(sessions)) : [],
       activeSessionId: activeSessionId ?? null,
       sidebarOpen: sidebarOpen !== null ? JSON.parse(sidebarOpen) : true,
     };
   } catch {
     return {};
   }
+}
+
+function normalizeSessions(sessions: ChatSession[]): ChatSession[] {
+  return sessions.map((session) => ({
+    ...session,
+    createdAt: new Date(session.createdAt),
+    updatedAt: new Date(session.updatedAt),
+    messages: session.messages.map((message) => {
+      const legacyMessage = message as ChatMessage & { timestamp?: Date | string };
+      return {
+        ...message,
+        createdAt: message.createdAt ?? new Date(legacyMessage.timestamp ?? Date.now()).toISOString(),
+      };
+    }),
+  }));
 }
 
 const initialState: StoreState = {

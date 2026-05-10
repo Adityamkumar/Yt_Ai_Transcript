@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Bot, Check, Copy, User } from 'lucide-react';
+import { Bot, Check, Copy, RotateCcw, User } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { chatBubbleVariants } from '@/animations/variants';
@@ -11,9 +11,10 @@ import { cn } from '@/utils/cn';
 
 interface MessageBubbleProps {
   message: ChatMessage;
+  onRetry?: (messageId: string) => void;
 }
 
-export function MessageBubble({ message }: MessageBubbleProps) {
+export function MessageBubble({ message, onRetry }: MessageBubbleProps) {
   const [copied, setCopied] = useState(false);
   const isUser = message.role === 'user';
 
@@ -51,7 +52,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
           <div className={cn('max-w-full', isUser ? 'w-fit max-w-[86%]' : 'w-full')}>
             <div className={cn('mb-2 flex items-center gap-2 px-1', isUser && 'justify-end')}>
               <span className="text-xs font-medium text-white">{isUser ? 'You' : 'EchoMind'}</span>
-              <span className="text-xs text-[var(--text-muted)]">{formatRelativeTime(message.timestamp)}</span>
+              <span className="text-xs text-[var(--text-muted)]">{formatRelativeTime(message.createdAt)}</span>
             </div>
 
             <div
@@ -63,7 +64,14 @@ export function MessageBubble({ message }: MessageBubbleProps) {
               )}
             >
               {message.isLoading ? (
-                <TypingIndicator />
+                message.content ? (
+                  <div className="markdown-content streaming-content">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown>
+                    <span className="streaming-cursor" />
+                  </div>
+                ) : (
+                  <TypingIndicator />
+                )
               ) : isUser ? (
                 <p className="user-message-text whitespace-pre-wrap text-[15px] leading-7">
                   {message.content}
@@ -83,6 +91,15 @@ export function MessageBubble({ message }: MessageBubbleProps) {
                     {copied ? <Check size={14} /> : <Copy size={14} />}
                     {copied ? 'Copied' : 'Copy'}
                   </button>
+                  {message.error && onRetry && (
+                    <button
+                      onClick={() => onRetry(message.id)}
+                      className="inline-flex h-8 items-center gap-2 rounded-lg px-2.5 text-xs font-medium text-[var(--danger)] transition hover:bg-[rgba(251,113,133,0.1)] hover:text-rose-300"
+                    >
+                      <RotateCcw size={14} />
+                      Retry
+                    </button>
+                  )}
                 </div>
               )}
             </div>

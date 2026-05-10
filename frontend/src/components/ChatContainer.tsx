@@ -15,7 +15,7 @@ interface ChatContainerProps {
 export function ChatContainer({ sessionId, videoId }: ChatContainerProps) {
   const { state } = useStore();
   const session = state.sessions.find((item) => item.id === sessionId);
-  const { sendMessage, isPending } = useChat(sessionId);
+  const { sendMessage, stopStreaming, isPending } = useChat(sessionId);
   const bottomRef = useAutoScroll(session?.messages ?? []);
 
   if (!session) return null;
@@ -24,6 +24,17 @@ export function ChatContainer({ sessionId, videoId }: ChatContainerProps) {
 
   const handlePromptSelect = (text: string) => {
     sendMessage(text, videoId);
+  };
+
+  const handleRetry = (assistantMessageId: string) => {
+    const index = session.messages.findIndex((message) => message.id === assistantMessageId);
+    const previousUserMessage = [...session.messages.slice(0, index)]
+      .reverse()
+      .find((message) => message.role === 'user');
+
+    if (previousUserMessage) {
+      sendMessage(previousUserMessage.content, videoId);
+    }
   };
 
   return (
@@ -46,7 +57,7 @@ export function ChatContainer({ sessionId, videoId }: ChatContainerProps) {
             <div className="space-y-1">
               <AnimatePresence initial={false}>
                 {session.messages.map((message) => (
-                  <MessageBubble key={message.id} message={message} />
+                  <MessageBubble key={message.id} message={message} onRetry={handleRetry} />
                 ))}
               </AnimatePresence>
             </div>
@@ -58,6 +69,7 @@ export function ChatContainer({ sessionId, videoId }: ChatContainerProps) {
 
       <ChatInput
         onSend={(message) => sendMessage(message, videoId)}
+        onStop={stopStreaming}
         isPending={isPending}
         placeholder="Ask about the video..."
       />

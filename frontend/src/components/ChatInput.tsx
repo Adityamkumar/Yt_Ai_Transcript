@@ -4,12 +4,13 @@ import { cn } from '@/utils/cn';
 
 interface ChatInputProps {
   onSend: (message: string) => void;
+  onStop?: () => void;
   disabled?: boolean;
   isPending?: boolean;
   placeholder?: string;
 }
 
-export function ChatInput({ onSend, disabled, isPending, placeholder }: ChatInputProps) {
+export function ChatInput({ onSend, onStop, disabled, isPending, placeholder }: ChatInputProps) {
   const [value, setValue] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -45,6 +46,7 @@ export function ChatInput({ onSend, disabled, isPending, placeholder }: ChatInpu
   }, []);
 
   const canSend = value.trim().length > 0 && !disabled && !isPending;
+  const canStop = Boolean(isPending && onStop);
 
   return (
     <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-[#050608] via-[#050608]/92 to-transparent px-4 pb-4 pt-12 sm:px-6 sm:pb-6">
@@ -68,12 +70,12 @@ export function ChatInput({ onSend, disabled, isPending, placeholder }: ChatInpu
             />
 
             <button
-              onClick={handleSend}
-              disabled={!canSend}
+              onClick={isPending ? onStop : handleSend}
+              disabled={!canSend && !canStop}
               aria-label={isPending ? 'Generating answer' : 'Send message'}
               className={cn(
                 'mb-1 grid h-10 w-10 shrink-0 place-items-center rounded-2xl transition',
-                canSend
+                canSend || canStop
                   ? 'bg-white text-neutral-950 shadow-sm hover:scale-[1.03] hover:bg-[#eef1ff]'
                   : 'cursor-not-allowed bg-white/[0.07] text-[var(--text-muted)]'
               )}
