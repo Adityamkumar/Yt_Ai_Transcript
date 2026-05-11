@@ -86,12 +86,12 @@ export function HeroSection() {
         {/* Headline */}
         <motion.h1
           variants={itemVariants}
-          className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-bold text-[#F5F7FF] leading-[1.05] tracking-tight mb-6"
+          className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold text-[#F5F7FF] leading-[1.2] tracking-tight mb-10"
           style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
         >
           Turn YouTube videos into{' '}
           <span
-            className="inline-block"
+            className="inline-block pb-2"
             style={{
               background: 'linear-gradient(135deg, #7C5CFF 0%, #4DA2FF 100%)',
               WebkitBackgroundClip: 'text',

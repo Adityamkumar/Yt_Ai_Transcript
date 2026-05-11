@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Github, Twitter, Zap } from 'lucide-react';
+import { Github, Zap } from 'lucide-react';
 
 export function Footer() {
   return (
@@ -31,49 +31,29 @@ export function Footer() {
           <div className="flex flex-col items-center gap-4">
             <div className="flex items-center gap-6">
               <a
-                href="https://github.com"
+                href="https://github.com/Adityamkumar/Yt_Ai_Transcript"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1.5 text-xs text-[#94A3B8] hover:text-[#F5F7FF] transition-colors duration-200"
+                className="flex items-center gap-1.5 text-sm text-[#94A3B8] hover:text-[#F5F7FF] transition-colors duration-200"
               >
-                <Github size={14} />
+                <Github size={16} />
                 GitHub
               </a>
               <Link
                 to="/login"
-                className="text-xs text-[#94A3B8] hover:text-[#F5F7FF] transition-colors duration-200"
+                className="text-sm text-[#94A3B8] hover:text-[#F5F7FF] transition-colors duration-200"
               >
                 Login
               </Link>
               <Link
                 to="/signup"
-                className="text-xs text-[#7C5CFF] hover:text-[#9b7fff] transition-colors duration-200 font-medium"
+                className="text-sm text-[#7C5CFF] hover:text-[#9b7fff] transition-colors duration-200 font-medium"
               >
                 Get Started
               </Link>
             </div>
 
-            {/* Social icons */}
-            <div className="flex items-center gap-3">
-              <a
-                href="https://github.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                id="footer-github"
-                className="p-2 rounded-lg text-[#94A3B8] hover:text-[#F5F7FF] hover:bg-white/5 border border-transparent hover:border-white/08 transition-all duration-200"
-              >
-                <Github size={15} />
-              </a>
-              <a
-                href="https://twitter.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                id="footer-twitter"
-                className="p-2 rounded-lg text-[#94A3B8] hover:text-[#F5F7FF] hover:bg-white/5 border border-transparent hover:border-white/08 transition-all duration-200"
-              >
-                <Twitter size={15} />
-              </a>
-            </div>
+
           </div>
         </div>
 

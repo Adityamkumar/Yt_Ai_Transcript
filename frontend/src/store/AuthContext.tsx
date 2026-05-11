@@ -28,26 +28,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const response = await axiosInstance.get('/api/v1/user/current-user');
       setUser(response.data.user);
+      localStorage.setItem('isAuthenticated', 'true');
     } catch (error) {
       setUser(null);
+      localStorage.removeItem('isAuthenticated');
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    refreshUser();
+    if (localStorage.getItem('isAuthenticated') === 'true') {
+      refreshUser();
+    } else {
+      setLoading(false);
+    }
   }, [refreshUser]);
 
   const login = async (email: string, password: string) => {
     const response = await axiosInstance.post('/api/v1/user/login', { email, password });
     setUser(response.data.user.user);
+    localStorage.setItem('isAuthenticated', 'true');
     navigate('/app');
   };
 
   const register = async (name: string, email: string, password: string) => {
     const response = await axiosInstance.post('/api/v1/user/register', { name, email, password });
     setUser(response.data.user);
+    localStorage.setItem('isAuthenticated', 'true');
     navigate('/app');
   };
 
@@ -56,6 +64,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await axiosInstance.post('/api/v1/user/logout');
     } finally {
       setUser(null);
+      localStorage.removeItem('isAuthenticated');
       navigate('/');
     }
   };
