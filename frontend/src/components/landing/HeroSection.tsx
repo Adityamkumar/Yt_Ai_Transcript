@@ -73,6 +73,14 @@ export function HeroSection() {
         initial="hidden"
         animate="visible"
       >
+        {/* Subtle glow behind heading */}
+        <div 
+          className="absolute top-[25%] left-1/2 -translate-x-1/2 w-[80%] max-w-[800px] h-[300px] pointer-events-none -z-10"
+          style={{
+            background: 'radial-gradient(ellipse at center, rgba(124,92,255,0.2) 0%, rgba(77,162,255,0.15) 40%, transparent 70%)',
+            filter: 'blur(60px)'
+          }}
+        />
         {/* Badge */}
         <motion.div variants={itemVariants} className="mb-8">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[rgba(124,92,255,0.3)] bg-[rgba(124,92,255,0.08)] backdrop-blur-sm">
