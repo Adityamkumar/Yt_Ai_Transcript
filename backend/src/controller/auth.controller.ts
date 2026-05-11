@@ -9,7 +9,11 @@ import type { CustomJwtPayload } from "../types/jwt.types.js";
 
 export const userRegister = asyncHandler(async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { name, email, password } = req.body;
+
+    if (!name) {
+      return res.status(400).json({ message: "Name is required" });
+    }
 
     const isUserAlreadyExists = await userModel.findOne({ email });
 
@@ -29,6 +33,7 @@ export const userRegister = asyncHandler(async (req, res) => {
     }
 
     const user = await userModel.create({
+      name,
       email: email,
       password: password,
     });
@@ -43,6 +48,7 @@ export const userRegister = asyncHandler(async (req, res) => {
       message: "User register successfully",
       user: {
         id: user._id,
+        name: user.name,
         email: user.email,
       },
     });
@@ -165,6 +171,7 @@ export const getCurrentUser = asyncHandler(async (req, res) => {
   return res.status(200).json({
     user: {
       id: req.user?._id,
+      name: req.user?.name,
       email: req.user?.email,
     },
   });

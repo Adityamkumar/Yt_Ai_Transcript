@@ -18,9 +18,6 @@ export function isValidYouTubeUrl(url: string): boolean {
   return extractVideoId(url) !== null;
 }
 
-export function getYouTubeThumbnail(videoId: string): string {
-  return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
-}
 
 export function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
@@ -48,10 +45,3 @@ export function deriveTitle(message: string): string {
   return truncate(message, 42);
 }
 
-export function debounce<T extends (...args: unknown[]) => void>(fn: T, ms: number): (...args: Parameters<T>) => void {
-  let timer: ReturnType<typeof setTimeout>;
-  return (...args: Parameters<T>) => {
-    clearTimeout(timer);
-    timer = setTimeout(() => fn(...args), ms);
-  };
-}

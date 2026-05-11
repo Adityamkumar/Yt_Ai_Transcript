@@ -3,24 +3,28 @@ import type { ChatMessage } from '@/types';
 
 export function useAutoScroll(messages: ChatMessage[]) {
   const bottomRef = useRef<HTMLDivElement>(null);
-  const frameRef = useRef<number | null>(null);
+  const isAutoScrollEnabled = useRef(true);
 
   useEffect(() => {
-    if (frameRef.current !== null) {
-      window.cancelAnimationFrame(frameRef.current);
-    }
+    const handleScroll = () => {
+      if (!bottomRef.current) return;
+      const container = bottomRef.current.parentElement;
+      if (!container) return;
 
-    frameRef.current = window.requestAnimationFrame(() => {
-      bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
-      frameRef.current = null;
-    });
-
-    return () => {
-      if (frameRef.current !== null) {
-        window.cancelAnimationFrame(frameRef.current);
-        frameRef.current = null;
-      }
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      const isAtBottom = scrollHeight - scrollTop - clientHeight < 150;
+      isAutoScrollEnabled.current = isAtBottom;
     };
+
+    const container = bottomRef.current?.parentElement;
+    container?.addEventListener('scroll', handleScroll);
+    return () => container?.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    if (!isAutoScrollEnabled.current) return;
+
+    bottomRef.current?.scrollIntoView({ behavior: 'auto', block: 'end' });
   }, [messages]);
 
   return bottomRef;

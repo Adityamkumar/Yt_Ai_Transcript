@@ -9,12 +9,14 @@ import {
   Trash2,
   User,
   X,
+  LogOut,
 } from 'lucide-react';
 import { useStore } from '@/store/useAppStore';
 import { APP_NAME } from '@/constants';
 import { formatRelativeTime } from '@/utils';
 import { listItemVariants, sidebarVariants, staggerContainer } from '@/animations/variants';
 import { cn } from '@/utils/cn';
+import { useAuth } from '@/store/AuthContext';
 
 interface SidebarProps {
   onNewChat: () => void;
@@ -22,6 +24,7 @@ interface SidebarProps {
 
 export function Sidebar({ onNewChat }: SidebarProps) {
   const { state, setActiveSession, deleteSession, toggleSidebar } = useStore();
+  const { user, logout } = useAuth();
   const { sessions, activeSessionId, sidebarOpen } = state;
 
   return (
@@ -166,16 +169,26 @@ export function Sidebar({ onNewChat }: SidebarProps) {
             </div>
           </div>
 
-          <div className="border-t border-white/[0.07] p-3">
-            <button className="flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left transition hover:bg-white/[0.055]">
+          <div className="border-t border-white/[0.07] p-3 space-y-1">
+            <div className="flex items-center gap-3 px-3 py-3 rounded-2xl bg-white/[0.03]">
               <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-white/[0.1] bg-white/[0.055] text-[var(--text-secondary)]">
                 <User size={16} />
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-sm font-medium text-white">Aditya Kumar</span>
-                <span className="block text-xs text-[var(--text-muted)]">Personal workspace</span>
+                <span className="block truncate text-sm font-medium text-white">{user?.name || 'Guest'}</span>
+                <span className="block text-xs text-[var(--text-muted)] truncate">{user?.email}</span>
               </span>
-              <Settings size={16} className="text-[var(--text-muted)]" />
+              <button 
+                onClick={logout}
+                title="Logout"
+                className="p-2 rounded-lg text-[var(--text-muted)] hover:bg-red-500/10 hover:text-red-400 transition-colors"
+              >
+                <LogOut size={16} />
+              </button>
+            </div>
+            <button className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition hover:bg-white/[0.055] text-[var(--text-muted)] hover:text-white">
+              <Settings size={15} />
+              <span className="text-xs font-medium">Settings</span>
             </button>
           </div>
         </div>

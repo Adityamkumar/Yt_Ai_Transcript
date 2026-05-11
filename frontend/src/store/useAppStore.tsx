@@ -127,13 +127,10 @@ function normalizeSessions(sessions: ChatSession[]): ChatSession[] {
     ...session,
     createdAt: new Date(session.createdAt),
     updatedAt: new Date(session.updatedAt),
-    messages: session.messages.map((message) => {
-      const legacyMessage = message as ChatMessage & { timestamp?: Date | string };
-      return {
-        ...message,
-        createdAt: message.createdAt ?? new Date(legacyMessage.timestamp ?? Date.now()).toISOString(),
-      };
-    }),
+    messages: session.messages.map((message) => ({
+      ...message,
+      createdAt: message.createdAt || new Date().toISOString(),
+    })),
   }));
 }
 

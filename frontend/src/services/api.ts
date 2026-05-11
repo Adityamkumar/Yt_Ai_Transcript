@@ -26,12 +26,14 @@ export const chatService = {
     onChunk: (chunk: string) => void,
     signal?: AbortSignal
   ): Promise<string> => {
-    const response = await fetch(API_ENDPOINTS.CHAT_ASK, {
+    const baseURL = axiosInstance.defaults.baseURL || '';
+    const response = await fetch(`${baseURL}${API_ENDPOINTS.CHAT_ASK}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Accept: 'text/plain',
       },
+      credentials: 'include',
       body: JSON.stringify({ ...payload, stream: true }),
       signal,
     });

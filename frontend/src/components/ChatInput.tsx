@@ -49,7 +49,7 @@ export function ChatInput({ onSend, onStop, disabled, isPending, placeholder }: 
   const canStop = Boolean(isPending && onStop);
 
   return (
-    <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-[#050608] via-[#050608]/92 to-transparent px-4 pb-4 pt-12 sm:px-6 sm:pb-6">
+    <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-[#050608] via-[#050608]/92 to-transparent pb-4 pt-12 sm:pb-6">
       <div className="chat-container pointer-events-auto">
         <div
           className={cn(
