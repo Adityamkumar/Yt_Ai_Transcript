@@ -1,0 +1,37 @@
+import type { NextFunction, Request, Response } from "express";
+import userModel from "../models/user.model.js";
+import jwt from "jsonwebtoken";
+import type { CustomJwtPayload } from "../types/jwt.types.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
+
+
+
+export const authMiddleware = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const token =
+      req.cookies?.accessToken ||
+      req.header("Authorization")?.replace("Bearer ", "");
+
+    if (!token) {
+      return res.status(401).json({
+        message: "Unauthorized access",
+      });
+    }
+
+    const decoded = jwt.verify(
+      token,
+      process.env.ACCESS_TOKEN_SECRET,
+    ) as CustomJwtPayload;
+
+    const user = await userModel.findById(decoded._id).select("-password");
+
+    if (!user) {
+      return res.status(401).json({
+        message: "Invalid token",
+      });
+    }
+
+    req.user = user;
+    next();
+  },
+);
