@@ -1,124 +1,127 @@
-import { useCallback, useRef, useState } from 'react';
-import { chatService } from '@/services/api';
-import { useStore } from '@/store/useAppStore';
-import { generateId } from '@/utils';
-import { getRecentMessages } from '@/utils/chatContext';
-import type { ChatMessage } from '@/types';
-import toast from 'react-hot-toast';
+import { useState, useCallback } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { messageService } from '@/services/message.service';
+import { chatService } from '@/services/chat.service';
+import { IMessage } from '@/types';
 
-export function useChat(sessionId: string | null) {
-  const { addMessage, updateMessage, activeSession } = useStore();
-  const [isTyping, setIsTyping] = useState(false);
-  const abortControllerRef = useRef<AbortController | null>(null);
+export function useChat(conversationId: string | undefined, videoId: string | undefined) {
+  const queryClient = useQueryClient();
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [streamingMessage, setStreamingMessage] = useState('');
 
   const sendMessage = useCallback(
-    async (question: string, videoId: string) => {
-      if (!sessionId || !question.trim()) return;
-
-      abortControllerRef.current?.abort();
-
-      const createdAt = new Date().toISOString();
-      const userMsg: ChatMessage = {
-        id: generateId(),
-        role: 'user',
-        content: question.trim(),
-        createdAt,
-      };
-
-      const sourceMessages = activeSession?.id === sessionId ? activeSession.messages : [];
-      const recentMessages = getRecentMessages(sourceMessages, 10);
-
-      addMessage(sessionId, userMsg);
-
-      const assistantMessageId = generateId();
-      const assistantMsg: ChatMessage = {
-        id: assistantMessageId,
-        role: 'assistant',
-        content: '',
-        createdAt: new Date().toISOString(),
-        isLoading: true,
-      };
-
-      addMessage(sessionId, assistantMsg);
-      setIsTyping(true);
-
-      const abortController = new AbortController();
-      abortControllerRef.current = abortController;
-
-      let streamedText = '';
-      let scheduledText = '';
-      let animationFrame: number | null = null;
-
-      const flush = () => {
-        animationFrame = null;
-        if (scheduledText === streamedText) return;
-        scheduledText = streamedText;
-        updateMessage(sessionId, assistantMessageId, {
-          content: scheduledText,
-          isLoading: true,
-        });
-      };
-
-      const scheduleFlush = () => {
-        if (animationFrame !== null) return;
-        animationFrame = window.requestAnimationFrame(flush);
-      };
+    async (content: string) => {
+      if (!conversationId || !videoId || isStreaming) return;
 
       try {
-        const finalText = await chatService.streamQuestion(
+        setIsStreaming(true);
+        setStreamingMessage('');
+
+        const userMsg = await messageService.createMessage(conversationId, 'user', content);
+
+        queryClient.setQueryData(['messages', conversationId], (old: IMessage[] = []) => [
+          ...old,
+          userMsg,
+        ]);
+
+        const history: IMessage[] = queryClient.getQueryData(['messages', conversationId]) || [];
+        const recentMessages = history.slice(-10).map(m => ({
+          role: m.role,
+          content: m.content
+        }));
+
+        let fullResponse = '';
+        await chatService.streamQuestion(
           {
             videoId,
-            question: question.trim(),
+            question: content,
             recentMessages,
           },
-          (chunk) => {
-            streamedText += chunk;
-            scheduleFlush();
-          },
-          abortController.signal
+          (token) => {
+            fullResponse += token;
+            setStreamingMessage(fullResponse);
+          }
         );
 
-        if (animationFrame !== null) {
-          window.cancelAnimationFrame(animationFrame);
+        if (!fullResponse.trim()) {
+          fullResponse = "I'm sorry, I encountered an issue while generating a response. Please try again.";
         }
 
-        updateMessage(sessionId, assistantMessageId, {
-          content: finalText || streamedText,
-          isLoading: false,
-        });
-      } catch (err) {
-        if (animationFrame !== null) {
-          window.cancelAnimationFrame(animationFrame);
-        }
+        const assistantMsg = await messageService.createMessage(conversationId, 'assistant', fullResponse);
 
-        if (err instanceof DOMException && err.name === 'AbortError') {
-          updateMessage(sessionId, assistantMessageId, {
-            content: streamedText || 'Response stopped.',
-            isLoading: false,
-          });
-          return;
-        }
-
-        const errorMsg = err instanceof Error ? err.message : 'Failed to get an answer. Try again.';
-        updateMessage(sessionId, assistantMessageId, {
-          content: streamedText || `Error: ${errorMsg}`,
-          isLoading: false,
-          error: errorMsg,
-        });
-        toast.error(errorMsg);
+        queryClient.setQueryData(['messages', conversationId], (old: IMessage[] = []) => [
+          ...old,
+          assistantMsg,
+        ]);
+        setStreamingMessage('');
+      } catch (error) {
+        throw error;
       } finally {
-        setIsTyping(false);
-        if (abortControllerRef.current === abortController) {
-          abortControllerRef.current = null;
-        }
+        setIsStreaming(false);
       }
     },
-    [sessionId, activeSession, addMessage, updateMessage]
+    [conversationId, videoId, isStreaming, queryClient]
   );
 
-  const stopStreaming = useCallback(() => {
-    abortControllerRef.current?.abort();
-  }, []);
+  const editMessage = useCallback(
+    async (messageId: string, newContent: string) => {
+      if (!conversationId || !videoId || isStreaming) return;
 
-  return { sendMessage, stopStreaming, isTyping, isPending: isTyping };
+      try {
+        setIsStreaming(true);
+        setStreamingMessage('');
+
+        const updatedMsg = await messageService.updateMessage(messageId, newContent);
+
+        queryClient.setQueryData(['messages', conversationId], (old: IMessage[] = []) => {
+          const index = old.findIndex(m => m._id === messageId);
+          if (index === -1) return old;
+          return [...old.slice(0, index), updatedMsg];
+        });
+
+        const history: IMessage[] = queryClient.getQueryData(['messages', conversationId]) || [];
+        const recentMessages = history.slice(-10).map(m => ({
+          role: m.role,
+          content: m.content
+        }));
+
+        let fullResponse = '';
+        await chatService.streamQuestion(
+          {
+            videoId,
+            question: newContent,
+            recentMessages,
+          },
+          (token) => {
+            fullResponse += token;
+            setStreamingMessage(fullResponse);
+          }
+        );
+
+        if (!fullResponse.trim()) {
+          fullResponse = "I'm sorry, I couldn't generate a new response for this edited question. Please try again.";
+        }
+
+        const assistantMsg = await messageService.createMessage(conversationId, 'assistant', fullResponse);
+
+        queryClient.setQueryData(['messages', conversationId], (old: IMessage[] = []) => [
+          ...old,
+          assistantMsg,
+        ]);
+        setStreamingMessage('');
+      } catch (error) {
+        throw error;
+      } finally {
+        setIsStreaming(false);
+      }
+    },
+    [conversationId, videoId, isStreaming, queryClient]
+  );
+
+  return {
+    sendMessage,
+    editMessage,
+    isStreaming,
+    streamingMessage,
+  };
 }

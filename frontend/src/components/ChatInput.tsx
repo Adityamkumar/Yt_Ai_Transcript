@@ -66,7 +66,7 @@ export function ChatInput({ onSend, onStop, disabled, isPending, placeholder }: 
               placeholder={placeholder ?? 'Message AI...'}
               disabled={disabled || isPending}
               rows={1}
-              className="max-h-[180px] min-h-12 flex-1 resize-none bg-transparent px-3 py-3 text-[15px] leading-6 text-white outline-none placeholder:text-[var(--text-muted)] disabled:cursor-not-allowed disabled:opacity-45 sm:px-4"
+              className="max-h-[180px] min-h-12 flex-1 resize-none bg-transparent px-3 py-3 text-[17px] leading-7 text-white outline-none placeholder:text-[var(--text-muted)] disabled:cursor-not-allowed disabled:opacity-45 sm:px-4"
             />
 
             <button

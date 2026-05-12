@@ -113,10 +113,17 @@ export const refreshAccessToken = asyncHandler(async (req, res) => {
     });
   }
 
-    const decodedToken = jwt.verify(
-      incomingRefreshToken,
-      process.env.REFRESH_TOKEN_SECRET,
-    ) as CustomJwtPayload;
+    let decodedToken;
+    try {
+      decodedToken = jwt.verify(
+        incomingRefreshToken,
+        process.env.REFRESH_TOKEN_SECRET,
+      ) as CustomJwtPayload;
+    } catch (error) {
+      return res.status(401).json({
+        message: "Refresh token is expired or invalid",
+      });
+    }
 
     const user = await userModel.findById(decodedToken._id);
 
@@ -154,7 +161,7 @@ export const userLogout = asyncHandler(async (req, res) => {
       },
     },
     {
-      new: true,
+      returnDocument: 'after',
     },
   );
 

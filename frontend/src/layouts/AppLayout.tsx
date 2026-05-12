@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect } from 'react';
 import { Toaster } from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 import { Sidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
-import { useStore } from '@/store/useAppStore';
-import { useTranscript } from '@/hooks/useTranscript';
+import { useUIStore } from '@/store/useUIStore';
 import { useKeyboardShortcut } from '@/hooks/useKeyboardShortcut';
 
 interface AppLayoutProps {
@@ -11,26 +11,25 @@ interface AppLayoutProps {
 }
 
 export function AppLayout({ children }: AppLayoutProps) {
-  const { setActiveSession, toggleSidebar, setSidebar } = useStore();
-  const transcript = useTranscript();
+  const navigate = useNavigate();
+  const { toggleSidebar, setSidebarOpen } = useUIStore();
 
   const handleNewChat = useCallback(() => {
-    setActiveSession(null);
-    transcript.reset();
-  }, [setActiveSession, transcript]);
+    navigate('/app');
+  }, [navigate]);
 
   useKeyboardShortcut({ key: 'b', ctrl: true }, toggleSidebar);
   useKeyboardShortcut({ key: 'n', ctrl: true }, handleNewChat);
 
   useEffect(() => {
     const syncSidebarToViewport = () => {
-      setSidebar(window.innerWidth >= 1024);
+      setSidebarOpen(window.innerWidth >= 1024);
     };
 
     syncSidebarToViewport();
     window.addEventListener('resize', syncSidebarToViewport);
     return () => window.removeEventListener('resize', syncSidebarToViewport);
-  }, [setSidebar]);
+  }, [setSidebarOpen]);
 
   return (
     <div className="app-shell">

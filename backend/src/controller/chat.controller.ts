@@ -69,12 +69,13 @@ export const askQuestion = asyncHandler(async (req, res) => {
     if (!closed && !res.destroyed) {
       res.end();
     }
-  } catch (error) {
+  } catch (error: any) {
     if (!closed && !res.destroyed) {
       if (!res.headersSent) {
         res.status(500);
       }
-      res.write("\n\nError: Failed to stream AI response.");
+      const errorMessage = error?.message || "I encountered a brief technical issue. Please try asking your question again.";
+      res.write(`\n\nI'm sorry, ${errorMessage}`);
       res.end();
     }
   }

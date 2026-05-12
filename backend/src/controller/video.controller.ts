@@ -1,5 +1,6 @@
 import { Video } from "../models/VideoUrl.model.js";
 import { getTranscriptFromYoutube } from "../services/transcript.service.js";
+import { generateVideoTitle } from "../services/ai.service.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -19,12 +20,16 @@ export const getTranscript = asyncHandler(async (req, res) => {
   });
 
   if (videoExists) {
+    if (!videoExists.title) {
+      videoExists.title = await generateVideoTitle(videoExists.transcript);
+      await videoExists.save();
+    }
     return res
       .status(200)
       .json(
         new ApiResponse(
           200,
-          videoExists.transcript,
+          videoExists,
           "Transcript generated successfully",
         ),
       );
@@ -36,10 +41,13 @@ export const getTranscript = asyncHandler(async (req, res) => {
     throw new ApiError(400, "transcript generation failed. Try again");
   }
 
+  const title = await generateVideoTitle(transcript);
+
   const video = await Video.create({
     youtubeUrl,
     youtubeVideoId: videoId,
     transcript,
+    title,
   });
 
   res

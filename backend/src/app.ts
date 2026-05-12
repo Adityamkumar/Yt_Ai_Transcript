@@ -3,6 +3,8 @@ import cors from "cors";
 import videoRouter from "./routes/video.route.js";
 import chatRouter from './routes/chat.route.js'
 import authRouter from './routes/auth.route.js'
+import conversationRouter from './routes/conversation.route.js'
+import messageRouter from './routes/message.route.js'
 import cookieParser from 'cookie-parser'
 
 const app = express();
@@ -20,7 +22,7 @@ app.use(cors({
     }
   },
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"]
 }));
 
@@ -30,6 +32,20 @@ app.use(cookieParser())
 app.use("/api/v1/video", videoRouter);
 app.use("/api/v1/chat", chatRouter);
 app.use("/api/v1/user", authRouter)
+app.use("/api/v1/conversations",conversationRouter);
+app.use("/api/v1/messages",messageRouter);
+
+app.use((err: any, req: any, res: any, next: any) => {
+  const statusCode = err.statusCode || 500;
+  const message = err.message || "Internal Server Error";
+  
+  return res.status(statusCode).json({
+    success: false,
+    statusCode,
+    message,
+    errors: err.errors || []
+  });
+});
 
 app.get("/", (req, res) => {
   res.json({

@@ -14,17 +14,17 @@ axiosInstance.interceptors.request.use((config) => config, (error) => Promise.re
 axiosInstance.interceptors.response.use((response) => response, async (error) => {
     const originalRequest = error.config;
 
-    const isAuthRequest = originalRequest.url ?. includes('login') || originalRequest.url ?. includes('register') || originalRequest.url ?. includes('refresh-token') || originalRequest.url ?. includes('current-user');
+    const isAuthRequest = originalRequest.url?.includes('login') || originalRequest.url?.includes('register') || originalRequest.url?.includes('refresh-token');
 
-    if (error.response ?. status === 401 && ! originalRequest._retry && ! isAuthRequest) {
+    if (error.response?.status === 401 && !originalRequest._retry && !isAuthRequest) {
         originalRequest._retry = true;
 
         try {
-            await axios.post(`${
-                axiosInstance.defaults.baseURL
-            }/api/v1/user/refresh-token`, {}, {withCredentials: true});
+            await axios.post(`${axiosInstance.defaults.baseURL}/api/v1/user/refresh-token`, {}, { withCredentials: true });
             return axiosInstance(originalRequest);
         } catch (refreshError) {
+            localStorage.removeItem('isAuthenticated');
+            window.location.href = '/';
             return Promise.reject(refreshError);
         }
     }

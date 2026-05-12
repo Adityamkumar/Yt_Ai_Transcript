@@ -1,41 +1,66 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { useStore } from '@/store/useAppStore';
+import { useMessages } from '@/hooks/useMessages';
 import { useChat } from '@/hooks/useChat';
 import { useAutoScroll } from '@/hooks/useAutoScroll';
 import { MessageBubble } from './MessageBubble';
 import { ChatInput } from './ChatInput';
 import { EmptyState } from './EmptyState';
 import { VideoCard } from './VideoCard';
+import { IMessage, VideoData } from '@/types';
 
 interface ChatContainerProps {
-  sessionId: string;
-  videoId: string;
+  conversationId: string;
+  video: VideoData;
 }
 
-export function ChatContainer({ sessionId, videoId }: ChatContainerProps) {
-  const { state } = useStore();
-  const session = state.sessions.find((item) => item.id === sessionId);
-  const { sendMessage, stopStreaming, isPending } = useChat(sessionId);
-  const bottomRef = useAutoScroll(session?.messages ?? []);
+export function ChatContainer({ conversationId, video }: ChatContainerProps) {
+  const { messages, isLoading } = useMessages(conversationId);
+  const targetVideoId = video?.youtubeVideoId || (typeof video === 'string' ? video : '');
+  const { sendMessage, editMessage, isStreaming, streamingMessage } = useChat(conversationId, targetVideoId);
+  
+  const handleEdit = (messageId: string, newContent: string) => {
+    editMessage(messageId, newContent);
+  };
 
-  if (!session) return null;
+  const displayMessages = [...messages];
+  if (isStreaming) {
+    displayMessages.push({
+      _id: 'streaming',
+      conversationId,
+      role: 'assistant',
+      content: streamingMessage,
+      isLoading: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    } as any);
+  }
 
-  const hasMessages = session.messages.length > 0;
+  const bottomRef = useAutoScroll(displayMessages);
+
+  const hasMessages = messages.length > 0 || isStreaming;
 
   const handlePromptSelect = (text: string) => {
-    sendMessage(text, videoId);
+    sendMessage(text);
   };
 
   const handleRetry = (assistantMessageId: string) => {
-    const index = session.messages.findIndex((message) => message.id === assistantMessageId);
-    const previousUserMessage = [...session.messages.slice(0, index)]
+    const index = messages.findIndex((message) => message._id === assistantMessageId);
+    const previousUserMessage = [...messages.slice(0, index)]
       .reverse()
       .find((message) => message.role === 'user');
 
     if (previousUserMessage) {
-      sendMessage(previousUserMessage.content, videoId);
+      sendMessage(previousUserMessage.content);
     }
   };
+
+  if (isLoading && messages.length === 0) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <div className="w-8 h-8 border-4 border-[#7C5CFF] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <section className="relative flex h-full min-h-0 flex-col">
@@ -50,14 +75,23 @@ export function ChatContainer({ sessionId, videoId }: ChatContainerProps) {
                 animate={{ opacity: 1, y: 0 }}
                 className="mb-8 max-w-[520px]"
               >
-                <VideoCard videoId={videoId} youtubeUrl={session.videoUrl} transcript="loaded" />
+                <VideoCard 
+                  videoId={video?.youtubeVideoId || 'loading'} 
+                  youtubeUrl={video?.youtubeUrl || ''} 
+                  transcript="loaded" 
+                />
               </motion.div>
             </div>
 
             <div className="space-y-1">
               <AnimatePresence initial={false}>
-                {session.messages.map((message) => (
-                  <MessageBubble key={message.id} message={message} onRetry={handleRetry} />
+                {displayMessages.map((message) => (
+                  <MessageBubble 
+                    key={message._id} 
+                    message={message} 
+                    onRetry={handleRetry} 
+                    onEdit={handleEdit}
+                  />
                 ))}
               </AnimatePresence>
             </div>
@@ -68,9 +102,9 @@ export function ChatContainer({ sessionId, videoId }: ChatContainerProps) {
       </div>
 
       <ChatInput
-        onSend={(message) => sendMessage(message, videoId)}
-        onStop={stopStreaming}
-        isPending={isPending}
+        onSend={(message) => sendMessage(message)}
+        onStop={() => {}}
+        isPending={isStreaming}
         placeholder="Ask about the video..."
       />
     </section>

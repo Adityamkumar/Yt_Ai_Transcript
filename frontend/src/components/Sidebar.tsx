@@ -11,7 +11,10 @@ import {
   X,
   LogOut,
 } from 'lucide-react';
-import { useStore } from '@/store/useAppStore';
+import { useNavigate, useParams } from 'react-router-dom';
+import toast from 'react-hot-toast';
+import { useConversations } from '@/hooks/useConversations';
+import { useUIStore } from '@/store/useUIStore';
 import { APP_NAME } from '@/constants';
 import { formatRelativeTime } from '@/utils';
 import { listItemVariants, sidebarVariants, staggerContainer } from '@/animations/variants';
@@ -23,9 +26,30 @@ interface SidebarProps {
 }
 
 export function Sidebar({ onNewChat }: SidebarProps) {
-  const { state, setActiveSession, deleteSession, toggleSidebar } = useStore();
+  const navigate = useNavigate();
+  const { conversationId } = useParams<{ conversationId: string }>();
+  const { conversations, isLoading, deleteConversation } = useConversations();
+  const { sidebarOpen, toggleSidebar } = useUIStore();
   const { user, logout } = useAuth();
-  const { sessions, activeSessionId, sidebarOpen } = state;
+
+  const handleConversationClick = (id: string) => {
+    navigate(`/workspace/${id}`);
+    if (window.innerWidth < 1024) {
+      toggleSidebar();
+    }
+  };
+
+  const handleDeleteConversation = async (id: string) => {
+    try {
+      await deleteConversation(id);
+      toast.success('Conversation deleted');
+      if (conversationId === id) {
+        navigate('/app');
+      }
+    } catch (error) {
+      toast.error('Failed to delete conversation');
+    }
+  };
 
   return (
     <>
@@ -51,7 +75,7 @@ export function Sidebar({ onNewChat }: SidebarProps) {
         <div className="flex h-full w-[var(--sidebar-width)] flex-col">
           <div className="flex h-[var(--header-height)] items-center justify-between border-b border-white/[0.07] px-4">
             <button
-              onClick={onNewChat}
+              onClick={() => navigate('/app')}
               className="flex min-w-0 items-center gap-3 rounded-xl pr-2 text-left"
             >
               <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-white/[0.1] bg-white/[0.06] text-[var(--accent)] shadow-sm">
@@ -89,8 +113,14 @@ export function Sidebar({ onNewChat }: SidebarProps) {
           </div>
 
           <nav className="px-3">
-            <button className="flex w-full items-center gap-3 rounded-xl bg-white/[0.055] px-3 py-2.5 text-sm font-medium text-white">
-              <LayoutDashboard size={16} className="text-[var(--accent)]" />
+            <button 
+              onClick={() => navigate('/app')}
+              className={cn(
+                "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition",
+                !conversationId ? "bg-white/[0.055] text-white" : "text-[var(--text-muted)] hover:text-white"
+              )}
+            >
+              <LayoutDashboard size={16} className={!conversationId ? "text-[var(--accent)]" : ""} />
               Workspace
             </button>
           </nav>
@@ -101,12 +131,18 @@ export function Sidebar({ onNewChat }: SidebarProps) {
                 History
               </p>
               <span className="rounded-full bg-white/[0.05] px-2 py-0.5 text-[11px] text-[var(--text-muted)]">
-                {sessions.length}
+                {conversations.length}
               </span>
             </div>
 
             <div className="min-h-0 flex-1 overflow-y-auto pb-4 pr-1 no-scrollbar">
-              {sessions.length === 0 ? (
+              {isLoading && conversations.length === 0 ? (
+                 <div className="space-y-2 p-2">
+                    {[...Array(3)].map((_, i) => (
+                      <div key={i} className="h-10 w-full rounded-lg bg-white/[0.03] animate-pulse" />
+                    ))}
+                 </div>
+              ) : conversations.length === 0 ? (
                 <div className="rounded-2xl border border-dashed border-white/[0.08] px-4 py-6 text-center">
                   <MessageSquare size={18} className="mx-auto mb-2 text-[var(--text-muted)]" />
                   <p className="text-sm font-medium text-white">No chats yet</p>
@@ -119,13 +155,13 @@ export function Sidebar({ onNewChat }: SidebarProps) {
                   animate="animate"
                   className="space-y-1"
                 >
-                  {sessions.map((session) => {
-                    const isActive = activeSessionId === session.id;
+                  {conversations.map((conv) => {
+                    const isActive = conversationId === conv._id;
 
                     return (
-                      <motion.div key={session.id} variants={listItemVariants} className="group relative">
+                      <motion.div key={conv._id} variants={listItemVariants} className="group relative">
                         <button
-                          onClick={() => setActiveSession(session.id)}
+                          onClick={() => handleConversationClick(conv._id)}
                           className={cn(
                             'flex w-full items-start gap-3 rounded-xl px-3 py-3 text-left transition',
                             isActive
@@ -144,9 +180,9 @@ export function Sidebar({ onNewChat }: SidebarProps) {
                             <MessageSquare size={14} />
                           </span>
                           <span className="min-w-0 flex-1 pr-7">
-                            <span className="block truncate text-sm font-medium">{session.title}</span>
+                            <span className="block truncate text-sm font-medium">{conv.title}</span>
                             <span className="mt-0.5 block text-xs text-[var(--text-muted)]">
-                              {formatRelativeTime(session.updatedAt)}
+                              {formatRelativeTime(new Date(conv.updatedAt))}
                             </span>
                           </span>
                         </button>
@@ -154,9 +190,9 @@ export function Sidebar({ onNewChat }: SidebarProps) {
                         <button
                           onClick={(event) => {
                             event.stopPropagation();
-                            deleteSession(session.id);
+                            handleDeleteConversation(conv._id);
                           }}
-                          aria-label={`Delete ${session.title}`}
+                          aria-label={`Delete ${conv.title}`}
                           className="absolute right-2 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-lg text-[var(--text-muted)] opacity-0 transition hover:bg-[rgba(251,113,133,0.12)] hover:text-[var(--danger)] group-hover:opacity-100"
                         >
                           <Trash2 size={14} />

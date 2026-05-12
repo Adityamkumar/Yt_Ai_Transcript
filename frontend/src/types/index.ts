@@ -5,58 +5,54 @@ export interface ApiResponse<T = unknown> {
   success: boolean;
 }
 
+export interface User {
+  _id: string;
+  name: string;
+  email: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface VideoData {
   _id: string;
   youtubeUrl: string;
   youtubeVideoId: string;
   transcript: string;
+  title: string;
   createdAt: string;
   updatedAt: string;
 }
 
-export interface TranscriptResponse extends ApiResponse<VideoData | string> {}
-
 export type MessageRole = 'user' | 'assistant';
 
-export interface ChatMessage {
-  id: string;
+export interface IMessage {
+  _id: string;
+  conversationId: string;
   role: MessageRole;
   content: string;
   createdAt: string;
+  updatedAt: string;
+}
+
+export interface IConversation {
+  _id: string;
+  userId: string;
+  videoId: string | VideoData;
+  title: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ChatMessage extends IMessage {
   isLoading?: boolean;
   error?: string;
-}
-
-export interface ConversationMessage {
-  role: MessageRole;
-  content: string;
-  createdAt: string;
-}
-
-export interface ChatSession {
-  id: string;
-  title: string;
-  videoId: string;
-  videoUrl: string;
-  videoTitle?: string;
-  messages: ChatMessage[];
-  createdAt: Date;
-  updatedAt: Date;
 }
 
 export interface AskQuestionPayload {
   videoId: string;
   question: string;
-  recentMessages?: ConversationMessage[];
+  recentMessages?: { role: MessageRole; content: string }[];
   stream?: boolean;
 }
 
-export interface AskQuestionResponse extends ApiResponse<string> {}
-
 export type AppState = 'idle' | 'extracting' | 'ready' | 'error';
-
-export interface AppStore {
-  sessions: ChatSession[];
-  activeSessionId: string | null;
-  sidebarOpen: boolean;
-}

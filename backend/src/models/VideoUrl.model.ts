@@ -2,6 +2,7 @@ import mongoose, { Document, Schema } from "mongoose";
 
 export interface IVideo extends Document {
   youtubeUrl: string;
+  title: string;
   transcript: string;
   youtubeVideoId:string
 }
@@ -16,6 +17,10 @@ const videoUrl = new Schema<IVideo>(
       type: String,
       required: true,
       unique: true,
+    },
+    title: {
+      type: String,
+      required: true,
     },
     transcript: {
       type: String,

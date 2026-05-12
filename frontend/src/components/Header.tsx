@@ -1,5 +1,7 @@
 import { PanelLeft, Plus, Sparkles } from 'lucide-react';
-import { useStore } from '@/store/useAppStore';
+import { useParams } from 'react-router-dom';
+import { useUIStore } from '@/store/useUIStore';
+import { useConversations } from '@/hooks/useConversations';
 import { APP_NAME } from '@/constants';
 import { cn } from '@/utils/cn';
 
@@ -8,9 +10,11 @@ interface HeaderProps {
 }
 
 export function Header({ onNewChat }: HeaderProps) {
-  const { state, toggleSidebar } = useStore();
-  const { sidebarOpen, activeSessionId, sessions } = state;
-  const activeSession = sessions.find((session) => session.id === activeSessionId);
+  const { sidebarOpen, toggleSidebar } = useUIStore();
+  const { conversationId } = useParams<{ conversationId: string }>();
+  const { conversations } = useConversations();
+  
+  const activeConversation = conversations.find((c) => c._id === conversationId);
 
   return (
     <header className="relative z-20 flex h-[var(--header-height)] shrink-0 items-center border-b border-white/[0.07] bg-[#07090d]/70 backdrop-blur-xl">
@@ -35,10 +39,10 @@ export function Header({ onNewChat }: HeaderProps) {
             </span>
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold leading-5 text-white">
-                {activeSession?.title ?? APP_NAME}
+                {activeConversation?.title ?? APP_NAME}
               </p>
               <p className="hidden truncate text-xs text-[var(--text-muted)] sm:block">
-                {activeSession ? 'Video workspace' : 'Transcript intelligence workspace'}
+                {activeConversation ? 'Video workspace' : 'Transcript intelligence workspace'}
               </p>
             </div>
           </div>
