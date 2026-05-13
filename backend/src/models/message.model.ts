@@ -8,7 +8,7 @@ export interface IMessage extends Document {
   updatedAt: Date;
 }
 
-const messageSchema = new Schema(
+const messageSchema = new Schema<IMessage>(
   {
     conversationId: {
       type: Schema.Types.ObjectId,

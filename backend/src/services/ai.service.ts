@@ -6,21 +6,19 @@ export type ConversationMessage = {
   createdAt?: string;
 };
 
-const genAI = new GoogleGenerativeAI(
-  process.env.GEMINI_API_KEY as string
-);
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY as string);
 
 const model = genAI.getGenerativeModel({
-  model: "gemini-3.1-flash-lite",
+  model: "gemini-3-flash-preview",
 });
 
 export const getRecentMessages = (
   messages: ConversationMessage[] = [],
-  limit = 10
+  limit = 10,
 ) => messages.filter((message) => message.content?.trim()).slice(-limit);
 
 export const formatConversationHistory = (
-  messages: ConversationMessage[] = []
+  messages: ConversationMessage[] = [],
 ) => {
   const recentMessages = getRecentMessages(messages);
 
@@ -39,12 +37,46 @@ export const formatConversationHistory = (
 export const buildContextPrompt = (
   transcript: string,
   question: string,
-  recentMessages: ConversationMessage[] = []
+  recentMessages: ConversationMessage[] = [],
 ) => `
 You are EchoMind AI.
 
 Use the transcript and recent conversation context to answer naturally and conversationally.
 If the user asks follow-up questions, use previous conversation context.
+
+Your task is to generate concise, clean, structured, and highly readable smart notes.
+
+Return the response in markdown format.
+
+The notes must contain these sections when relevant:
+
+Overview
+
+Provide a short explanation of the video topic.
+
+Main Concepts
+
+List the major concepts explained in the video.
+
+Key Insights
+
+Important ideas, lessons, or observations.
+
+Actionable Takeaways
+
+Practical actions or advice from the video.
+
+Important Examples
+
+Examples or scenarios discussed.
+
+Key Quotes
+
+Important memorable lines if available.
+
+Summary
+
+End with a concise summary.
 
 Rules:
 - Be friendly, conversational, and engaging.
@@ -54,6 +86,13 @@ Rules:
 - If a question is NOT related to the video transcript or the conversation context, politely inform the user. For example: "I'd love to help with that, but my current focus is on the contents of this video. Feel free to ask me anything about [Video Topic] instead!"
 - Keep answers concise unless the user asks for more detail.
 - Ensure the tone is helpful, professional, and slightly enthusiastic.
+- Keep formatting clean and structured.
+- Use bullet points where useful.
+- Do not generate conversational text.
+- Do not say “Here are your notes”.
+- Do not use markdown tables.
+- Focus on clarity and usefulness.
+- Keep notes scannable and visually structured.
 - The transcript may be in Hindi or another language. Answer in the user's language when clear, otherwise answer in English.
 
 Transcript:
@@ -69,7 +108,7 @@ ${question}
 export const askAiAboutTranscript = async (
   transcript: string,
   question: string,
-  recentMessages: ConversationMessage[] = []
+  recentMessages: ConversationMessage[] = [],
 ) => {
   try {
     const prompt = buildContextPrompt(transcript, question, recentMessages);
@@ -83,7 +122,7 @@ export const askAiAboutTranscript = async (
 export async function* streamAiAboutTranscript(
   transcript: string,
   question: string,
-  recentMessages: ConversationMessage[] = []
+  recentMessages: ConversationMessage[] = [],
 ) {
   if (!process.env.GEMINI_API_KEY) {
     yield "I'm sorry, the AI service is not properly configured. Please check the API key.";
@@ -112,8 +151,12 @@ export async function* streamAiAboutTranscript(
     }
   } catch (error: any) {
     const errorMessage = error?.message || "Unknown AI error";
-    
-    if (errorMessage.includes("503") || errorMessage.includes("high demand") || errorMessage.includes("Service Unavailable")) {
+
+    if (
+      errorMessage.includes("503") ||
+      errorMessage.includes("high demand") ||
+      errorMessage.includes("Service Unavailable")
+    ) {
       yield "EchoMind AI is currently receiving a lot of questions! 🚀 Please wait a few seconds and try again. Spikes in demand are usually temporary.";
     } else if (errorMessage.includes("API_KEY_INVALID")) {
       yield "The AI API key is invalid. Please update it in the backend configuration.";
@@ -132,9 +175,9 @@ export const generateVideoTitle = async (transcript: string) => {
     Transcript Snippet:
     ${transcript.slice(0, 3000)}
     `;
-    
+
     const result = await model.generateContent(prompt);
-    return result.response.text().trim().replace(/["']/g, '');
+    return result.response.text().trim().replace(/["']/g, "");
   } catch {
     return "New Conversation";
   }

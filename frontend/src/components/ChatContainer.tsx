@@ -1,4 +1,6 @@
+import { useState, useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { ArrowDown } from 'lucide-react';
 import { useMessages } from '@/hooks/useMessages';
 import { useChat } from '@/hooks/useChat';
 import { useAutoScroll } from '@/hooks/useAutoScroll';
@@ -17,6 +19,30 @@ export function ChatContainer({ conversationId, video }: ChatContainerProps) {
   const { messages, isLoading } = useMessages(conversationId);
   const targetVideoId = video?.youtubeVideoId || (typeof video === 'string' ? video : '');
   const { sendMessage, editMessage, isStreaming, streamingMessage } = useChat(conversationId, targetVideoId);
+  const [showScrollButton, setShowScrollButton] = useState(false);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      // Show button if user has scrolled up more than 200px from the bottom
+      // AND there is actually something to scroll (scrollHeight > clientHeight)
+      const isNearBottom = scrollHeight - scrollTop - clientHeight < 200;
+      const canScroll = scrollHeight > clientHeight + 100;
+      setShowScrollButton(!isNearBottom && canScroll);
+    };
+
+    handleScroll(); // Initial check
+    container.addEventListener('scroll', handleScroll);
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, [messages, isStreaming]); // Re-run when messages change to update visibility
+
+  const scrollToBottom = () => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
   
   const handleEdit = (messageId: string, newContent: string) => {
     editMessage(messageId, newContent);
@@ -64,7 +90,10 @@ export function ChatContainer({ conversationId, video }: ChatContainerProps) {
 
   return (
     <section className="relative flex h-full min-h-0 flex-col">
-      <div className="min-h-0 flex-1 overflow-y-auto scroll-smooth">
+      <div 
+        ref={scrollContainerRef}
+        className="min-h-0 flex-1 overflow-y-auto"
+      >
         {!hasMessages ? (
           <EmptyState hasTranscript onPromptSelect={handlePromptSelect} />
         ) : (
@@ -100,6 +129,21 @@ export function ChatContainer({ conversationId, video }: ChatContainerProps) {
           </div>
         )}
       </div>
+
+      <AnimatePresence>
+        {showScrollButton && (
+          <motion.button
+            initial={{ opacity: 0, scale: 0.8, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.8, y: 10 }}
+            onClick={scrollToBottom}
+            className="absolute bottom-[140px] left-1/2 z-50 flex h-11 w-11 -translate-x-1/2 items-center justify-center rounded-full border border-white/10 bg-[#1A1A1A] text-white shadow-[0_8px_30px_rgb(0,0,0,0.6)] backdrop-blur-md transition-all hover:bg-[#252525] hover:scale-110 active:scale-95 sm:bottom-[160px]"
+            aria-label="Scroll to bottom"
+          >
+            <ArrowDown className="h-6 w-6" />
+          </motion.button>
+        )}
+      </AnimatePresence>
 
       <ChatInput
         onSend={(message) => sendMessage(message)}

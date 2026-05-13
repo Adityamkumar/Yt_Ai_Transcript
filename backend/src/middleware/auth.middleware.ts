@@ -1,8 +1,8 @@
 import type { NextFunction, Request, Response } from "express";
-import userModel from "../models/user.model.js";
 import jwt from "jsonwebtoken";
 import type { CustomJwtPayload } from "../types/jwt.types.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import User from "../models/user.model.js";
 
 
 
@@ -24,7 +24,7 @@ export const authMiddleware = asyncHandler(
         process.env.ACCESS_TOKEN_SECRET,
       ) as CustomJwtPayload;
   
-      const user = await userModel.findById(decoded._id).select("-password");
+      const user = await User.findById(decoded._id).select("-password");
   
       if (!user) {
         return res.status(401).json({

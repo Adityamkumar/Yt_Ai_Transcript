@@ -5,6 +5,7 @@ import chatRouter from './routes/chat.route.js'
 import authRouter from './routes/auth.route.js'
 import conversationRouter from './routes/conversation.route.js'
 import messageRouter from './routes/message.route.js'
+import bookmarkRouter from './routes/bookmark.route.js'
 import cookieParser from 'cookie-parser'
 
 const app = express();
@@ -34,6 +35,8 @@ app.use("/api/v1/chat", chatRouter);
 app.use("/api/v1/user", authRouter)
 app.use("/api/v1/conversations",conversationRouter);
 app.use("/api/v1/messages",messageRouter);
+app.use("/api/v1/bookmark", bookmarkRouter)
+
 
 app.use((err: any, req: any, res: any, next: any) => {
   const statusCode = err.statusCode || 500;

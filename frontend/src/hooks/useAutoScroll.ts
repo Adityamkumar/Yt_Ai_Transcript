@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 import type { ChatMessage } from '@/types';
 
 export function useAutoScroll(messages: ChatMessage[]) {
@@ -6,25 +6,40 @@ export function useAutoScroll(messages: ChatMessage[]) {
   const isAutoScrollEnabled = useRef(true);
 
   useEffect(() => {
-    const handleScroll = () => {
-      if (!bottomRef.current) return;
-      const container = bottomRef.current.parentElement;
-      if (!container) return;
+    const container = bottomRef.current?.closest('.overflow-y-auto') || bottomRef.current?.parentElement;
+    if (!container) return;
 
+    // Native scroll anchoring for stability
+    (container as HTMLElement).style.overflowAnchor = 'auto';
+
+    const handleScroll = () => {
       const { scrollTop, scrollHeight, clientHeight } = container;
-      const isAtBottom = scrollHeight - scrollTop - clientHeight < 150;
-      isAutoScrollEnabled.current = isAtBottom;
+      // 10px threshold is a good balance for detecting 'at the bottom'
+      isAutoScrollEnabled.current = scrollHeight - scrollTop - clientHeight < 10;
     };
 
-    const container = bottomRef.current?.parentElement;
-    container?.addEventListener('scroll', handleScroll);
-    return () => container?.removeEventListener('scroll', handleScroll);
+    const manualPause = () => {
+      isAutoScrollEnabled.current = false;
+    };
+
+    container.addEventListener('scroll', handleScroll, { passive: true });
+    container.addEventListener('wheel', manualPause, { passive: true });
+    container.addEventListener('touchstart', manualPause, { passive: true });
+
+    return () => {
+      container.removeEventListener('scroll', handleScroll);
+      container.removeEventListener('wheel', manualPause);
+      container.removeEventListener('touchstart', manualPause);
+    };
   }, []);
 
-  useEffect(() => {
-    if (!isAutoScrollEnabled.current) return;
+  // useLayoutEffect runs synchronously after all DOM mutations.
+  // This is the best place to update scroll position to prevent jitter.
+  useLayoutEffect(() => {
+    const container = bottomRef.current?.closest('.overflow-y-auto') || bottomRef.current?.parentElement;
+    if (!container || !isAutoScrollEnabled.current) return;
 
-    bottomRef.current?.scrollIntoView({ behavior: 'auto', block: 'end' });
+    container.scrollTop = container.scrollHeight;
   }, [messages]);
 
   return bottomRef;

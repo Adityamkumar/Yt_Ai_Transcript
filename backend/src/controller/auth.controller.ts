@@ -1,4 +1,4 @@
-import userModel from "../models/user.model.js";
+import User from "../models/user.model.js";
 import { refreshCookieOptions, accessCookieOptions } from "../config/cookie.config.js";
 import jwt from "jsonwebtoken";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -15,7 +15,7 @@ export const userRegister = asyncHandler(async (req, res) => {
       return res.status(400).json({ message: "Name is required" });
     }
 
-    const isUserAlreadyExists = await userModel.findOne({ email });
+    const isUserAlreadyExists = await User.findOne({ email });
 
     if (isUserAlreadyExists) {
       return res.status(400).json({
@@ -32,7 +32,7 @@ export const userRegister = asyncHandler(async (req, res) => {
       });
     }
 
-    const user = await userModel.create({
+    const user = await User.create({
       name,
       email: email,
       password: password,
@@ -63,7 +63,7 @@ export const userLogin = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const user = await userModel.findOne({ email });
+    const user = await User.findOne({ email });
 
     if (!user) {
       return res.status(400).json({
@@ -81,7 +81,7 @@ export const userLogin = asyncHandler(async (req, res) => {
     const { accessToken, refreshToken } =
       await generateAccessTokenAndRefreshToken(user._id);
 
-    const loggedInUser = await userModel
+    const loggedInUser = await User
       .findById(user._id)
       .select("-password -refreshToken");
 
@@ -125,7 +125,7 @@ export const refreshAccessToken = asyncHandler(async (req, res) => {
       });
     }
 
-    const user = await userModel.findById(decodedToken._id);
+    const user = await User.findById(decodedToken._id);
 
     if (!user) {
       return res.status(401).json({
@@ -153,7 +153,7 @@ export const refreshAccessToken = asyncHandler(async (req, res) => {
 })
 
 export const userLogout = asyncHandler(async (req, res) => {
-  await userModel.findByIdAndUpdate(
+  await User.findByIdAndUpdate(
     req.user?._id,
     {
       $unset: {
