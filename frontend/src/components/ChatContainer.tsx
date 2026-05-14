@@ -4,11 +4,11 @@ import { ArrowDown } from 'lucide-react';
 import { useMessages } from '@/hooks/useMessages';
 import { useChat } from '@/hooks/useChat';
 import { useAutoScroll } from '@/hooks/useAutoScroll';
-import { MessageBubble } from './MessageBubble';
+import { MessageRenderer } from './MessageRenderer';
 import { ChatInput } from './ChatInput';
 import { EmptyState } from './EmptyState';
 import { VideoCard } from './VideoCard';
-import { IMessage, VideoData } from '@/types';
+import { VideoData } from '@/types';
 
 interface ChatContainerProps {
   conversationId: string;
@@ -18,35 +18,9 @@ interface ChatContainerProps {
 export function ChatContainer({ conversationId, video }: ChatContainerProps) {
   const { messages, isLoading } = useMessages(conversationId);
   const targetVideoId = video?.youtubeVideoId || (typeof video === 'string' ? video : '');
-  const { sendMessage, editMessage, isStreaming, streamingMessage } = useChat(conversationId, targetVideoId);
+  const { sendMessage, editMessage, generateNotes, isStreaming, streamingMessage, isNotesRequest } = useChat(conversationId, targetVideoId);
   const [showScrollButton, setShowScrollButton] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const container = scrollContainerRef.current;
-    if (!container) return;
-
-    const handleScroll = () => {
-      const { scrollTop, scrollHeight, clientHeight } = container;
-      // Show button if user has scrolled up more than 200px from the bottom
-      // AND there is actually something to scroll (scrollHeight > clientHeight)
-      const isNearBottom = scrollHeight - scrollTop - clientHeight < 200;
-      const canScroll = scrollHeight > clientHeight + 100;
-      setShowScrollButton(!isNearBottom && canScroll);
-    };
-
-    handleScroll(); // Initial check
-    container.addEventListener('scroll', handleScroll);
-    return () => container.removeEventListener('scroll', handleScroll);
-  }, [messages, isStreaming]); // Re-run when messages change to update visibility
-
-  const scrollToBottom = () => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-  
-  const handleEdit = (messageId: string, newContent: string) => {
-    editMessage(messageId, newContent);
-  };
 
   const displayMessages = [...messages];
   if (isStreaming) {
@@ -54,6 +28,7 @@ export function ChatContainer({ conversationId, video }: ChatContainerProps) {
       _id: 'streaming',
       conversationId,
       role: 'assistant',
+      type: isNotesRequest ? 'notes' : 'chat',
       content: streamingMessage,
       isLoading: true,
       createdAt: new Date().toISOString(),
@@ -63,21 +38,28 @@ export function ChatContainer({ conversationId, video }: ChatContainerProps) {
 
   const bottomRef = useAutoScroll(displayMessages);
 
-  const hasMessages = messages.length > 0 || isStreaming;
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
 
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      const isNearBottom = scrollHeight - scrollTop - clientHeight < 200;
+      const canScroll = scrollHeight > clientHeight + 100;
+      setShowScrollButton(!isNearBottom && canScroll);
+    };
+
+    handleScroll();
+    container.addEventListener('scroll', handleScroll);
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, [messages, isStreaming]);
+
+  const scrollToBottom = () => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+  
   const handlePromptSelect = (text: string) => {
     sendMessage(text);
-  };
-
-  const handleRetry = (assistantMessageId: string) => {
-    const index = messages.findIndex((message) => message._id === assistantMessageId);
-    const previousUserMessage = [...messages.slice(0, index)]
-      .reverse()
-      .find((message) => message.role === 'user');
-
-    if (previousUserMessage) {
-      sendMessage(previousUserMessage.content);
-    }
   };
 
   if (isLoading && messages.length === 0) {
@@ -88,6 +70,8 @@ export function ChatContainer({ conversationId, video }: ChatContainerProps) {
     );
   }
 
+  const hasMessages = messages.length > 0 || isStreaming;
+
   return (
     <section className="relative flex h-full min-h-0 flex-col">
       <div 
@@ -95,7 +79,14 @@ export function ChatContainer({ conversationId, video }: ChatContainerProps) {
         className="min-h-0 flex-1 overflow-y-auto"
       >
         {!hasMessages ? (
-          <EmptyState hasTranscript onPromptSelect={handlePromptSelect} />
+          <div className="flex flex-col gap-10 pb-40 pt-10 sm:pb-44 sm:pt-12">
+            <EmptyState 
+              hasTranscript 
+              onPromptSelect={handlePromptSelect} 
+              onNotesClick={generateNotes}
+              isLoadingNotes={isStreaming}
+            />
+          </div>
         ) : (
           <div className="pb-36 pt-5 sm:pb-40 sm:pt-8">
             <div className="chat-container">
@@ -115,11 +106,10 @@ export function ChatContainer({ conversationId, video }: ChatContainerProps) {
             <div className="space-y-1">
               <AnimatePresence initial={false}>
                 {displayMessages.map((message) => (
-                  <MessageBubble 
+                  <MessageRenderer 
                     key={message._id} 
                     message={message} 
-                    onRetry={handleRetry} 
-                    onEdit={handleEdit}
+                    onEdit={editMessage}
                   />
                 ))}
               </AnimatePresence>

@@ -12,17 +12,20 @@ import {
   Youtube,
   Zap,
 } from 'lucide-react';
+import { SmartNotesCard } from './notes/SmartNotesCard';
 import { APP_NAME, APP_TAGLINE, SUGGESTED_PROMPTS } from '@/constants';
 import { promptCardVariants, promptStagger } from '@/animations/variants';
 
 interface EmptyStateProps {
   onPromptSelect?: (text: string) => void;
+  onNotesClick?: () => void;
+  isLoadingNotes?: boolean;
   hasTranscript?: boolean;
 }
 
 const promptIcons = [Sparkles, CheckCircle2, BrainCircuit, FileQuestion, BarChart3, ListChecks];
 
-export function EmptyState({ onPromptSelect, hasTranscript = false }: EmptyStateProps) {
+export function EmptyState({ onPromptSelect, onNotesClick, isLoadingNotes, hasTranscript = false }: EmptyStateProps) {
   if (hasTranscript) {
     return (
       <div className="chat-container flex min-h-full flex-col justify-center pb-40 pt-10 sm:pb-44 sm:pt-12">
@@ -44,10 +47,19 @@ export function EmptyState({ onPromptSelect, hasTranscript = false }: EmptyState
             variants={promptStagger}
             initial="initial"
             animate="animate"
-            className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"
+            className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
           >
-            {SUGGESTED_PROMPTS.map((prompt, index) => {
-              const Icon = promptIcons[index] ?? MessageSquare;
+            {onNotesClick && (
+              <motion.div variants={promptCardVariants}>
+                <SmartNotesCard 
+                  onClick={onNotesClick} 
+                  isLoading={isLoadingNotes} 
+                />
+              </motion.div>
+            )}
+            
+            {SUGGESTED_PROMPTS.slice(onNotesClick ? 1 : 0).map((prompt, index) => {
+              const Icon = promptIcons[index + (onNotesClick ? 1 : 0)] ?? MessageSquare;
 
               return (
                 <motion.button
@@ -56,7 +68,7 @@ export function EmptyState({ onPromptSelect, hasTranscript = false }: EmptyState
                   whileHover={{ y: -3 }}
                   whileTap={{ scale: 0.985 }}
                   onClick={() => onPromptSelect(prompt.text)}
-                  className="group flex min-h-[138px] flex-col rounded-2xl border border-white/[0.08] bg-white/[0.04] p-4 text-left shadow-sm transition hover:border-white/[0.16] hover:bg-white/[0.065]"
+                  className="group flex min-h-[142px] flex-col rounded-2xl border border-white/[0.08] bg-white/[0.04] p-4 text-left shadow-sm transition hover:border-white/[0.16] hover:bg-white/[0.065]"
                 >
                   <div className="mb-4 flex items-center justify-between">
                     <span className="grid h-9 w-9 place-items-center rounded-xl border border-white/[0.08] bg-[#0c1018] text-[var(--accent)]">

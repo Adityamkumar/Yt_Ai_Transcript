@@ -1,45 +1,78 @@
-import { useEffect, useLayoutEffect, useRef } from 'react';
-import type { ChatMessage } from '@/types';
+import { useEffect, useLayoutEffect, useRef } from "react";
+import type { ChatMessage } from "@/types";
 
 export function useAutoScroll(messages: ChatMessage[]) {
   const bottomRef = useRef<HTMLDivElement>(null);
-  const isAutoScrollEnabled = useRef(true);
+
+  const autoScrollEnabledRef = useRef(true);
+
+  const userScrollingRef = useRef(false);
+
+  const programmaticScrollRef = useRef(false);
+
+  const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    const container = bottomRef.current?.closest('.overflow-y-auto') || bottomRef.current?.parentElement;
+    const container =
+      bottomRef.current?.closest(".overflow-y-auto") ||
+      bottomRef.current?.parentElement;
+
     if (!container) return;
 
-    // Native scroll anchoring for stability
-    (container as HTMLElement).style.overflowAnchor = 'auto';
-
     const handleScroll = () => {
+      if (programmaticScrollRef.current) return;
+
       const { scrollTop, scrollHeight, clientHeight } = container;
-      // 10px threshold is a good balance for detecting 'at the bottom'
-      isAutoScrollEnabled.current = scrollHeight - scrollTop - clientHeight < 10;
+
+      const distanceFromBottom =
+        scrollHeight - scrollTop - clientHeight;
+
+      const isNearBottom = distanceFromBottom < 150;
+
+      autoScrollEnabledRef.current = isNearBottom;
+
+      userScrollingRef.current = true;
+
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+
+      scrollTimeoutRef.current = setTimeout(() => {
+        userScrollingRef.current = false;
+      }, 120);
     };
 
-    const manualPause = () => {
-      isAutoScrollEnabled.current = false;
-    };
-
-    container.addEventListener('scroll', handleScroll, { passive: true });
-    container.addEventListener('wheel', manualPause, { passive: true });
-    container.addEventListener('touchstart', manualPause, { passive: true });
+    container.addEventListener("scroll", handleScroll, {
+      passive: true,
+    });
 
     return () => {
-      container.removeEventListener('scroll', handleScroll);
-      container.removeEventListener('wheel', manualPause);
-      container.removeEventListener('touchstart', manualPause);
+      container.removeEventListener("scroll", handleScroll);
+
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
     };
   }, []);
 
-  // useLayoutEffect runs synchronously after all DOM mutations.
-  // This is the best place to update scroll position to prevent jitter.
   useLayoutEffect(() => {
-    const container = bottomRef.current?.closest('.overflow-y-auto') || bottomRef.current?.parentElement;
-    if (!container || !isAutoScrollEnabled.current) return;
+    const container =
+      bottomRef.current?.closest(".overflow-y-auto") ||
+      bottomRef.current?.parentElement;
+
+    if (!container) return;
+
+    if (userScrollingRef.current) return;
+
+    if (!autoScrollEnabledRef.current) return;
+
+    programmaticScrollRef.current = true;
 
     container.scrollTop = container.scrollHeight;
+
+    requestAnimationFrame(() => {
+      programmaticScrollRef.current = false;
+    });
   }, [messages]);
 
   return bottomRef;

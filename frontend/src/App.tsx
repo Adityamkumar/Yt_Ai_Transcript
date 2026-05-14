@@ -7,6 +7,7 @@ import HomePage from '@/pages/HomePage';
 import LandingPage from '@/pages/LandingPage';
 import LoginPage from '@/pages/LoginPage';
 import SignupPage from '@/pages/SignupPage';
+import BookmarksPage from '@/features/bookmarks/BookmarksPage';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -51,6 +52,16 @@ export default function App() {
                 <ProtectedRoute>
                   <AppLayout>
                     <HomePage />
+                  </AppLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/bookmarks"
+              element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <BookmarksPage />
                   </AppLayout>
                 </ProtectedRoute>
               }

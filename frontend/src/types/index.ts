@@ -24,11 +24,13 @@ export interface VideoData {
 }
 
 export type MessageRole = 'user' | 'assistant';
+export type MessageType = 'chat' | 'notes';
 
 export interface IMessage {
   _id: string;
   conversationId: string;
   role: MessageRole;
+  type: MessageType;
   content: string;
   createdAt: string;
   updatedAt: string;
@@ -46,6 +48,18 @@ export interface IConversation {
 export interface ChatMessage extends IMessage {
   isLoading?: boolean;
   error?: string;
+  isBookmarked?: boolean;
+}
+
+export interface IBookmark {
+  _id: string;
+  userId: string;
+  conversationId: string | { _id: string; title: string };
+  messageId: string;
+  type: MessageType;
+  title: string;
+  content: string;
+  createdAt: string;
 }
 
 export interface AskQuestionPayload {
@@ -53,6 +67,7 @@ export interface AskQuestionPayload {
   question: string;
   recentMessages?: { role: MessageRole; content: string }[];
   stream?: boolean;
+  type?: MessageType;
 }
 
 export type AppState = 'idle' | 'extracting' | 'ready' | 'error';

@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import {
+  Bookmark,
   ChevronRight,
   LayoutDashboard,
   MessageSquare,
@@ -11,9 +12,10 @@ import {
   X,
   LogOut,
 } from 'lucide-react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useConversations } from '@/hooks/useConversations';
+import { useBookmarks } from '@/hooks/useBookmarks';
 import { useUIStore } from '@/store/useUIStore';
 import { APP_NAME } from '@/constants';
 import { formatRelativeTime } from '@/utils';
@@ -27,8 +29,10 @@ interface SidebarProps {
 
 export function Sidebar({ onNewChat }: SidebarProps) {
   const navigate = useNavigate();
+  const location = useLocation();
   const { conversationId } = useParams<{ conversationId: string }>();
-  const { conversations, isLoading, deleteConversation } = useConversations();
+  const { conversations, isLoading: isConversationsLoading, deleteConversation } = useConversations();
+  const { bookmarks } = useBookmarks();
   const { sidebarOpen, toggleSidebar } = useUIStore();
   const { user, logout } = useAuth();
 
@@ -99,7 +103,7 @@ export function Sidebar({ onNewChat }: SidebarProps) {
           <div className="p-4">
             <button
               onClick={onNewChat}
-              className="group flex w-full items-center gap-3 rounded-2xl border border-white/[0.1] bg-white/[0.075] px-3.5 py-3 text-left shadow-sm transition hover:border-white/[0.16] hover:bg-white/[0.11]"
+              className="group flex w-full items-center gap-3 rounded-2xl border border-white/[0.1] bg-white/[0.075] px-3.5 py-2.5 text-left shadow-sm transition hover:border-white/[0.16] hover:bg-white/[0.11]"
             >
               <span className="grid h-9 w-9 place-items-center rounded-xl bg-white text-neutral-950 transition group-hover:scale-[1.03]">
                 <Plus size={18} />
@@ -112,16 +116,31 @@ export function Sidebar({ onNewChat }: SidebarProps) {
             </button>
           </div>
 
-          <nav className="px-3">
+          <nav className="px-3 space-y-1">
             <button 
               onClick={() => navigate('/app')}
               className={cn(
-                "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition",
-                !conversationId ? "bg-white/[0.055] text-white" : "text-[var(--text-muted)] hover:text-white"
+                "flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition",
+                !location.pathname.includes('/bookmarks') && !conversationId ? "bg-white/[0.055] text-white" : "text-[var(--text-muted)] hover:text-white"
               )}
             >
-              <LayoutDashboard size={16} className={!conversationId ? "text-[var(--accent)]" : ""} />
+              <LayoutDashboard size={16} className={!location.pathname.includes('/bookmarks') && !conversationId ? "text-[var(--accent)]" : ""} />
               Workspace
+            </button>
+            <button 
+              onClick={() => navigate('/bookmarks')}
+              className={cn(
+                "flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition",
+                location.pathname === '/bookmarks' ? "bg-white/[0.055] text-white" : "text-[var(--text-muted)] hover:text-white"
+              )}
+            >
+              <Bookmark size={16} className={location.pathname === '/bookmarks' ? "text-[var(--accent)]" : ""} />
+              <span className="flex-1">Bookmarks</span>
+              {bookmarks.length > 0 && (
+                <span className="rounded-full bg-white/[0.05] px-2 py-0.5 text-[10px] text-[var(--text-muted)]">
+                  {bookmarks.length}
+                </span>
+              )}
             </button>
           </nav>
 
@@ -136,7 +155,7 @@ export function Sidebar({ onNewChat }: SidebarProps) {
             </div>
 
             <div className="min-h-0 flex-1 overflow-y-auto pb-4 pr-1 no-scrollbar">
-              {isLoading && conversations.length === 0 ? (
+              {isConversationsLoading && conversations.length === 0 ? (
                  <div className="space-y-2 p-2">
                     {[...Array(3)].map((_, i) => (
                       <div key={i} className="h-10 w-full rounded-lg bg-white/[0.03] animate-pulse" />
@@ -163,7 +182,7 @@ export function Sidebar({ onNewChat }: SidebarProps) {
                         <button
                           onClick={() => handleConversationClick(conv._id)}
                           className={cn(
-                            'flex w-full items-start gap-3 rounded-xl px-3 py-3 text-left transition',
+                            'flex w-full items-start gap-3 rounded-xl px-3 py-2.5 text-left transition',
                             isActive
                               ? 'bg-white/[0.075] text-white shadow-sm'
                               : 'text-[var(--text-secondary)] hover:bg-white/[0.045] hover:text-white'
@@ -206,7 +225,7 @@ export function Sidebar({ onNewChat }: SidebarProps) {
           </div>
 
           <div className="border-t border-white/[0.07] p-3 space-y-1">
-            <div className="flex items-center gap-3 px-3 py-3 rounded-2xl bg-white/[0.03]">
+            <div className="flex items-center gap-3 px-3 py-2.5 rounded-2xl bg-white/[0.03]">
               <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-white/[0.1] bg-white/[0.055] text-[var(--text-secondary)]">
                 <User size={16} />
               </span>

@@ -14,6 +14,7 @@ type AskQuestionBody = {
   question?: string;
   recentMessages?: ConversationMessage[];
   stream?: boolean;
+  type?: "chat" | "notes";
 };
 
 const isStreamingRequest = (body: AskQuestionBody, acceptHeader?: string | string[]) => {
@@ -22,9 +23,9 @@ const isStreamingRequest = (body: AskQuestionBody, acceptHeader?: string | strin
 };
 
 export const askQuestion = asyncHandler(async (req, res) => {
-  const { videoId, question, recentMessages = [] } = req.body as AskQuestionBody;
+  const { videoId, question, recentMessages = [], type = "chat" } = req.body as AskQuestionBody;
 
-  if (!videoId || !question) {
+  if (!videoId || (!question && type !== "notes")) {
     throw new ApiError(400, "videoId and question are required");
   }
 
@@ -40,7 +41,7 @@ export const askQuestion = asyncHandler(async (req, res) => {
   const contextMessages = getRecentMessages(recentMessages, 10);
 
   if (!isStreamingRequest(req.body as AskQuestionBody, req.headers.accept)) {
-    const answer = await askAiAboutTranscript(transcript, question, contextMessages);
+    const answer = await askAiAboutTranscript(transcript, question || "", contextMessages, type);
 
     return res
       .status(200)
@@ -61,7 +62,7 @@ export const askQuestion = asyncHandler(async (req, res) => {
   });
 
   try {
-    for await (const chunk of streamAiAboutTranscript(transcript, question, contextMessages)) {
+    for await (const chunk of streamAiAboutTranscript(transcript, question || "", contextMessages, type)) {
       if (closed || res.destroyed) break;
       res.write(chunk);
     }

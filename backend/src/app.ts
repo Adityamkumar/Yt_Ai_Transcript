@@ -35,7 +35,7 @@ app.use("/api/v1/chat", chatRouter);
 app.use("/api/v1/user", authRouter)
 app.use("/api/v1/conversations",conversationRouter);
 app.use("/api/v1/messages",messageRouter);
-app.use("/api/v1/bookmark", bookmarkRouter)
+app.use("/api/v1/bookmarks", bookmarkRouter)
 
 
 app.use((err: any, req: any, res: any, next: any) => {

@@ -27,7 +27,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const refreshUser = useCallback(async () => {
     try {
       const response = await axiosInstance.get('/api/v1/user/current-user');
-      // Backend returns { user: { id, name, email } }
       setUser(response.data.user);
       localStorage.setItem('isAuthenticated', 'true');
     } catch (error) {
@@ -48,7 +47,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (email: string, password: string) => {
     const response = await axiosInstance.post('/api/v1/user/login', { email, password });
-    // Backend returns { user: { user: loggedInUser, ... } }
     const userData = response.data.user.user;
     setUser({
         id: userData._id || userData.id,
@@ -61,7 +59,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const register = async (name: string, email: string, password: string) => {
     const response = await axiosInstance.post('/api/v1/user/register', { name, email, password });
-    // Backend returns { user: { id, name, email } }
     setUser(response.data.user);
     localStorage.setItem('isAuthenticated', 'true');
     navigate('/app');

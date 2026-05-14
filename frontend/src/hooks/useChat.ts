@@ -2,19 +2,24 @@ import { useState, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { messageService } from '@/services/message.service';
 import { chatService } from '@/services/chat.service';
-import { IMessage } from '@/types';
+import { IMessage, MessageType } from '@/types';
 
 export function useChat(conversationId: string | undefined, videoId: string | undefined) {
   const queryClient = useQueryClient();
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingMessage, setStreamingMessage] = useState('');
+  const [isNotesRequest, setIsNotesRequest] = useState(false);
 
   const sendMessage = useCallback(
     async (content: string) => {
       if (!conversationId || !videoId || isStreaming) return;
 
+      const isNotesIntent = /create notes|generate notes|make notes|summarize into notes|structured notes/i.test(content);
+      const messageType: MessageType = isNotesIntent ? 'notes' : 'chat';
+
       try {
         setIsStreaming(true);
+        setIsNotesRequest(messageType === 'notes');
         setStreamingMessage('');
 
         const userMsg = await messageService.createMessage(conversationId, 'user', content);
@@ -36,6 +41,7 @@ export function useChat(conversationId: string | undefined, videoId: string | un
             videoId,
             question: content,
             recentMessages,
+            type: messageType,
           },
           (token) => {
             fullResponse += token;
@@ -47,7 +53,7 @@ export function useChat(conversationId: string | undefined, videoId: string | un
           fullResponse = "I'm sorry, I encountered an issue while generating a response. Please try again.";
         }
 
-        const assistantMsg = await messageService.createMessage(conversationId, 'assistant', fullResponse);
+        const assistantMsg = await messageService.createMessage(conversationId, 'assistant', fullResponse, messageType);
 
         queryClient.setQueryData(['messages', conversationId], (old: IMessage[] = []) => [
           ...old,
@@ -118,10 +124,51 @@ export function useChat(conversationId: string | undefined, videoId: string | un
     [conversationId, videoId, isStreaming, queryClient]
   );
 
+  const generateNotes = useCallback(
+    async () => {
+      if (!conversationId || !videoId || isStreaming) return;
+
+      try {
+        setIsStreaming(true);
+        setIsNotesRequest(true);
+        setStreamingMessage('');
+
+        let fullResponse = '';
+        await chatService.streamQuestion(
+          {
+            videoId,
+            question: "Generate smart notes",
+            recentMessages: [],
+            type: 'notes',
+          },
+          (token) => {
+            fullResponse += token;
+            setStreamingMessage(fullResponse);
+          }
+        );
+
+        const assistantMsg = await messageService.createMessage(conversationId, 'assistant', fullResponse, 'notes');
+
+        queryClient.setQueryData(['messages', conversationId], (old: IMessage[] = []) => [
+          ...old,
+          assistantMsg,
+        ]);
+        setStreamingMessage('');
+      } catch (error) {
+        throw error;
+      } finally {
+        setIsStreaming(false);
+      }
+    },
+    [conversationId, videoId, isStreaming, queryClient]
+  );
+
   return {
     sendMessage,
     editMessage,
+    generateNotes,
     isStreaming,
     streamingMessage,
+    isNotesRequest,
   };
 }

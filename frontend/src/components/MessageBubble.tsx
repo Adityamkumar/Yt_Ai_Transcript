@@ -70,7 +70,7 @@ export function MessageBubble({ message, onRetry, onEdit }: MessageBubbleProps) 
       variants={chatBubbleVariants}
       initial="initial"
       animate="animate"
-      className="group py-5 sm:py-6"
+      className="group py-3.5 sm:py-4"
     >
       <div className={cn('chat-container flex gap-4 sm:gap-5', isUser && 'flex-row-reverse')}>
         <div className="mt-1 shrink-0">
@@ -97,12 +97,12 @@ export function MessageBubble({ message, onRetry, onEdit }: MessageBubbleProps) 
 
             <div
               className={cn(
-                'relative rounded-3xl text-[20px] leading-relaxed shadow-md transition-all duration-300',
+                'relative rounded-3xl text-base leading-relaxed shadow-md transition-all duration-300',
                 isUser
                   ? isEditing 
                     ? 'bg-white/[0.06] border border-white/15 p-1.5 w-full sm:min-w-[450px] lg:min-w-[550px]' 
-                    : 'bg-white px-6 py-5 shadow-xl'
-                  : 'border border-white/[0.1] bg-white/[0.06] px-6 py-6 text-white/95 backdrop-blur-2xl sm:px-8'
+                    : 'bg-white px-5 py-4 shadow-xl'
+                  : 'border border-white/[0.1] bg-white/[0.06] px-5 py-5 text-white/95 backdrop-blur-2xl sm:px-6'
               )}
             >
               {isEditing ? (
@@ -111,7 +111,7 @@ export function MessageBubble({ message, onRetry, onEdit }: MessageBubbleProps) 
                     ref={textareaRef}
                     value={editValue}
                     onChange={(e) => setEditValue(e.target.value)}
-                    className="w-full bg-transparent p-3 text-white outline-none resize-none min-h-[120px] text-[20px] leading-relaxed"
+                    className="w-full bg-transparent p-3 text-white outline-none resize-none min-h-[120px] text-base leading-relaxed"
                     placeholder="Edit your message..."
                     autoFocus
                   />
@@ -137,7 +137,7 @@ export function MessageBubble({ message, onRetry, onEdit }: MessageBubbleProps) 
                 <>
                   {message.isLoading ? (
                     message.content ? (
-                      <div className="markdown-content streaming-content inline-block w-full text-[20px]">
+                      <div className="markdown-content streaming-content inline-block w-full text-base">
                         <ReactMarkdown remarkPlugins={[remarkGfm]} children={message.content} />
                         <span className="streaming-cursor" />
                       </div>
@@ -145,11 +145,11 @@ export function MessageBubble({ message, onRetry, onEdit }: MessageBubbleProps) 
                       <TypingIndicator />
                     )
                   ) : isUser ? (
-                    <p className="whitespace-pre-wrap text-[20px] !text-black font-medium opacity-100">
+                    <p className="whitespace-pre-wrap text-base !text-black font-medium opacity-100">
                       {message.content}
                     </p>
                   ) : (
-                    <div className="markdown-content text-[20px]">
+                    <div className="markdown-content text-base">
                       <ReactMarkdown remarkPlugins={[remarkGfm]} children={message.content} />
                     </div>
                   )}

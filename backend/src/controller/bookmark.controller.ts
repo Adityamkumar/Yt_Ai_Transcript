@@ -62,3 +62,24 @@ export const getBookmarks = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, bookmarks, "Bookmarks fetched successfully"));
 });
+
+export const deleteBookmark = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  if (!id) {
+    throw new ApiError(400, "Bookmark ID is required");
+  }
+
+  const bookmark = await Bookmark.findOneAndDelete({
+    _id: id,
+    userId: req.user?._id!,
+  });
+
+  if (!bookmark) {
+    throw new ApiError(404, "Bookmark not found or unauthorized");
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, null, "Bookmark deleted successfully"));
+});

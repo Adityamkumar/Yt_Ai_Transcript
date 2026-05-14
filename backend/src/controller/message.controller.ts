@@ -5,7 +5,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
 export const createMessage = asyncHandler(async (req, res) => {
-  const { conversationId, role, content } = req.body;
+  const { conversationId, role, content, type = "chat" } = req.body;
 
   if (!conversationId || !role || !content) {
     throw new ApiError(400, "All fields are required");
@@ -15,6 +15,7 @@ export const createMessage = asyncHandler(async (req, res) => {
     conversationId,
     role,
     content,
+    type,
   });
 
   return res

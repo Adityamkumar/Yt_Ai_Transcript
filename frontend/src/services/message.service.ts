@@ -1,12 +1,13 @@
 import axiosInstance from '@/lib/axios';
-import { ApiResponse, IMessage, MessageRole } from '@/types';
+import { ApiResponse, IMessage, MessageRole, MessageType } from '@/types';
 
 export const messageService = {
-  createMessage: async (conversationId: string, role: MessageRole, content: string) => {
+  createMessage: async (conversationId: string, role: MessageRole, content: string, type: MessageType = 'chat') => {
     const response = await axiosInstance.post<ApiResponse<IMessage>>('/api/v1/messages', {
       conversationId,
       role,
       content,
+      type,
     });
     return response.data.data;
   },
