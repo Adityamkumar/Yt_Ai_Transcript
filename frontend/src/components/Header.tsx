@@ -39,7 +39,7 @@ export function Header({ onNewChat }: HeaderProps) {
             </span>
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold leading-5 text-white">
-                {activeConversation?.title ?? APP_NAME}
+                {activeConversation?.title.replace(/\*\*/g, "") ?? APP_NAME}
               </p>
               <p className="hidden truncate text-xs text-[var(--text-muted)] sm:block">
                 {activeConversation ? 'Video workspace' : 'Transcript intelligence workspace'}

@@ -36,18 +36,29 @@ export function useChat(conversationId: string | undefined, videoId: string | un
         }));
 
         let fullResponse = '';
-        await chatService.streamQuestion(
-          {
+        
+        if (messageType === 'notes') {
+          const response = await chatService.askQuestion({
             videoId,
             question: content,
             recentMessages,
-            type: messageType,
-          },
-          (token) => {
-            fullResponse += token;
-            setStreamingMessage(fullResponse);
-          }
-        );
+            type: 'notes',
+          });
+          fullResponse = response.data;
+        } else {
+          await chatService.streamQuestion(
+            {
+              videoId,
+              question: content,
+              recentMessages,
+              type: messageType,
+            },
+            (token) => {
+              fullResponse += token;
+              setStreamingMessage(fullResponse);
+            }
+          );
+        }
 
         if (!fullResponse.trim()) {
           fullResponse = "I'm sorry, I encountered an issue while generating a response. Please try again.";
@@ -133,19 +144,20 @@ export function useChat(conversationId: string | undefined, videoId: string | un
         setIsNotesRequest(true);
         setStreamingMessage('');
 
-        let fullResponse = '';
-        await chatService.streamQuestion(
-          {
-            videoId,
-            question: "Generate smart notes",
-            recentMessages: [],
-            type: 'notes',
-          },
-          (token) => {
-            fullResponse += token;
-            setStreamingMessage(fullResponse);
-          }
-        );
+        const response = await chatService.askQuestion({
+          videoId,
+          question: "Generate smart notes",
+          recentMessages: [],
+          type: 'notes',
+        });
+
+        // The askQuestion service returns response.data (which is the ApiResponse object)
+        // We need the 'data' field inside the ApiResponse, which contains our JSON string
+        const fullResponse = response.data;
+
+        if (!fullResponse) {
+          throw new Error("Failed to receive notes from AI");
+        }
 
         const assistantMsg = await messageService.createMessage(conversationId, 'assistant', fullResponse, 'notes');
 
@@ -155,6 +167,7 @@ export function useChat(conversationId: string | undefined, videoId: string | un
         ]);
         setStreamingMessage('');
       } catch (error) {
+        console.error("Notes generation error:", error);
         throw error;
       } finally {
         setIsStreaming(false);

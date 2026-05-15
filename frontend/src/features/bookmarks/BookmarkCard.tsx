@@ -15,6 +15,20 @@ interface BookmarkCardProps {
 export function BookmarkCard({ bookmark, onDelete }: BookmarkCardProps) {
   const navigate = useNavigate();
   const conversation = typeof bookmark.conversationId === 'object' ? bookmark.conversationId : null;
+  
+  const displayContent = React.useMemo(() => {
+    if (bookmark.type === 'notes') {
+      try {
+        const parsed = JSON.parse(bookmark.content);
+        // Show subtitle or first main concept as preview
+        return parsed.subtitle || (parsed.overview?.[0]) || bookmark.content;
+      } catch (e) {
+        console.error("Error parsing bookmark content:", e);
+        return bookmark.content;
+      }
+    }
+    return bookmark.content;
+  }, [bookmark.content, bookmark.type]);
 
   return (
     <motion.div
@@ -35,7 +49,7 @@ export function BookmarkCard({ bookmark, onDelete }: BookmarkCardProps) {
               <span className="text-[10px] font-bold uppercase tracking-wider text-purple-400 mb-0.5">
                 {bookmark.type}
               </span>
-              <h3 className="text-lg font-bold text-white line-clamp-2 leading-tight">{bookmark.title}</h3>
+              <h3 className="text-lg font-bold text-white line-clamp-2 leading-tight">{bookmark.title.replace(/\*\*/g, "")}</h3>
             </div>
           </div>
           
@@ -52,7 +66,7 @@ export function BookmarkCard({ bookmark, onDelete }: BookmarkCardProps) {
 
         <div className="prose prose-invert prose-sm max-w-none line-clamp-4 text-gray-400 mb-6 text-sm leading-relaxed">
           <ReactMarkdown remarkPlugins={[remarkGfm]}>
-            {bookmark.content}
+            {displayContent}
           </ReactMarkdown>
         </div>
 
@@ -68,7 +82,7 @@ export function BookmarkCard({ bookmark, onDelete }: BookmarkCardProps) {
               className="flex items-center gap-1.5 text-xs font-medium text-purple-400 hover:text-purple-300 transition-colors"
             >
               <MessageSquare className="w-3.5 h-3.5" />
-              <span className="max-w-[100px] truncate">{conversation.title}</span>
+              <span className="max-w-[100px] truncate">{conversation.title.replace(/\*\*/g, "")}</span>
               <ExternalLink className="w-3 h-3" />
             </button>
           )}

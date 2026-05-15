@@ -199,7 +199,9 @@ export function Sidebar({ onNewChat }: SidebarProps) {
                             <MessageSquare size={14} />
                           </span>
                           <span className="min-w-0 flex-1 pr-7">
-                            <span className="block truncate text-sm font-medium">{conv.title}</span>
+                            <span className="block truncate text-sm font-medium">
+                              {conv.title.replace(/\*\*/g, "")}
+                            </span>
                             <span className="mt-0.5 block text-xs text-[var(--text-muted)]">
                               {formatRelativeTime(new Date(conv.updatedAt))}
                             </span>

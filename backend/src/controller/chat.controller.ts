@@ -18,8 +18,9 @@ type AskQuestionBody = {
 };
 
 const isStreamingRequest = (body: AskQuestionBody, acceptHeader?: string | string[]) => {
+  if (body.stream === true) return true;
   const accept = Array.isArray(acceptHeader) ? acceptHeader.join(",") : acceptHeader ?? "";
-  return body.stream === true || accept.includes("text/plain") || accept.includes("text/event-stream");
+  return accept.includes("text/event-stream") || (accept.includes("text/plain") && !accept.includes("application/json"));
 };
 
 export const askQuestion = asyncHandler(async (req, res) => {
@@ -40,7 +41,8 @@ export const askQuestion = asyncHandler(async (req, res) => {
   const transcript = video.transcript;
   const contextMessages = getRecentMessages(recentMessages, 10);
 
-  if (!isStreamingRequest(req.body as AskQuestionBody, req.headers.accept)) {
+  // Notes should NEVER stream as per architecture requirements
+  if (type === "notes" || !isStreamingRequest(req.body as AskQuestionBody, req.headers.accept)) {
     const answer = await askAiAboutTranscript(transcript, question || "", contextMessages, type);
 
     return res
