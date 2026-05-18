@@ -3,6 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { messageService } from '@/services/message.service';
 import { chatService } from '@/services/chat.service';
 import { IMessage, MessageType } from '@/types';
+import { WorkspaceAction } from '@/components/workspace-actions/workspaceActionConfig';
 
 export function useChat(conversationId: string | undefined, videoId: string | undefined) {
   const queryClient = useQueryClient();
@@ -14,8 +15,10 @@ export function useChat(conversationId: string | undefined, videoId: string | un
     async (content: string) => {
       if (!conversationId || !videoId || isStreaming) return;
 
-      const isNotesIntent = /create notes|generate notes|make notes|summarize into notes|structured notes/i.test(content);
-      const messageType: MessageType = isNotesIntent ? 'notes' : 'chat';
+      const isNotesIntent = /create notes|generate notes|make notes|structured notes/i.test(content);
+      const isSummaryIntent = /summarize this video|key highlights|video summary/i.test(content);
+      
+      const messageType: MessageType = isNotesIntent ? 'notes' : isSummaryIntent ? 'summary' : 'chat';
 
       try {
         setIsStreaming(true);
@@ -37,12 +40,12 @@ export function useChat(conversationId: string | undefined, videoId: string | un
 
         let fullResponse = '';
         
-        if (messageType === 'notes') {
+        if (messageType === 'notes' || messageType === 'summary') {
           const response = await chatService.askQuestion({
             videoId,
             question: content,
             recentMessages,
-            type: 'notes',
+            type: messageType,
           });
           fullResponse = response.data;
         } else {
@@ -73,6 +76,56 @@ export function useChat(conversationId: string | undefined, videoId: string | un
         setStreamingMessage('');
       } catch (error) {
         throw error;
+      } finally {
+        setIsStreaming(false);
+      }
+    },
+    [conversationId, videoId, isStreaming, queryClient]
+  );
+
+  const generateNotes = useCallback(
+    async () => {
+      if (!conversationId || !videoId || isStreaming) return;
+      try {
+        setIsStreaming(true);
+        setIsNotesRequest(true);
+        setStreamingMessage('');
+        const response = await chatService.askQuestion({
+          videoId,
+          question: "Generate complete structured educational notes for this video.",
+          recentMessages: [],
+          type: 'notes',
+        });
+        const assistantMsg = await messageService.createMessage(conversationId, 'assistant', response.data, 'notes');
+        queryClient.setQueryData(['messages', conversationId], (old: IMessage[] = []) => [...old, assistantMsg]);
+        setStreamingMessage('');
+      } catch (error) {
+        console.error("Notes generation error:", error);
+      } finally {
+        setIsStreaming(false);
+      }
+    },
+    [conversationId, videoId, isStreaming, queryClient]
+  );
+
+  const generateSummary = useCallback(
+    async () => {
+      if (!conversationId || !videoId || isStreaming) return;
+      try {
+        setIsStreaming(true);
+        setIsNotesRequest(false);
+        setStreamingMessage('');
+        const response = await chatService.askQuestion({
+          videoId,
+          question: "Provide a quick summary of this video with key highlights.",
+          recentMessages: [],
+          type: 'summary',
+        });
+        const assistantMsg = await messageService.createMessage(conversationId, 'assistant', response.data, 'summary');
+        queryClient.setQueryData(['messages', conversationId], (old: IMessage[] = []) => [...old, assistantMsg]);
+        setStreamingMessage('');
+      } catch (error) {
+        console.error("Summary generation error:", error);
       } finally {
         setIsStreaming(false);
       }
@@ -115,10 +168,6 @@ export function useChat(conversationId: string | undefined, videoId: string | un
           }
         );
 
-        if (!fullResponse.trim()) {
-          fullResponse = "I'm sorry, I couldn't generate a new response for this edited question. Please try again.";
-        }
-
         const assistantMsg = await messageService.createMessage(conversationId, 'assistant', fullResponse);
 
         queryClient.setQueryData(['messages', conversationId], (old: IMessage[] = []) => [
@@ -135,51 +184,60 @@ export function useChat(conversationId: string | undefined, videoId: string | un
     [conversationId, videoId, isStreaming, queryClient]
   );
 
-  const generateNotes = useCallback(
-    async () => {
+  const triggerAction = useCallback(
+    async (action: WorkspaceAction) => {
       if (!conversationId || !videoId || isStreaming) return;
+
+      if (action.type === 'chat') {
+        await sendMessage(action.prompt);
+        return;
+      }
 
       try {
         setIsStreaming(true);
-        setIsNotesRequest(true);
+        setIsNotesRequest(action.type === 'notes');
         setStreamingMessage('');
+
+        const userMsg = await messageService.createMessage(conversationId, 'user', action.prompt);
+        queryClient.setQueryData(['messages', conversationId], (old: IMessage[] = []) => [
+          ...old,
+          userMsg,
+        ]);
 
         const response = await chatService.askQuestion({
           videoId,
-          question: "Generate smart notes",
+          question: action.prompt,
           recentMessages: [],
-          type: 'notes',
+          type: action.type,
         });
 
-        // The askQuestion service returns response.data (which is the ApiResponse object)
-        // We need the 'data' field inside the ApiResponse, which contains our JSON string
-        const fullResponse = response.data;
-
-        if (!fullResponse) {
-          throw new Error("Failed to receive notes from AI");
-        }
-
-        const assistantMsg = await messageService.createMessage(conversationId, 'assistant', fullResponse, 'notes');
-
+        const fullResponse = response.data || "I'm sorry, I encountered an issue. Please try again.";
+        const assistantMsg = await messageService.createMessage(
+          conversationId,
+          'assistant',
+          fullResponse,
+          action.type,
+        );
         queryClient.setQueryData(['messages', conversationId], (old: IMessage[] = []) => [
           ...old,
           assistantMsg,
         ]);
         setStreamingMessage('');
       } catch (error) {
-        console.error("Notes generation error:", error);
         throw error;
       } finally {
         setIsStreaming(false);
       }
     },
-    [conversationId, videoId, isStreaming, queryClient]
+    [conversationId, videoId, isStreaming, queryClient, sendMessage],
   );
 
   return {
     sendMessage,
     editMessage,
     generateNotes,
+    generateSummary,
+    triggerAction,
     isStreaming,
     streamingMessage,
     isNotesRequest,

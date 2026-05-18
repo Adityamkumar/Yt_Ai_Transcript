@@ -7,16 +7,11 @@ interface Props {
   children: ReactNode;
 }
 
-export function PDFSection({
-  title,
-  children,
-}: Props) {
+export function PDFSection({ title, children }: Props) {
   return (
     <View style={styles.section}>
-      <Text style={styles.sectionTitle}>
-        {title}
-      </Text>
-
+      <Text style={styles.sectionLabel}>{title}</Text>
+      <View style={styles.divider} />
       {children}
     </View>
   );

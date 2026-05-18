@@ -22,9 +22,10 @@ interface MessageBubbleProps {
   message: ChatMessage;
   onRetry?: (messageId: string) => void;
   onEdit?: (messageId: string, content: string) => void;
+  children?: React.ReactNode;
 }
 
-export function MessageBubble({ message, onRetry, onEdit }: MessageBubbleProps) {
+export function MessageBubble({ message, onRetry, onEdit, children }: MessageBubbleProps) {
   const [copied, setCopied] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(message.content);
@@ -133,6 +134,8 @@ export function MessageBubble({ message, onRetry, onEdit }: MessageBubbleProps) 
                     </button>
                   </div>
                 </div>
+              ) : children ? (
+                children
               ) : (
                 <>
                   {message.isLoading ? (

@@ -1,10 +1,12 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { Toaster } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { Sidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
+import { WorkspaceActions } from '@/components/workspace-actions/WorkspaceActions';
 import { useUIStore } from '@/store/useUIStore';
 import { useKeyboardShortcut } from '@/hooks/useKeyboardShortcut';
+import { WorkspaceAction } from '@/components/workspace-actions/workspaceActionConfig';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -13,10 +15,19 @@ interface AppLayoutProps {
 export function AppLayout({ children }: AppLayoutProps) {
   const navigate = useNavigate();
   const { toggleSidebar, setSidebarOpen } = useUIStore();
+  const actionTriggerRef = useRef<((action: WorkspaceAction) => void) | null>(null);
 
   const handleNewChat = useCallback(() => {
     navigate('/app');
   }, [navigate]);
+
+  const handleActionReady = useCallback((trigger: (action: WorkspaceAction) => void) => {
+    actionTriggerRef.current = trigger;
+  }, []);
+
+  const handleWorkspaceAction = useCallback((action: WorkspaceAction) => {
+    actionTriggerRef.current?.(action);
+  }, []);
 
   useKeyboardShortcut({ key: 'b', ctrl: true }, toggleSidebar);
   useKeyboardShortcut({ key: 'n', ctrl: true }, handleNewChat);
@@ -31,13 +42,21 @@ export function AppLayout({ children }: AppLayoutProps) {
     return () => window.removeEventListener('resize', syncSidebarToViewport);
   }, [setSidebarOpen]);
 
+  const workspaceActionsNode = (
+    <WorkspaceActions onAction={handleWorkspaceAction} />
+  );
+
   return (
     <div className="app-shell">
       <Sidebar onNewChat={handleNewChat} />
 
       <div className="app-main">
-        <Header onNewChat={handleNewChat} />
-        <main className="app-scroll">{children}</main>
+        <Header onNewChat={handleNewChat} workspaceActions={workspaceActionsNode} />
+        <main className="app-scroll">
+          {React.isValidElement(children)
+            ? React.cloneElement(children as React.ReactElement<any>, { onActionReady: handleActionReady })
+            : children}
+        </main>
       </div>
 
       <Toaster

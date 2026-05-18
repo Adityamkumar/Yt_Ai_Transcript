@@ -1,5 +1,6 @@
 import { Conversation } from "../models/conversation.model.js";
 import { Message } from "../models/message.model.js";
+import { Video } from "../models/VideoUrl.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -71,9 +72,15 @@ export const deleteConversation = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Conversation not found or unauthorized");
   }
 
-  await Message.deleteMany({ conversationId });
+  const videoId = conversation.videoId;
 
+  await Message.deleteMany({ conversationId });
   await Conversation.findByIdAndDelete(conversationId);
+
+  const remainingConversations = await Conversation.countDocuments({ videoId });
+  if (remainingConversations === 0) {
+    await Video.findByIdAndDelete(videoId);
+  }
 
   return res
     .status(200)

@@ -8,13 +8,15 @@ import { ChatInput } from "./ChatInput";
 import { EmptyState } from "./EmptyState";
 import { VideoCard } from "./VideoCard";
 import { VideoData } from "@/types";
+import { WorkspaceAction } from "./workspace-actions/workspaceActionConfig";
 
 interface ChatContainerProps {
   conversationId: string;
   video: VideoData;
+  onActionReady?: (trigger: (action: WorkspaceAction) => void) => void;
 }
 
-export function ChatContainer({ conversationId, video }: ChatContainerProps) {
+export function ChatContainer({ conversationId, video, onActionReady }: ChatContainerProps) {
   const { messages, isLoading } = useMessages(conversationId);
 
   const targetVideoId =
@@ -24,6 +26,8 @@ export function ChatContainer({ conversationId, video }: ChatContainerProps) {
     sendMessage,
     editMessage,
     generateNotes,
+    generateSummary,
+    triggerAction,
     isStreaming,
     streamingMessage,
     isNotesRequest,
@@ -32,6 +36,10 @@ export function ChatContainer({ conversationId, video }: ChatContainerProps) {
   const [showScrollButton, setShowScrollButton] = useState(false);
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    onActionReady?.(triggerAction);
+  }, [triggerAction, onActionReady]);
 
   const streamingDisplayMessage = useMemo(() => {
     if (!isStreaming) return null;
@@ -119,6 +127,7 @@ export function ChatContainer({ conversationId, video }: ChatContainerProps) {
               hasTranscript
               onPromptSelect={handlePromptSelect}
               onNotesClick={generateNotes}
+              onSummaryClick={generateSummary}
               isLoadingNotes={isStreaming}
             />
           </div>
@@ -140,6 +149,7 @@ export function ChatContainer({ conversationId, video }: ChatContainerProps) {
                   key={message._id}
                   message={message}
                   onEdit={editMessage}
+                  videoId={video?.youtubeVideoId}
                 />
               ))}
 

@@ -19,13 +19,20 @@ import { promptCardVariants, promptStagger } from '@/animations/variants';
 interface EmptyStateProps {
   onPromptSelect?: (text: string) => void;
   onNotesClick?: () => void;
+  onSummaryClick?: () => void;
   isLoadingNotes?: boolean;
   hasTranscript?: boolean;
 }
 
 const promptIcons = [Sparkles, CheckCircle2, BrainCircuit, FileQuestion, BarChart3, ListChecks];
 
-export function EmptyState({ onPromptSelect, onNotesClick, isLoadingNotes, hasTranscript = false }: EmptyStateProps) {
+export function EmptyState({ 
+  onPromptSelect, 
+  onNotesClick, 
+  onSummaryClick,
+  isLoadingNotes, 
+  hasTranscript = false 
+}: EmptyStateProps) {
   if (hasTranscript) {
     return (
       <div className="chat-container flex min-h-full flex-col justify-center pb-40 pt-10 sm:pb-44 sm:pt-12">
@@ -50,12 +57,23 @@ export function EmptyState({ onPromptSelect, onNotesClick, isLoadingNotes, hasTr
             className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
           >
             {onNotesClick && (
-              <motion.div variants={promptCardVariants}>
-                <SmartNotesCard 
-                  onClick={onNotesClick} 
-                  isLoading={isLoadingNotes} 
-                />
-              </motion.div>
+              <>
+                <motion.div variants={promptCardVariants}>
+                  <SmartNotesCard 
+                    onClick={onNotesClick} 
+                    isLoading={isLoadingNotes} 
+                  />
+                </motion.div>
+                <motion.div variants={promptCardVariants}>
+                  <SmartNotesCard 
+                    title="Summarize Video"
+                    description="Get a conversational summary with key timestamped highlights instantly."
+                    color="blue"
+                    onClick={() => onSummaryClick?.()} 
+                    isLoading={isLoadingNotes} 
+                  />
+                </motion.div>
+              </>
             )}
             
             {SUGGESTED_PROMPTS.slice(onNotesClick ? 1 : 0).map((prompt, index) => {

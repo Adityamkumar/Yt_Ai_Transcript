@@ -1,80 +1,105 @@
-import {
-  Document,
-  Page,
-  Text,
-  View,
-} from "@react-pdf/renderer";
-
-import { NotesResponse } from "@/types/notesResponse";
+import { Document, Page, Text, View } from "@react-pdf/renderer";
+import { NotesResponse } from "@/types";
 import { styles } from "./PDFStyles";
 import { PDFHeader } from "./PDFHeader";
-import { PDFSection } from "./PDFSection";
-import { PDFBulletList } from "../pdf/PDFBulletlist";
-import { PDFSummary } from "./PDFSummary";
+import { PDFBulletList } from "./PDFBulletlist";
+import { PDFMarkdownText } from "./PDFMarkdownText";
 
 interface Props {
   notes: NotesResponse;
 }
 
-export function NotesPDF({
-  notes,
-}: Props) {
+export function NotesPDF({ notes }: Props) {
   return (
     <Document>
-      <Page
-        size="A4"
-        style={styles.page}
-      >
-        <PDFHeader
-          title={notes.title}
-          subtitle={notes.subtitle}
-        />
+      <Page size="A4" style={styles.page}>
+        <PDFHeader title={notes.title} subtitle={notes.subtitle} />
 
-        <PDFSection title="Overview">
-          <PDFBulletList
-            items={notes.overview}
-          />
-        </PDFSection>
-
-        <PDFSection title="Main Concepts">
-          {notes.mainConcepts.map(
-            (concept, index) => (
-              <View key={index} style={{ marginBottom: 15 }}>
-                <Text style={styles.conceptHeading}>
-                  {concept.heading.replace(/\*\*/g, "")}
-                </Text>
-
-                <PDFBulletList
-                  items={concept.points}
-                />
+        {notes.overview && notes.overview.length > 0 && (
+          <View style={styles.section}>
+            <View wrap={false}>
+              <Text style={styles.sectionLabel}>Executive Summary</Text>
+              <View style={styles.divider} />
+              <View style={{ marginBottom: 12 }}>
+                <PDFMarkdownText style={styles.overviewText}>
+                  {notes.overview[0]}
+                </PDFMarkdownText>
               </View>
-            )
-          )}
-        </PDFSection>
+            </View>
+            {notes.overview.slice(1).map((paragraph, index) => (
+              <View key={index + 1} style={{ marginBottom: 12 }}>
+                <PDFMarkdownText style={styles.overviewText}>
+                  {paragraph}
+                </PDFMarkdownText>
+              </View>
+            ))}
+          </View>
+        )}
 
-        <PDFSection title="Key Insights">
-          <PDFBulletList
-            items={notes.keyInsights}
-          />
-        </PDFSection>
+        {notes.mainConcepts && notes.mainConcepts.length > 0 && (
+          <View style={styles.section}>
+            <View wrap={false}>
+              <Text style={styles.sectionLabel}>Main Concepts</Text>
+              <View style={styles.divider} />
+              {notes.mainConcepts[0] && (
+                <View style={styles.conceptBlock}>
+                  <Text style={styles.conceptHeading}>{notes.mainConcepts[0].heading}</Text>
+                  <PDFBulletList items={notes.mainConcepts[0].points} />
+                </View>
+              )}
+            </View>
+            {notes.mainConcepts.slice(1).map((concept, index) => (
+              <View key={index + 1} style={styles.conceptBlock}>
+                <Text style={styles.conceptHeading}>{concept.heading}</Text>
+                <PDFBulletList items={concept.points} />
+              </View>
+            ))}
+          </View>
+        )}
 
-        <PDFSection title="Actionable Takeaways">
-          <PDFBulletList
-            items={
-              notes.actionableTakeaways
-            }
-          />
-        </PDFSection>
+        {notes.keyInsights && notes.keyInsights.length > 0 && (
+          <View style={styles.section}>
+            <View minPresenceAhead={120}>
+              <Text style={styles.sectionLabel}>Key Insights</Text>
+              <View style={styles.divider} />
+            </View>
+            <View style={styles.insightBox}>
+              <Text style={styles.insightLabel}>Core Learnings</Text>
+              <PDFBulletList items={notes.keyInsights} />
+            </View>
+          </View>
+        )}
 
-        <PDFSection title="Examples">
-          <PDFBulletList
-            items={notes.examples}
-          />
-        </PDFSection>
+        {notes.actionableTakeaways && notes.actionableTakeaways.length > 0 && (
+          <View style={styles.section}>
+            <View minPresenceAhead={120}>
+              <Text style={styles.sectionLabel}>Actionable Takeaways</Text>
+              <View style={styles.divider} />
+            </View>
+            <View style={styles.takeawayBox}>
+              <Text style={styles.takeawayLabel}>Next Steps</Text>
+              <PDFBulletList items={notes.actionableTakeaways} isCheck={true} />
+            </View>
+          </View>
+        )}
+        
+        {notes.examples && notes.examples.length > 0 && (
+          <View style={styles.section}>
+            <View minPresenceAhead={120}>
+              <Text style={styles.sectionLabel}>Real-World Examples</Text>
+              <View style={styles.divider} />
+            </View>
+            <View style={styles.exampleBox}>
+              <Text style={styles.exampleLabel}>Applications</Text>
+              <PDFBulletList items={notes.examples} />
+            </View>
+          </View>
+        )}
 
-        <PDFSummary
-          summary={notes.summary}
-        />
+        <View style={styles.footer} fixed>
+          <Text style={styles.footerText}>Generated by EchoMind AI</Text>
+          <Text style={styles.footerBrand}>ECHOMIND</Text>
+        </View>
       </Page>
     </Document>
   );

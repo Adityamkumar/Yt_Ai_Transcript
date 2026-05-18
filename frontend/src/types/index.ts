@@ -13,18 +13,25 @@ export interface User {
   updatedAt: string;
 }
 
+export interface ITranscriptChunk {
+  text: string;
+  start: number;
+  end: number;
+  duration: number;
+}
+
 export interface VideoData {
   _id: string;
   youtubeUrl: string;
   youtubeVideoId: string;
-  transcript: string;
+  transcript: ITranscriptChunk[];
   title: string;
   createdAt: string;
   updatedAt: string;
 }
 
 export type MessageRole = 'user' | 'assistant';
-export type MessageType = 'chat' | 'notes';
+export type MessageType = 'chat' | 'notes' | 'summary';
 
 export interface IMessage {
   _id: string;
@@ -71,3 +78,17 @@ export interface AskQuestionPayload {
 }
 
 export type AppState = 'idle' | 'extracting' | 'ready' | 'error';
+
+export interface NotesResponse {
+  title: string;
+  subtitle: string;
+  overview: string[];
+  mainConcepts: {
+    heading: string;
+    points: string[];
+  }[];
+  keyInsights: string[];
+  actionableTakeaways: string[];
+  examples: string[];
+}
+

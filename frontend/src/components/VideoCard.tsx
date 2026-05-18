@@ -4,7 +4,7 @@ import { cn } from '@/utils/cn';
 interface VideoCardProps {
   videoId: string;
   youtubeUrl: string;
-  transcript?: string;
+  transcript?: any;
   isLoading?: boolean;
 }
 

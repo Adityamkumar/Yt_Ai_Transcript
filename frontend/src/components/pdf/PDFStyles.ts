@@ -1,118 +1,213 @@
 import { StyleSheet } from "@react-pdf/renderer";
 
+const ACCENT = "#5B4EFF";
+const ACCENT_LIGHT = "#EEF0FF";
+const TEXT_DARK = "#1A1A2E";
+const TEXT_BODY = "#374151";
+const TEXT_MUTED = "#6B7280";
+const BORDER = "#E5E7EB";
+const BG_PAGE = "#FFFFFF";
+const BG_SECTION = "#F9FAFB";
+const BG_KEYWORD = "#EEF0FF";
+const CODE_BG = "#F1F5F9";
+const CODE_TEXT = "#1E3A5F";
+const INSIGHT_BG = "#FFFBEB";
+const INSIGHT_BORDER = "#FDE68A";
+const TAKEAWAY_BG = "#F0FDF4";
+const TAKEAWAY_BORDER = "#86EFAC";
+
 export const styles = StyleSheet.create({
   page: {
-    padding: 50,
-    backgroundColor: "#ffffff",
-    fontSize: 11,
+    paddingTop: 48,
+    paddingBottom: 56,
+    paddingHorizontal: 48,
+    backgroundColor: BG_PAGE,
+    fontSize: 10.5,
     fontFamily: "Helvetica",
-    lineHeight: 1.5,
-    color: "#374151",
+    lineHeight: 1.55,
+    color: TEXT_BODY,
   },
 
-  header: {
-    marginBottom: 40,
-    borderBottom: 1,
-    borderBottomColor: "#e5e7eb",
-    paddingBottom: 25,
-    alignItems: "center",
-    textAlign: "center",
+  headerWrapper: {
+    marginBottom: 36,
+    paddingBottom: 20,
+    borderBottom: `2px solid ${ACCENT}`,
+  },
+
+  headerMeta: {
+    fontSize: 8,
+    letterSpacing: 1.5,
+    textTransform: "uppercase",
+    color: ACCENT,
+    marginBottom: 8,
+    fontWeight: "bold",
   },
 
   title: {
-    fontSize: 28,
-    fontWeight: "bold",
-    marginBottom: 20,
-    color: "#111827",
-    letterSpacing: -0.5,
+    fontSize: 22,
+    fontFamily: "Helvetica-Bold",
+    color: TEXT_DARK,
+    marginBottom: 6,
+    lineHeight: 1.2,
   },
 
   subtitle: {
-    fontSize: 11,
-    color: "#6b7280",
-    maxWidth: "85%",
+    fontSize: 10,
+    color: TEXT_MUTED,
+    lineHeight: 1.5,
   },
 
   section: {
-    marginBottom: 30,
+    marginBottom: 28,
   },
 
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
-    marginBottom: 15,
-    color: "#111827",
+  sectionLabel: {
+    fontSize: 7.5,
+    fontFamily: "Helvetica-Bold",
+    letterSpacing: 2,
     textTransform: "uppercase",
-    letterSpacing: 1,
-    borderLeft: 3,
-    borderLeftColor: "#8b9cff",
-    paddingLeft: 10,
+    color: ACCENT,
+    marginBottom: 10,
+  },
+
+  divider: {
+    borderBottom: `1px solid ${BORDER}`,
+    marginBottom: 14,
+  },
+
+  overviewText: {
+    fontSize: 10.5,
+    color: TEXT_BODY,
+    lineHeight: 1.65,
+    marginBottom: 8,
+  },
+
+  conceptBlock: {
+    marginBottom: 18,
+    padding: "10 14",
+    backgroundColor: BG_SECTION,
+    borderRadius: 6,
+    borderLeft: `3px solid ${ACCENT}`,
   },
 
   conceptHeading: {
-    fontSize: 13,
-    fontWeight: "bold",
+    fontSize: 11,
+    fontFamily: "Helvetica-Bold",
+    color: TEXT_DARK,
     marginBottom: 8,
-    marginTop: 12,
-    color: "#111827",
-    backgroundColor: "#f9fafb",
-    padding: "4 8",
-    borderRadius: 4,
   },
 
-  bulletItem: {
+  bulletRow: {
     flexDirection: "row",
-    marginBottom: 10,
-    paddingLeft: 4,
+    marginBottom: 6,
+    paddingLeft: 2,
   },
 
-  bullet: {
+  bulletContent: {
+    flex: 1,
+  },
+
+  bulletDot: {
     width: 14,
-    color: "#8b9cff",
-    fontWeight: "bold",
+    fontSize: 12,
+    color: ACCENT,
+    lineHeight: 1.3,
   },
 
   bulletText: {
-    flex: 1,
-    textAlign: "justify",
+    fontSize: 10,
+    color: TEXT_BODY,
+    lineHeight: 1.6,
+  },
+
+  insightBox: {
+    backgroundColor: INSIGHT_BG,
+    borderRadius: 6,
+    padding: "10 14",
+    marginBottom: 18,
+    borderLeft: `3px solid ${INSIGHT_BORDER}`,
+  },
+
+  insightLabel: {
+    fontSize: 7.5,
+    fontFamily: "Helvetica-Bold",
+    letterSpacing: 1.8,
+    textTransform: "uppercase",
+    color: "#B45309",
+    marginBottom: 8,
+  },
+
+  takeawayBox: {
+    backgroundColor: TAKEAWAY_BG,
+    borderRadius: 6,
+    padding: "10 14",
+    marginBottom: 18,
+    borderLeft: `3px solid ${TAKEAWAY_BORDER}`,
+  },
+
+  takeawayLabel: {
+    fontSize: 7.5,
+    fontFamily: "Helvetica-Bold",
+    letterSpacing: 1.8,
+    textTransform: "uppercase",
+    color: "#15803D",
+    marginBottom: 8,
+  },
+
+  checkmark: {
+    width: 14,
+    fontSize: 10,
+    color: "#16A34A",
   },
 
   keyword: {
-    fontWeight: "bold",
-    color: "#111827",
+    fontFamily: "Helvetica-Bold",
+    color: ACCENT,
   },
 
   code: {
     fontFamily: "Courier",
-    fontWeight: "bold",
-    backgroundColor: "#f1f5f9",
-    color: "#000000",
-    paddingHorizontal: 5,
-    paddingVertical: 2,
-    borderRadius: 4,
-    fontSize: 10,
+    fontSize: 9.5,
+    color: CODE_TEXT,
   },
 
-  summaryBox: {
-    marginTop: 25,
-    padding: 20,
-    backgroundColor: "#f8fafc",
-    borderRadius: 12,
-    border: 1,
-    borderColor: "#e2e8f0",
+  exampleBox: {
+    backgroundColor: "#F5F3FF",
+    borderRadius: 6,
+    padding: "10 14",
+    marginBottom: 18,
+    borderLeft: `3px solid #A78BFA`,
   },
 
-  summaryTitle: {
-    fontSize: 14,
-    fontWeight: "bold",
-    marginBottom: 12,
-    color: "#111827",
+  exampleLabel: {
+    fontSize: 7.5,
+    fontFamily: "Helvetica-Bold",
+    letterSpacing: 1.8,
     textTransform: "uppercase",
-    letterSpacing: 0.5,
+    color: "#7C3AED",
+    marginBottom: 8,
   },
 
-  summaryText: {
-    marginBottom: 6,
-    lineHeight: 1.6,
-  }
+  footer: {
+    position: "absolute",
+    bottom: 24,
+    left: 48,
+    right: 48,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderTop: `1px solid ${BORDER}`,
+    paddingTop: 10,
+  },
+
+  footerText: {
+    fontSize: 8,
+    color: TEXT_MUTED,
+  },
+
+  footerBrand: {
+    fontSize: 8,
+    color: ACCENT,
+    fontFamily: "Helvetica-Bold",
+  },
 });

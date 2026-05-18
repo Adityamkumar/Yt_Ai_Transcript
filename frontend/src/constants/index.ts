@@ -13,7 +13,6 @@ export const APP_DESCRIPTION =
 export const SUGGESTED_PROMPTS = [
   { label: 'Summarize', text: 'Give me a concise summary of this video.' },
   { label: 'Key Takeaways', text: 'What are the 5 most important takeaways from this video?' },
-  { label: 'Main Ideas', text: 'What are the main ideas discussed in this video?' },
   { label: 'Questions', text: 'What questions does this video answer?' },
   { label: 'Data Points', text: 'What data, statistics, or numbers are mentioned?' },
   { label: 'Action Items', text: 'What actionable advice or next steps does this video suggest?' },

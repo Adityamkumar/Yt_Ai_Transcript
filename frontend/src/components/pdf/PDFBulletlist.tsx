@@ -3,28 +3,32 @@ import { styles } from "./PDFStyles";
 import { PDFMarkdownText } from "./PDFMarkdownText";
 
 interface Props {
-  items: string[];
+  items: (string | { text?: string; description?: string })[];
+  isCheck?: boolean;
 }
 
-export function PDFBulletList({
-  items,
-}: Props) {
+export function PDFBulletList({ items, isCheck = false }: Props) {
   return (
     <View>
-      {items.map((item, index) => (
-        <View
-          key={index}
-          style={styles.bulletItem}
-        >
-          <Text style={styles.bullet}>
-            •
-          </Text>
+      {items.map((item, index) => {
+        let text = "";
+        if (typeof item === "string") {
+          text = item;
+        } else {
+          text = item.text || item.description || "";
+        }
 
-          <PDFMarkdownText>
-            {item}
-          </PDFMarkdownText>
-        </View>
-      ))}
+        return (
+          <View key={index} style={styles.bulletRow}>
+            <Text style={isCheck ? { ...styles.bulletDot, ...styles.checkmark } : styles.bulletDot}>
+              {isCheck ? "\u2713" : "\u2022"}
+            </Text>
+            <View style={styles.bulletContent}>
+              <PDFMarkdownText>{text}</PDFMarkdownText>
+            </View>
+          </View>
+        );
+      })}
     </View>
   );
 }

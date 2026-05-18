@@ -9,8 +9,13 @@ import { VideoCard } from '@/components/VideoCard';
 import { useConversations } from '@/hooks/useConversations';
 import { videoService } from '@/services/video.service';
 import { fadeIn, pageVariants } from '@/animations/variants';
+import { WorkspaceAction } from '@/components/workspace-actions/workspaceActionConfig';
 
-export default function HomePage() {
+interface HomePageProps {
+  onActionReady?: (trigger: (action: WorkspaceAction) => void) => void;
+}
+
+export default function HomePage({ onActionReady }: HomePageProps) {
   const { conversationId } = useParams<{ conversationId: string }>();
   const navigate = useNavigate();
   const { conversations, createConversation, isCreating: isCreatingConversation } = useConversations();
@@ -60,7 +65,8 @@ export default function HomePage() {
         >
           <ChatContainer 
             conversationId={activeConversation._id} 
-            video={typeof activeConversation.videoId === 'string' ? { _id: activeConversation.videoId } as any : activeConversation.videoId} 
+            video={typeof activeConversation.videoId === 'string' ? { _id: activeConversation.videoId } as any : activeConversation.videoId}
+            onActionReady={onActionReady}
           />
         </motion.div>
       ) : (

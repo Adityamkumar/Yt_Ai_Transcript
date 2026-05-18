@@ -1,4 +1,5 @@
 import { Video } from "../models/VideoUrl.model.js";
+import { getTranscriptFromYoutube, optimizeStoredTranscript } from "../services/transcript.service.js";
 import {
   askAiAboutTranscript,
   getRecentMessages,
@@ -14,7 +15,7 @@ type AskQuestionBody = {
   question?: string;
   recentMessages?: ConversationMessage[];
   stream?: boolean;
-  type?: "chat" | "notes";
+  type?: "chat" | "notes" | "summary";
 };
 
 const isStreamingRequest = (body: AskQuestionBody, acceptHeader?: string | string[]) => {
@@ -38,7 +39,41 @@ export const askQuestion = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Video not found");
   }
 
-  const transcript = video.transcript;
+  let transcript = video.transcript;
+
+  // Robust fallback: if transcript is empty, try to re-fetch it
+  if (!transcript || (Array.isArray(transcript) && transcript.length === 0)) {
+    console.log(`Transcript empty for video ${videoId}, attempting re-fetch...`);
+    const fetchedTranscript = await getTranscriptFromYoutube(video.youtubeVideoId);
+    if (fetchedTranscript) {
+      video.transcript = fetchedTranscript;
+      await video.save();
+      transcript = video.transcript;
+    }
+  }
+
+  if (Array.isArray(transcript) && transcript.length > 0) {
+    const optimized = optimizeStoredTranscript(transcript);
+    const shouldSave =
+      optimized.length !== transcript.length ||
+      optimized.some((chunk, index) => {
+        const existing = transcript[index];
+        return (
+          !existing ||
+          existing.start !== chunk.start ||
+          (existing as any).end !== chunk.end ||
+          existing.duration !== chunk.duration ||
+          existing.text !== chunk.text
+        );
+      });
+
+    if (shouldSave) {
+      video.transcript = optimized as any;
+      await video.save();
+      transcript = video.transcript;
+    }
+  }
+
   const contextMessages = getRecentMessages(recentMessages, 10);
 
   // Notes should NEVER stream as per architecture requirements

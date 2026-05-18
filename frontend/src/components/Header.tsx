@@ -7,9 +7,10 @@ import { cn } from '@/utils/cn';
 
 interface HeaderProps {
   onNewChat?: () => void;
+  workspaceActions?: React.ReactNode;
 }
 
-export function Header({ onNewChat }: HeaderProps) {
+export function Header({ onNewChat, workspaceActions }: HeaderProps) {
   const { sidebarOpen, toggleSidebar } = useUIStore();
   const { conversationId } = useParams<{ conversationId: string }>();
   const { conversations } = useConversations();
@@ -48,13 +49,17 @@ export function Header({ onNewChat }: HeaderProps) {
           </div>
         </div>
 
-        <button
-          onClick={onNewChat}
-          className="inline-flex h-9 shrink-0 items-center gap-2 rounded-xl border border-white/[0.1] bg-white/[0.055] px-3 text-sm font-medium text-white transition hover:border-white/[0.16] hover:bg-white/[0.09]"
-        >
-          <Plus size={16} />
-          <span className="hidden sm:inline">New chat</span>
-        </button>
+        <div className="flex shrink-0 items-center gap-2">
+          {activeConversation && workspaceActions}
+
+          <button
+            onClick={onNewChat}
+            className="inline-flex h-9 shrink-0 items-center gap-2 rounded-xl border border-white/[0.1] bg-white/[0.055] px-3 text-sm font-medium text-white transition hover:border-white/[0.16] hover:bg-white/[0.09]"
+          >
+            <Plus size={16} />
+            <span className="hidden sm:inline">New chat</span>
+          </button>
+        </div>
       </div>
     </header>
   );

@@ -9,14 +9,11 @@ interface Props {
 export function PDFMarkdownText({ children, style }: Props) {
   if (!children) return null;
 
-  // Split by bold (**text**) or inline code (`text`)
-  // Regex matches **text** OR `text`
   const segments = children.split(/(\*\*.*?\*\*|`.*?`)/g);
 
   return (
     <Text style={[styles.bulletText, style]}>
       {segments.map((segment, index) => {
-        // Handle Bold
         if (segment.startsWith("**") && segment.endsWith("**")) {
           return (
             <Text key={index} style={styles.keyword}>
@@ -25,7 +22,6 @@ export function PDFMarkdownText({ children, style }: Props) {
           );
         }
         
-        // Handle Inline Code
         if (segment.startsWith("`") && segment.endsWith("`")) {
           return (
             <Text key={index} style={styles.code}>
@@ -34,7 +30,6 @@ export function PDFMarkdownText({ children, style }: Props) {
           );
         }
 
-        // Normal Text
         return segment;
       })}
     </Text>
