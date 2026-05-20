@@ -2,6 +2,13 @@ import { GoogleGenAI } from "@google/genai";
 import { z } from "zod";
 import type{ ITranscriptChunk } from "../models/VideoUrl.model.js";
 import { formatTimestamp } from "../utils/formatTimestamp.js";
+import {
+  CHAT_SYSTEM_PROMPT,
+  NOTES_SYSTEM_PROMPT,
+  PDF_CHAT_SYSTEM_PROMPT,
+  PDF_NOTES_SYSTEM_PROMPT,
+  SUMMARY_SYSTEM_PROMPT,
+} from "./ai.prompts.js";
 
 export type ConversationMessage = {
   role: "user" | "assistant";
@@ -90,56 +97,6 @@ export const formatConversationHistory = (
     .join("\n\n");
 };
 
-const NOTES_SYSTEM_PROMPT = `
-You are an expert educational AI assistant specializing in video understanding.
-Generate structured educational revision notes for quick study and revision.
-
-RULES:
-- Default response language is English.
-- Only switch to another language if the user explicitly requests that language.
-- Extract 3-5 Main Concepts with detailed, self-contained bullet points
-- Include Key Insights and Actionable Takeaways
-- Do NOT include any timestamps or time references in the notes
-- Use **bold** for technical terms, concepts, and keywords
-- Use \`inline code\` for commands, functions, and code snippets
-- Each point should be a complete, informative sentence
-- Return VALID JSON ONLY.
-`;
-
-const SUMMARY_SYSTEM_PROMPT = `
-You are a helpful AI assistant. Generate a lightweight conversational summary of the video.
-Focus on key highlights and takeaways.
-
-RULES:
-- Default response language is English.
-- Only switch to another language if the user explicitly requests that language.
-- Translate non-English transcript segments into natural English unless user asked for another language.
-- Provide 8-12 highlights for videos around 10-20 minutes.
-- Each highlight text should start with a short topic label, then a colon, then a detailed 2-3 sentence explanation.
-- For each highlight, provide the exact START time in TOTAL SECONDS (integer)
-- Ensure timeline coverage from beginning, middle, and end of the video
-- Keep highlights ordered by timestamp ascending
-- Avoid mixed-language output in a single summary.
-- Return VALID JSON ONLY: { "summary": [{ "text": "...", "timestamp": 120 }] }
-`;
-
-const CHAT_SYSTEM_PROMPT = `
-You are EchoMind AI, a helpful YouTube learning assistant.
-
-RULES:
-- Be conversational
-- Friendly and concise
-- Default response language is English.
-- Only switch to another language if the user explicitly requests that language.
-- Use the provided transcript context for EVERYTHING.
-- If the user asks about the video, you MUST answer based on the transcript provided below.
-- If unrelated question asked, politely refuse
-- Do NOT include any timestamps or time references in your response.
-- Use emojis naturally
-- Keep responses readable
-
-IMPORTANT: The Transcript is provided below. Use it to answer the user's question accurately.
-`;
 
 export const formatTranscriptWithTimestamps = (chunks: ITranscriptChunk[]) => {
   return chunks
@@ -360,7 +317,7 @@ export const askAiAboutTranscript = async (
 
       console.log(`GENERATING ${type.toUpperCase()}...`);
       const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
+        model: "gemini-2.5-flash",
         contents: prompt,
         config: {
           responseMimeType: "application/json",
@@ -407,7 +364,7 @@ export const askAiAboutTranscript = async (
     }
 
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
+      model: "gemini-2.5-flash",
       contents: prompt,
     });
 
@@ -458,7 +415,7 @@ export async function* streamAiAboutTranscript(
     );
 
     const response = await ai.models.generateContentStream({
-      model: "gemini-3-flash-preview",
+      model: "gemini-2.5-flash",
       contents: prompt,
     });
 
@@ -493,7 +450,7 @@ export const generateVideoTitle = async (transcript: string | ITranscriptChunk[]
       : transcript.slice(0, 50).map(c => c.text).join(" ");
     
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
+      model: "gemini-2.5-flash",
 
       contents: `
 Generate a concise searchable title for this YouTube video.
@@ -513,5 +470,174 @@ ${formattedTranscript.slice(0, 3000)}
     return response.text?.trim().replace(/["']/g, "").replace(/\*\*/g, "");
   } catch {
     return "New Conversation";
+  }
+};
+
+
+export const buildPdfContextPrompt = (
+  context: string,
+  question: string,
+  recentMessages: ConversationMessage[] = [],
+  type: "chat" | "notes" | "summary" = "chat",
+) => {
+  const systemPrompt = type === "notes" ? PDF_NOTES_SYSTEM_PROMPT : type === "summary" ? SUMMARY_SYSTEM_PROMPT : PDF_CHAT_SYSTEM_PROMPT;
+
+  return `
+${systemPrompt}
+
+PDF Document Context:
+${context}
+
+Recent Conversation History:
+${formatConversationHistory(recentMessages)}
+
+Current User Message:
+${
+  type === "notes"
+    ? "Generate structured educational revision notes for quick study and revision based on the document context."
+    : type === "summary"
+    ? "Provide a lightweight conversational summary of this document with key highlights."
+    : question
+}
+`;
+};
+
+export const askAiAboutPdf = async (
+  context: string,
+  question: string,
+  recentMessages: ConversationMessage[] = [],
+  type: "chat" | "notes" | "summary" = "chat",
+) => {
+  try {
+    const prompt = buildPdfContextPrompt(context, question, recentMessages, type);
+
+    if (type === "notes" || type === "summary") {
+      const schema = type === "notes" ? GeminiNotesSchema : GeminiSummarySchema;
+      const validator = type === "notes" ? NotesSchema : SummarySchema;
+
+      console.log(`GENERATING PDF ${type.toUpperCase()}...`);
+      const response = await ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: prompt,
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: schema as any,
+        },
+      });
+
+      const rawText = response.text?.trim();
+      if (!rawText) throw new Error(`Empty ${type} response received`);
+
+      let jsonStr = rawText;
+      const jsonMatch = rawText.match(/```json\s?([\s\S]*?)\s?```/) || rawText.match(/```\s?([\s\S]*?)\s?```/);
+      if (jsonMatch) {
+        jsonStr = jsonMatch[1]!.trim();
+      } else {
+        const firstBrace = rawText.indexOf('{');
+        const lastBrace = rawText.lastIndexOf('}');
+        if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+          jsonStr = rawText.substring(firstBrace, lastBrace + 1).trim();
+        }
+      }
+
+      try {
+        const parsed = JSON.parse(jsonStr);
+        const validated = validator.parse(parsed);
+        if (type === "notes") {
+          return JSON.stringify(sanitizeNotesResponse(validated as NotesResponse));
+        }
+        return JSON.stringify(validated);
+      } catch (parseError: any) {
+        console.error(`${type} JSON Error:`, parseError);
+        throw new Error(`Invalid ${type} structure`);
+      }
+    }
+
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: prompt,
+    });
+
+    return response.text?.trim() || "";
+  } catch (error: any) {
+    console.error("AI Service Error:", error);
+    throw new Error(`Failed to generate AI response: ${error?.message || "Unknown error"}`);
+  }
+};
+
+export async function* streamAiAboutPdf(
+  context: string,
+  question: string,
+  recentMessages: ConversationMessage[] = [],
+  type: "chat" | "notes" | "summary" = "chat",
+) {
+  if (!process.env.GEMINI_API_KEY) {
+    yield "AI service not configured.";
+    return;
+  }
+
+  try {
+    if (type === "notes" || type === "summary") {
+      const result = await askAiAboutPdf(
+        context,
+        question,
+        recentMessages,
+        type,
+      );
+      yield result;
+      return;
+    }
+
+    const prompt = buildPdfContextPrompt(
+      context,
+      question,
+      recentMessages,
+      type,
+    );
+
+    const response = await ai.models.generateContentStream({
+      model: "gemini-2.5-flash",
+      contents: prompt,
+    });
+
+    for await (const chunk of response) {
+      const text = chunk.text;
+      if (text) {
+        yield text;
+      }
+    }
+  } catch (error: any) {
+    console.error("Stream Error:", error);
+    const errorMessage = error?.message || "Unknown AI error";
+    if (errorMessage.includes("503") || errorMessage.includes("overloaded")) {
+      yield "EchoMind AI is currently busy 🚀 Please try again in a moment.";
+    } else {
+      yield "Something went wrong while generating the response.";
+    }
+  }
+}
+
+export const generatePdfTitle = async (sampleText: string) => {
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: `
+Generate a concise searchable title based on this document text sample.
+
+RULES:
+- 2-5 words
+- Educational / Professional
+- Topic-focused
+- No quotes
+- No filler words
+
+Sample Text:
+${sampleText.slice(0, 3000)}
+`,
+    });
+
+    return response.text?.trim().replace(/["']/g, "").replace(/\*\*/g, "");
+  } catch {
+    return "New Document";
   }
 };

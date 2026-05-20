@@ -2,7 +2,9 @@ import mongoose, { Document, Schema, Types } from "mongoose";
 
 export interface IConversation extends Document {
   userId: Types.ObjectId;
-  videoId: Types.ObjectId;
+  videoId?: Types.ObjectId;
+  pdfDocumentId?: Types.ObjectId;
+  type: "video" | "pdf";
   title: string;
   createdAt: Date;
   updatedAt: Date;
@@ -18,6 +20,17 @@ const conversationSchema = new Schema(
     videoId: {
       type: Schema.Types.ObjectId,
       ref: "Video",
+      required: false,
+    },
+    pdfDocumentId: {
+      type: Schema.Types.ObjectId,
+      ref: "PdfDocument",
+      required: false,
+    },
+    type: {
+      type: String,
+      enum: ["video", "pdf"],
+      default: "video",
       required: true,
     },
     title: {
@@ -31,3 +44,4 @@ const conversationSchema = new Schema(
 );
 
 export const Conversation = mongoose.model<IConversation>("Conversation", conversationSchema);
+

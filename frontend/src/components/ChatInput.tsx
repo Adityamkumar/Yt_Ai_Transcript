@@ -66,7 +66,7 @@ export function ChatInput({ onSend, onStop, disabled, isPending, placeholder }: 
               placeholder={placeholder ?? 'Message AI...'}
               disabled={disabled || isPending}
               rows={1}
-              className="max-h-45 min-h-11 flex-1 resize-none bg-transparent px-3 py-2.5 text-[15px] leading-6 text-white outline-none placeholder:text-(--text-muted) disabled:cursor-not-allowed disabled:opacity-45 sm:px-4"
+              className="max-h-45 min-h-12 flex-1 resize-none bg-transparent px-3 py-2.5 text-[17px] leading-7 text-white outline-none placeholder:text-(--text-muted) disabled:cursor-not-allowed disabled:opacity-45 sm:px-4"
             />
 
             <button
@@ -85,7 +85,7 @@ export function ChatInput({ onSend, onStop, disabled, isPending, placeholder }: 
           </div>
         </div>
 
-        <p className="mt-2 text-center text-[11px] leading-5 text-(--text-muted)">
+        <p className="mt-2 text-center text-[12px] leading-5 text-(--text-muted)">
           AI responses can be incomplete. Verify important details against the source.
         </p>
       </div>

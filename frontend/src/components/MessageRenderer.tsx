@@ -15,7 +15,7 @@ export function MessageRenderer({ message, onEdit, videoId }: MessageRendererPro
     return <NotesMessage message={message} videoId={videoId} />;
   }
 
-  if (message.type === 'summary' && videoId) {
+  if (message.type === 'summary') {
     return (
       <MessageBubble message={message} onEdit={onEdit}>
         <SummaryMessage message={message} videoId={videoId} />

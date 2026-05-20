@@ -1,4 +1,4 @@
-import { useCallback, useState, useRef, useEffect } from 'react';
+import { Children, cloneElement, isValidElement, useCallback, useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Bot,
@@ -66,6 +66,91 @@ export function MessageBubble({ message, onRetry, onEdit, children }: MessageBub
     setIsEditing(false);
   };
 
+  const highlightInlineCodeInText = (text: string) => {
+    const codeLikePattern = /(\b[a-zA-Z_$][\w$]*(?:\.[a-zA-Z_$][\w$]*)+\([^()\n]{0,120}\))/g;
+    const segments = text.split(codeLikePattern);
+
+    return segments.map((segment, index) => {
+      if (index % 2 === 1) {
+        return (
+          <code key={`auto-code-${index}`} className="font-mono text-[0.85em]">
+            {segment}
+          </code>
+        );
+      }
+      return segment;
+    });
+  };
+
+  const highlightInlineCodeNodes = (node: any): any => {
+    if (typeof node === 'string') {
+      return highlightInlineCodeInText(node);
+    }
+
+    if (Array.isArray(node)) {
+      return node.map((child) => highlightInlineCodeNodes(child));
+    }
+
+    if (isValidElement(node)) {
+      const element = node as any;
+      const typeName = typeof element.type === 'string' ? element.type : '';
+      if (typeName === 'code' || typeName === 'pre') {
+        return node;
+      }
+
+      const originalChildren = element.props?.children;
+      if (!originalChildren) {
+        return node;
+      }
+
+      return cloneElement(element, {
+        ...element.props,
+        children: Children.map(originalChildren, (child) => highlightInlineCodeNodes(child)),
+      });
+    }
+
+    return node;
+  };
+
+  const markdownComponents = {
+    pre: ({ children }: any) => (
+      <pre className="group/code relative overflow-x-auto rounded-xl border border-white/10 bg-[#06080d] p-4">
+        {children}
+      </pre>
+    ),
+    code: ({ className, children, ...props }: any) => {
+      const language = typeof className === 'string' ? className.replace('language-', '') : '';
+      const isBlockCode = Boolean(language);
+
+      if (isBlockCode) {
+        return (
+          <code className={cn('block font-mono text-[13px] leading-6 text-gray-100', className)} {...props}>
+            {language ? (
+              <span className="mb-2 inline-block rounded-md border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-gray-400">
+                {language}
+              </span>
+            ) : null}
+            {children}
+          </code>
+        );
+      }
+
+      return (
+        <code
+          className={cn(
+            'inline rounded-md border border-white/10 bg-white/7 px-1.5 py-0.5 font-mono text-[0.85em] text-white',
+            className
+          )}
+          {...props}
+        >
+          {children}
+        </code>
+      );
+    },
+    p: ({ children }: any) => <p>{Children.map(children, (child) => highlightInlineCodeNodes(child))}</p>,
+    li: ({ children }: any) => <li>{Children.map(children, (child) => highlightInlineCodeNodes(child))}</li>,
+  };
+
   return (
     <motion.article
       variants={chatBubbleVariants}
@@ -98,13 +183,14 @@ export function MessageBubble({ message, onRetry, onEdit, children }: MessageBub
 
             <div
               className={cn(
-                'relative rounded-3xl text-base leading-relaxed shadow-md transition-all duration-300',
+                'relative rounded-3xl text-[17px] leading-relaxed shadow-md transition-all duration-300',
                 isUser
                   ? isEditing 
                     ? 'bg-white/[0.06] border border-white/15 p-1.5 w-full sm:min-w-[450px] lg:min-w-[550px]' 
                     : 'bg-white px-5 py-4 shadow-xl'
                   : 'border border-white/[0.1] bg-white/[0.06] px-5 py-5 text-white/95 backdrop-blur-2xl sm:px-6'
               )}
+              style={{ fontSize: '17px' }}
             >
               {isEditing ? (
                 <div className="flex flex-col gap-3 p-1">
@@ -112,7 +198,7 @@ export function MessageBubble({ message, onRetry, onEdit, children }: MessageBub
                     ref={textareaRef}
                     value={editValue}
                     onChange={(e) => setEditValue(e.target.value)}
-                    className="w-full bg-transparent p-3 text-white outline-none resize-none min-h-[120px] text-base leading-relaxed"
+                    className="w-full bg-transparent p-3 text-white outline-none resize-none min-h-[120px] text-[17px] leading-relaxed"
                     placeholder="Edit your message..."
                     autoFocus
                   />
@@ -140,20 +226,28 @@ export function MessageBubble({ message, onRetry, onEdit, children }: MessageBub
                 <>
                   {message.isLoading ? (
                     message.content ? (
-                      <div className="markdown-content streaming-content inline-block w-full text-base">
-                        <ReactMarkdown remarkPlugins={[remarkGfm]} children={message.content} />
+                      <div className="markdown-content streaming-content inline-block w-full text-[17px]">
+                        <ReactMarkdown
+                          remarkPlugins={[remarkGfm]}
+                          components={markdownComponents}
+                          children={message.content}
+                        />
                         <span className="streaming-cursor" />
                       </div>
                     ) : (
                       <TypingIndicator />
                     )
                   ) : isUser ? (
-                    <p className="whitespace-pre-wrap text-base !text-black font-medium opacity-100">
+                    <p className="whitespace-pre-wrap text-[17px] !text-black font-medium opacity-100">
                       {message.content}
                     </p>
                   ) : (
-                    <div className="markdown-content text-base">
-                      <ReactMarkdown remarkPlugins={[remarkGfm]} children={message.content} />
+                    <div className="markdown-content text-[17px]">
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        components={markdownComponents}
+                        children={message.content}
+                      />
                     </div>
                   )}
                 </>

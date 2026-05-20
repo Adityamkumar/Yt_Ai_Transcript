@@ -6,6 +6,7 @@ import authRouter from './routes/auth.route.js'
 import conversationRouter from './routes/conversation.route.js'
 import messageRouter from './routes/message.route.js'
 import bookmarkRouter from './routes/bookmark.route.js'
+import pdfRouter from './routes/pdf.route.js'
 import cookieParser from 'cookie-parser'
 
 const app = express();
@@ -36,6 +37,7 @@ app.use("/api/v1/user", authRouter)
 app.use("/api/v1/conversations",conversationRouter);
 app.use("/api/v1/messages",messageRouter);
 app.use("/api/v1/bookmarks", bookmarkRouter)
+app.use("/api/v1/pdf", pdfRouter);
 
 
 app.use((err: any, req: any, res: any, next: any) => {

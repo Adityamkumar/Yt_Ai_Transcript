@@ -11,6 +11,7 @@ import {
   Sparkles,
   Youtube,
   Zap,
+  FileText,
 } from 'lucide-react';
 import { SmartNotesCard } from './notes/SmartNotesCard';
 import { APP_NAME, APP_TAGLINE, SUGGESTED_PROMPTS } from '@/constants';
@@ -60,8 +61,8 @@ export function EmptyState({
               <>
                 <motion.div variants={promptCardVariants}>
                   <SmartNotesCard 
-                    onClick={onNotesClick} 
-                    isLoading={isLoadingNotes} 
+                     onClick={onNotesClick} 
+                     isLoading={isLoadingNotes} 
                   />
                 </motion.div>
                 <motion.div variants={promptCardVariants}>
@@ -126,7 +127,7 @@ export function EmptyState({
 
         <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.045] px-3 py-1.5 text-xs font-medium text-[var(--text-secondary)]">
           <Sparkles size={13} className="text-[var(--accent)]" />
-          AI transcript workspace
+          AI learning workspace
         </p>
 
         <h1 className="mx-auto max-w-2xl text-[clamp(2.25rem,6vw,4.25rem)] font-semibold leading-[1.04] text-white">
@@ -138,13 +139,13 @@ export function EmptyState({
 
         <div className="mx-auto mt-7 grid max-w-2xl grid-cols-1 gap-3 text-left sm:grid-cols-3">
           {[
-            { icon: Youtube, title: 'Paste a link', text: 'Index any public YouTube transcript.' },
-            { icon: Zap, title: 'Extract signal', text: 'Find the ideas worth saving.' },
-            { icon: MessageSquare, title: 'Ask clearly', text: 'Chat with the video context.' },
+            { icon: Youtube, title: 'Analyze YouTube', text: 'Index transcripts of any educational video.' },
+            { icon: FileText, title: 'Chat with PDF', text: 'Upload documents to query grounded facts.' },
+            { icon: BrainCircuit, title: 'Generate Study Notes', text: 'Turn sources into structured study materials.' },
           ].map(({ icon: Icon, title, text }) => (
             <div
               key={title}
-              className="cursor-pointer rounded-2xl border border-white/[0.08] bg-white/[0.035] p-4 shadow-sm"
+              className="cursor-pointer rounded-2xl border border-white/[0.08] bg-white/[0.035] p-4 shadow-sm hover:border-white/[0.15] transition"
             >
               <Icon size={18} className="mb-3 text-[var(--accent)]" />
               <p className="text-sm font-semibold text-white">{title}</p>

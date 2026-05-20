@@ -43,14 +43,14 @@ export function Header({ onNewChat, workspaceActions }: HeaderProps) {
                 {activeConversation?.title.replace(/\*\*/g, "") ?? APP_NAME}
               </p>
               <p className="hidden truncate text-xs text-[var(--text-muted)] sm:block">
-                {activeConversation ? 'Video workspace' : 'Transcript intelligence workspace'}
+                {activeConversation ? (activeConversation.type === 'pdf' ? 'PDF workspace' : 'Video workspace') : 'Transcript intelligence workspace'}
               </p>
             </div>
           </div>
         </div>
 
         <div className="flex shrink-0 items-center gap-2">
-          {activeConversation && workspaceActions}
+          {activeConversation && activeConversation.type !== 'pdf' && workspaceActions}
 
           <button
             onClick={onNewChat}

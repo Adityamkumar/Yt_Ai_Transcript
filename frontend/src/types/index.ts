@@ -43,13 +43,37 @@ export interface IMessage {
   updatedAt: string;
 }
 
+export interface PdfDocument {
+  _id: string;
+  title: string;
+  fileName: string;
+  fileUrl: string;
+  fileId: string;
+  pageCount: number;
+  totalChunks: number;
+  status: "processing" | "ready" | "failed";
+  uploadedBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface IConversation {
   _id: string;
   userId: string;
-  videoId: string | VideoData;
+  videoId?: string | VideoData;
+  pdfDocumentId?: string | PdfDocument;
+  type: "video" | "pdf";
   title: string;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface PdfAskPayload {
+  documentId: string;
+  question: string;
+  recentMessages?: { role: MessageRole; content: string }[];
+  stream?: boolean;
+  type?: MessageType;
 }
 
 export interface ChatMessage extends IMessage {

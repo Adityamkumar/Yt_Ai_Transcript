@@ -12,6 +12,7 @@ import {
   User,
   X,
   LogOut,
+  FileText,
 } from 'lucide-react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -90,7 +91,7 @@ export function Sidebar({ onNewChat }: SidebarProps) {
               </span>
               <span className="min-w-0">
                 <span className="block truncate text-sm font-semibold text-white">{APP_NAME}</span>
-                <span className="block text-xs text-[var(--text-muted)]">AI video workspace</span>
+                <span className="block text-xs text-[var(--text-muted)]">AI learning workspace</span>
               </span>
             </button>
 
@@ -113,7 +114,7 @@ export function Sidebar({ onNewChat }: SidebarProps) {
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block text-sm font-semibold text-white">New conversation</span>
-                <span className="block text-xs text-[var(--text-muted)]">Index another video</span>
+                <span className="block text-xs text-[var(--text-muted)]">Index YouTube / PDF</span>
               </span>
               <ChevronRight size={16} className="text-[var(--text-muted)] transition group-hover:translate-x-0.5" />
             </button>
@@ -168,7 +169,7 @@ export function Sidebar({ onNewChat }: SidebarProps) {
                 <div className="rounded-2xl border border-dashed border-white/[0.08] px-4 py-6 text-center">
                   <MessageSquare size={18} className="mx-auto mb-2 text-[var(--text-muted)]" />
                   <p className="text-sm font-medium text-white">No chats yet</p>
-                  <p className="mt-1 text-xs text-[var(--text-muted)]">Your indexed videos appear here.</p>
+                  <p className="mt-1 text-xs text-[var(--text-muted)]">Your indexed sources appear here.</p>
                 </div>
               ) : (
                 <motion.div
@@ -179,6 +180,7 @@ export function Sidebar({ onNewChat }: SidebarProps) {
                 >
                   {conversations.map((conv) => {
                     const isActive = conversationId === conv._id;
+                    const isPdf = conv.type === "pdf";
 
                     return (
                       <motion.div key={conv._id} variants={listItemVariants} className="group relative">
@@ -199,7 +201,7 @@ export function Sidebar({ onNewChat }: SidebarProps) {
                                 : 'border-white/[0.08] bg-white/[0.035] text-[var(--text-muted)]'
                             )}
                           >
-                            <MessageSquare size={14} />
+                            {isPdf ? <FileText size={13} /> : <MessageSquare size={13} />}
                           </span>
                           <span className="min-w-0 flex-1 pr-7">
                             <span className="block truncate text-sm font-medium">

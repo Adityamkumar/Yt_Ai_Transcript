@@ -5,7 +5,7 @@ import { formatTimestamp } from '../timestamps/formatTimestamp';
 
 interface SummaryMessageProps {
   message: ChatMessage;
-  videoId: string;
+  videoId?: string;
 }
 
 interface SummaryData {
@@ -53,6 +53,9 @@ export function SummaryMessage({ message, videoId }: SummaryMessageProps) {
           .map((item) => ({
             text: item.text.trim(),
             timestamp: Math.max(0, Math.floor(item.timestamp)),
+            endTimestamp: Number.isFinite(item.endTimestamp)
+              ? Math.max(0, Math.floor(item.endTimestamp as number))
+              : undefined,
           })),
       };
     } catch {
@@ -67,7 +70,7 @@ export function SummaryMessage({ message, videoId }: SummaryMessageProps) {
   return (
     <div className="space-y-4 py-1">
       <h3 className="text-white text-[19px] sm:text-[20px] font-bold leading-tight tracking-tight">
-        Key steps covered in the project:
+        {videoId ? 'Key highlights from this video:' : 'Key highlights from this document:'}
       </h3>
 
       <div className="space-y-5">
@@ -84,14 +87,16 @@ export function SummaryMessage({ message, videoId }: SummaryMessageProps) {
               className="text-gray-100 text-[17px] sm:text-[18px] leading-[1.55]"
             >
               <p>
-                <span className="mr-2 align-top text-gray-300">•</span>
+                <span className="mr-2 align-top text-gray-300">-</span>
                 <span className="font-bold text-white">{parsed.topic}</span>{' '}
-                <SummaryTimestamp
-                  timestamp={item.timestamp}
-                  endTimestamp={end}
-                  videoId={videoId}
-                  label={rangeLabel}
-                />
+                {videoId ? (
+                  <SummaryTimestamp
+                    timestamp={item.timestamp}
+                    endTimestamp={end}
+                    videoId={videoId}
+                    label={rangeLabel}
+                  />
+                ) : null}
                 {parsed.description ? `: ${parsed.description}` : ''}
               </p>
             </div>
