@@ -317,7 +317,7 @@ export const askAiAboutTranscript = async (
 
       console.log(`GENERATING ${type.toUpperCase()}...`);
       const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
+        model: "gemini-3.5-flash",
         contents: prompt,
         config: {
           responseMimeType: "application/json",
@@ -364,7 +364,7 @@ export const askAiAboutTranscript = async (
     }
 
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-3.5-flash",
       contents: prompt,
     });
 
@@ -415,7 +415,7 @@ export async function* streamAiAboutTranscript(
     );
 
     const response = await ai.models.generateContentStream({
-      model: "gemini-2.5-flash",
+      model: "gemini-3.5-flash",
       contents: prompt,
     });
 
@@ -450,7 +450,7 @@ export const generateVideoTitle = async (transcript: string | ITranscriptChunk[]
       : transcript.slice(0, 50).map(c => c.text).join(" ");
     
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-3.5-flash",
 
       contents: `
 Generate a concise searchable title for this YouTube video.
@@ -517,7 +517,7 @@ export const askAiAboutPdf = async (
 
       console.log(`GENERATING PDF ${type.toUpperCase()}...`);
       const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
+        model: "gemini-3.5-flash",
         contents: prompt,
         config: {
           responseMimeType: "application/json",
@@ -554,7 +554,7 @@ export const askAiAboutPdf = async (
     }
 
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-3.5-flash",
       contents: prompt,
     });
 
@@ -596,7 +596,7 @@ export async function* streamAiAboutPdf(
     );
 
     const response = await ai.models.generateContentStream({
-      model: "gemini-2.5-flash",
+      model: "gemini-3.5-flash",
       contents: prompt,
     });
 
@@ -620,7 +620,7 @@ export async function* streamAiAboutPdf(
 export const generatePdfTitle = async (sampleText: string) => {
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-3.5-flash",
       contents: `
 Generate a concise searchable title based on this document text sample.
 

@@ -6,6 +6,50 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { extractVideoId } from "../utils/extractVideoId.js";
 
+const GENERIC_VIDEO_TITLES = new Set([
+  "new conversation",
+  "new chat",
+  "untitled",
+  "video",
+  "youtube video",
+]);
+
+const buildTitleFromTranscript = (
+  transcript: Array<{ text: string }> = [],
+  videoId: string,
+) => {
+  const combined = transcript
+    .slice(0, 6)
+    .map((chunk) => chunk.text || "")
+    .join(" ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (!combined) {
+    return `Video ${videoId}`;
+  }
+
+  const words = combined.split(" ").slice(0, 6).join(" ");
+  return words.length > 70 ? `${words.slice(0, 67).trim()}...` : words;
+};
+
+const resolveVideoTitle = (
+  aiTitle: string | undefined,
+  transcript: Array<{ text: string }> = [],
+  videoId: string,
+) => {
+  const cleaned = (aiTitle || "")
+    .replace(/["'`*]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (cleaned && !GENERIC_VIDEO_TITLES.has(cleaned.toLowerCase())) {
+    return cleaned;
+  }
+
+  return buildTitleFromTranscript(transcript, videoId);
+};
+
 export const getTranscript = asyncHandler(async (req, res) => {
   const { youtubeUrl } = req.body;
 
@@ -47,8 +91,9 @@ export const getTranscript = asyncHandler(async (req, res) => {
       }
     }
     
-    if (!videoExists.title) {
-      videoExists.title = (await generateVideoTitle(videoExists.transcript)) || "New Conversation";
+    if (!videoExists.title || GENERIC_VIDEO_TITLES.has(videoExists.title.toLowerCase())) {
+      const aiTitle = await generateVideoTitle(videoExists.transcript);
+      videoExists.title = resolveVideoTitle(aiTitle, videoExists.transcript as any, videoId);
       await videoExists.save();
     }
     return res
@@ -68,7 +113,8 @@ export const getTranscript = asyncHandler(async (req, res) => {
     throw new ApiError(400, "transcript generation failed. Try again");
   }
 
-  const title = (await generateVideoTitle(transcript)) || "New Conversation";
+  const aiTitle = await generateVideoTitle(transcript);
+  const title = resolveVideoTitle(aiTitle, transcript as any, videoId);
 
   const video = await Video.create({
     youtubeUrl,
