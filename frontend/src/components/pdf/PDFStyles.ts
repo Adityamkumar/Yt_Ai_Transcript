@@ -18,47 +18,47 @@ const TAKEAWAY_BORDER = "#86EFAC";
 
 export const styles = StyleSheet.create({
   page: {
-    paddingTop: 48,
-    paddingBottom: 56,
-    paddingHorizontal: 48,
+    paddingTop: 36,
+    paddingBottom: 44,
+    paddingHorizontal: 40,
     backgroundColor: BG_PAGE,
-    fontSize: 10.5,
+    fontSize: 10,
     fontFamily: "Helvetica",
-    lineHeight: 1.55,
+    lineHeight: 1.45,
     color: TEXT_BODY,
   },
 
   headerWrapper: {
-    marginBottom: 36,
-    paddingBottom: 20,
+    marginBottom: 18,
+    paddingBottom: 12,
     borderBottom: `2px solid ${ACCENT}`,
   },
 
   headerMeta: {
-    fontSize: 8,
+    fontSize: 7.5,
     letterSpacing: 1.5,
     textTransform: "uppercase",
     color: ACCENT,
-    marginBottom: 8,
+    marginBottom: 5,
     fontWeight: "bold",
   },
 
   title: {
-    fontSize: 22,
+    fontSize: 20,
     fontFamily: "Helvetica-Bold",
     color: TEXT_DARK,
-    marginBottom: 6,
+    marginBottom: 4,
     lineHeight: 1.2,
   },
 
   subtitle: {
-    fontSize: 10,
+    fontSize: 9.5,
     color: TEXT_MUTED,
-    lineHeight: 1.5,
+    lineHeight: 1.4,
   },
 
   section: {
-    marginBottom: 28,
+    marginBottom: 10,
   },
 
   sectionLabel: {
@@ -67,39 +67,39 @@ export const styles = StyleSheet.create({
     letterSpacing: 2,
     textTransform: "uppercase",
     color: ACCENT,
-    marginBottom: 10,
+    marginBottom: 5,
   },
 
   divider: {
     borderBottom: `1px solid ${BORDER}`,
-    marginBottom: 14,
-  },
-
-  overviewText: {
-    fontSize: 10.5,
-    color: TEXT_BODY,
-    lineHeight: 1.65,
     marginBottom: 8,
   },
 
+  overviewText: {
+    fontSize: 10,
+    color: TEXT_BODY,
+    lineHeight: 1.55,
+    marginBottom: 4,
+  },
+
   conceptBlock: {
-    marginBottom: 18,
-    padding: "10 14",
+    marginBottom: 8,
+    padding: "8 12",
     backgroundColor: BG_SECTION,
-    borderRadius: 6,
+    borderRadius: 4,
     borderLeft: `3px solid ${ACCENT}`,
   },
 
   conceptHeading: {
-    fontSize: 11,
+    fontSize: 10.5,
     fontFamily: "Helvetica-Bold",
     color: TEXT_DARK,
-    marginBottom: 8,
+    marginBottom: 4,
   },
 
   bulletRow: {
     flexDirection: "row",
-    marginBottom: 6,
+    marginBottom: 3,
     paddingLeft: 2,
   },
 
@@ -108,23 +108,23 @@ export const styles = StyleSheet.create({
   },
 
   bulletDot: {
-    width: 14,
-    fontSize: 12,
+    width: 12,
+    fontSize: 10,
     color: ACCENT,
     lineHeight: 1.3,
   },
 
   bulletText: {
-    fontSize: 10,
+    fontSize: 9.5,
     color: TEXT_BODY,
-    lineHeight: 1.6,
+    lineHeight: 1.5,
   },
 
   insightBox: {
     backgroundColor: INSIGHT_BG,
-    borderRadius: 6,
-    padding: "10 14",
-    marginBottom: 18,
+    borderRadius: 4,
+    padding: "8 12",
+    marginBottom: 6,
     borderLeft: `3px solid ${INSIGHT_BORDER}`,
   },
 
@@ -134,14 +134,14 @@ export const styles = StyleSheet.create({
     letterSpacing: 1.8,
     textTransform: "uppercase",
     color: "#B45309",
-    marginBottom: 8,
+    marginBottom: 4,
   },
 
   takeawayBox: {
     backgroundColor: TAKEAWAY_BG,
-    borderRadius: 6,
-    padding: "10 14",
-    marginBottom: 18,
+    borderRadius: 4,
+    padding: "8 12",
+    marginBottom: 6,
     borderLeft: `3px solid ${TAKEAWAY_BORDER}`,
   },
 
@@ -151,12 +151,12 @@ export const styles = StyleSheet.create({
     letterSpacing: 1.8,
     textTransform: "uppercase",
     color: "#15803D",
-    marginBottom: 8,
+    marginBottom: 4,
   },
 
   checkmark: {
-    width: 14,
-    fontSize: 10,
+    width: 12,
+    fontSize: 9,
     color: "#16A34A",
   },
 
@@ -167,15 +167,15 @@ export const styles = StyleSheet.create({
 
   code: {
     fontFamily: "Courier",
-    fontSize: 9.5,
+    fontSize: 9,
     color: CODE_TEXT,
   },
 
   exampleBox: {
     backgroundColor: "#F5F3FF",
-    borderRadius: 6,
-    padding: "10 14",
-    marginBottom: 18,
+    borderRadius: 4,
+    padding: "8 12",
+    marginBottom: 6,
     borderLeft: `3px solid #A78BFA`,
   },
 
@@ -185,28 +185,28 @@ export const styles = StyleSheet.create({
     letterSpacing: 1.8,
     textTransform: "uppercase",
     color: "#7C3AED",
-    marginBottom: 8,
+    marginBottom: 4,
   },
 
   footer: {
     position: "absolute",
-    bottom: 24,
-    left: 48,
-    right: 48,
+    bottom: 18,
+    left: 40,
+    right: 40,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     borderTop: `1px solid ${BORDER}`,
-    paddingTop: 10,
+    paddingTop: 6,
   },
 
   footerText: {
-    fontSize: 8,
+    fontSize: 7,
     color: TEXT_MUTED,
   },
 
   footerBrand: {
-    fontSize: 8,
+    fontSize: 7,
     color: ACCENT,
     fontFamily: "Helvetica-Bold",
   },

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   Bookmark,
@@ -22,6 +23,7 @@ import { formatRelativeTime } from '@/utils';
 import { listItemVariants, sidebarVariants, staggerContainer } from '@/animations/variants';
 import { cn } from '@/utils/cn';
 import { useAuth } from '@/store/AuthContext';
+import { SettingsModal } from './SettingsModal';
 
 interface SidebarProps {
   onNewChat: () => void;
@@ -35,6 +37,7 @@ export function Sidebar({ onNewChat }: SidebarProps) {
   const { bookmarks } = useBookmarks();
   const { sidebarOpen, toggleSidebar } = useUIStore();
   const { user, logout } = useAuth();
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   const handleConversationClick = (id: string) => {
     navigate(`/workspace/${id}`);
@@ -243,13 +246,17 @@ export function Sidebar({ onNewChat }: SidebarProps) {
                 <LogOut size={16} />
               </button>
             </div>
-            <button className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition hover:bg-white/[0.055] text-[var(--text-muted)] hover:text-white">
+            <button 
+              onClick={() => setSettingsOpen(true)}
+              className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition hover:bg-white/[0.055] text-[var(--text-muted)] hover:text-white"
+            >
               <Settings size={15} />
               <span className="text-xs font-medium">Settings</span>
             </button>
           </div>
         </div>
       </motion.aside>
+      <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </>
   );
 }

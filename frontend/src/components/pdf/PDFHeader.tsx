@@ -8,7 +8,7 @@ interface Props {
 
 export function PDFHeader({ title, subtitle }: Props) {
   return (
-    <View style={styles.headerWrapper}>
+    <View style={styles.headerWrapper} wrap={false}>
       <Text style={styles.headerMeta}>EchoMind AI · Study Notes</Text>
       <Text style={styles.title}>{title.replace(/\*\*/g, "")}</Text>
       {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}

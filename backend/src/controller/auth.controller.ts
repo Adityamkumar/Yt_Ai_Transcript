@@ -1,35 +1,34 @@
 import User from "../models/user.model.js";
-import { refreshCookieOptions, accessCookieOptions } from "../config/cookie.config.js";
+import {
+  refreshCookieOptions,
+  accessCookieOptions,
+} from "../config/cookie.config.js";
 import jwt from "jsonwebtoken";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { generateAccessTokenAndRefreshToken } from "../services/auth.service.js";
 import type { CustomJwtPayload } from "../types/jwt.types.js";
-
-
+import { ApiError } from "../utils/ApiError.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
 
 export const userRegister = asyncHandler(async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
     if (!name) {
-      return res.status(400).json({ message: "Name is required" });
+      throw new ApiError(400, "Name is required");
     }
 
     const isUserAlreadyExists = await User.findOne({ email });
 
     if (isUserAlreadyExists) {
-      return res.status(400).json({
-        message: "User already exists!",
-      });
+      throw new ApiError(400, "User already exists with this email");
     }
 
     if (!password) {
-      return res.status(400).json({ message: "Password is required" });
+      throw new ApiError(400, "Password is required");
     }
     if (typeof password != "string") {
-      return res.status(400).json({
-        message: "Password must be a string",
-      });
+      throw new ApiError(400, "Password must be a string");
     }
 
     const user = await User.create({
@@ -53,11 +52,9 @@ export const userRegister = asyncHandler(async (req, res) => {
       },
     });
   } catch (error) {
-    return res.status(500).json({ message: "Internal server error!" });
+    throw new ApiError(500, "Internal server error!");
   }
-}
-);
-
+});
 
 export const userLogin = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
@@ -66,24 +63,20 @@ export const userLogin = asyncHandler(async (req, res) => {
     const user = await User.findOne({ email });
 
     if (!user) {
-      return res.status(400).json({
-        message: "Invalid email or password!",
-      });
+      throw new ApiError(400, "Invalid email or password!");
     }
     const isPasswordMatched = await user.isPasswordCorrect(password);
 
     if (!isPasswordMatched) {
-      return res.status(400).json({
-        message: "Invalid email or password!",
-      });
+      throw new ApiError(400, "Invalid email or password!");
     }
 
     const { accessToken, refreshToken } =
       await generateAccessTokenAndRefreshToken(user._id);
 
-    const loggedInUser = await User
-      .findById(user._id)
-      .select("-password -refreshToken");
+    const loggedInUser = await User.findById(user._id).select(
+      "-password -refreshToken",
+    );
 
     res.cookie("accessToken", accessToken, accessCookieOptions);
     res.cookie("refreshToken", refreshToken, refreshCookieOptions);
@@ -97,60 +90,45 @@ export const userLogin = asyncHandler(async (req, res) => {
       },
     });
   } catch (error) {
-    return res.status(500).json({
-      message: "Internal server error",
-    });
+    throw new ApiError(500, "Internal server error");
   }
-})
+});
 
 export const refreshAccessToken = asyncHandler(async (req, res) => {
   const incomingRefreshToken =
     req.cookies.refreshToken || req.body.refreshToken;
 
   if (!incomingRefreshToken) {
-    return res.status(401).json({
-      message: "Unauthorized request",
-    });
+    throw new ApiError(401, "Unauthorized request");
   }
 
-    let decodedToken;
-    try {
-      decodedToken = jwt.verify(
-        incomingRefreshToken,
-        process.env.REFRESH_TOKEN_SECRET,
-      ) as CustomJwtPayload;
-    } catch (error) {
-      return res.status(401).json({
-        message: "Refresh token is expired or invalid",
-      });
-    }
+  let decodedToken = jwt.verify(
+    incomingRefreshToken,
+    process.env.REFRESH_TOKEN_SECRET,
+  ) as CustomJwtPayload;
 
-    const user = await User.findById(decodedToken._id);
+  const user = await User.findById(decodedToken._id);
 
-    if (!user) {
-      return res.status(401).json({
-        message: "Invalid refreshToken",
-      });
-    }
+  if (!user) {
+    throw new ApiError(401, "Invalid refreshToken");
+  }
 
-    if (incomingRefreshToken !== user?.refreshToken) {
-      return res
-        .status(401)
-        .json({ message: "Refresh token is used or expired" });
-    }
+  if (incomingRefreshToken !== user?.refreshToken) {
+    throw new ApiError(401, "Refresh token is used or expired");
+  }
 
-    const { accessToken, refreshToken } =
-      await generateAccessTokenAndRefreshToken(user._id);
+  const { accessToken, refreshToken } =
+    await generateAccessTokenAndRefreshToken(user._id);
 
-    res.cookie("accessToken", accessToken, accessCookieOptions);
-    res.cookie("refreshToken", refreshToken, refreshCookieOptions);
+  res.cookie("accessToken", accessToken, accessCookieOptions);
+  res.cookie("refreshToken", refreshToken, refreshCookieOptions);
 
-    return res.status(200).json({
-      accessToken,
-      refreshToken: refreshToken,
-      message: "access token refreshed",
-    });
-})
+  res.status(200).json({
+    message: "access token refreshed",
+    accessToken,
+    refreshToken,
+  });
+});
 
 export const userLogout = asyncHandler(async (req, res) => {
   await User.findByIdAndUpdate(
@@ -161,7 +139,7 @@ export const userLogout = asyncHandler(async (req, res) => {
       },
     },
     {
-      returnDocument: 'after',
+      returnDocument: "after",
     },
   );
 
@@ -170,9 +148,9 @@ export const userLogout = asyncHandler(async (req, res) => {
     .clearCookie("accessToken", accessCookieOptions)
     .clearCookie("refreshToken", refreshCookieOptions)
     .json({
-       message: "user logged out successfully"
-    })
-})
+      message: "user logged out successfully",
+    });
+});
 
 export const getCurrentUser = asyncHandler(async (req, res) => {
   return res.status(200).json({
@@ -182,4 +160,31 @@ export const getCurrentUser = asyncHandler(async (req, res) => {
       email: req.user?.email,
     },
   });
-})
+});
+
+export const deleteUser = asyncHandler(async (req, res) => {
+  const userId = req.params.id;   
+    const { password } = req.body;
+
+  if (userId !== req.user?._id.toString()) {
+     throw new ApiError(403, "Forbidden: You can only delete your own account");
+  }
+
+  const user = await User.findById(userId);
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+  const isPasswordMatched = await user.isPasswordCorrect(password);
+  if (!isPasswordMatched) {
+    throw new ApiError(400, "Invalid password");
+  }
+
+  await User.findByIdAndDelete(userId);
+  
+  res
+  .status(200)
+  .clearCookie("accessToken", accessCookieOptions)
+  .clearCookie("refreshToken", refreshCookieOptions)
+  .json(new ApiResponse(200, "User deleted successfully"));
+}
+);

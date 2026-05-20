@@ -1,5 +1,5 @@
 import express from 'express'
-import { userLogin, userRegister, userLogout, refreshAccessToken, getCurrentUser } from '../controller/auth.controller.js'
+import { userLogin, userRegister, userLogout, refreshAccessToken, getCurrentUser, deleteUser } from '../controller/auth.controller.js'
 import { authMiddleware } from '../middleware/auth.middleware.js'
 
 const router = express.Router()
@@ -11,5 +11,6 @@ router.post('/login', userLogin)
 router.post('/logout', authMiddleware, userLogout)
 router.post('/refresh-token', refreshAccessToken)
 router.get('/current-user', authMiddleware, getCurrentUser)
+router.delete('/delete/:id', authMiddleware, deleteUser)
 
 export default router

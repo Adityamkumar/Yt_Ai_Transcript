@@ -20,14 +20,14 @@ export function NotesPDF({ notes }: Props) {
             <View wrap={false}>
               <Text style={styles.sectionLabel}>Executive Summary</Text>
               <View style={styles.divider} />
-              <View style={{ marginBottom: 12 }}>
+              <View style={{ marginBottom: 4 }}>
                 <PDFMarkdownText style={styles.overviewText}>
                   {notes.overview[0]}
                 </PDFMarkdownText>
               </View>
             </View>
             {notes.overview.slice(1).map((paragraph, index) => (
-              <View key={index + 1} style={{ marginBottom: 12 }}>
+              <View key={index + 1} style={{ marginBottom: 4 }}>
                 <PDFMarkdownText style={styles.overviewText}>
                   {paragraph}
                 </PDFMarkdownText>
@@ -38,18 +38,10 @@ export function NotesPDF({ notes }: Props) {
 
         {notes.mainConcepts && notes.mainConcepts.length > 0 && (
           <View style={styles.section}>
-            <View wrap={false}>
-              <Text style={styles.sectionLabel}>Main Concepts</Text>
-              <View style={styles.divider} />
-              {notes.mainConcepts[0] && (
-                <View style={styles.conceptBlock}>
-                  <Text style={styles.conceptHeading}>{notes.mainConcepts[0].heading}</Text>
-                  <PDFBulletList items={notes.mainConcepts[0].points} />
-                </View>
-              )}
-            </View>
-            {notes.mainConcepts.slice(1).map((concept, index) => (
-              <View key={index + 1} style={styles.conceptBlock}>
+            <Text style={styles.sectionLabel}>Main Concepts</Text>
+            <View style={styles.divider} />
+            {notes.mainConcepts.map((concept, index) => (
+              <View key={index} style={styles.conceptBlock} wrap={false}>
                 <Text style={styles.conceptHeading}>{concept.heading}</Text>
                 <PDFBulletList items={concept.points} />
               </View>
@@ -59,39 +51,39 @@ export function NotesPDF({ notes }: Props) {
 
         {notes.keyInsights && notes.keyInsights.length > 0 && (
           <View style={styles.section}>
-            <View minPresenceAhead={120}>
+            <View wrap={false}>
               <Text style={styles.sectionLabel}>Key Insights</Text>
               <View style={styles.divider} />
-            </View>
-            <View style={styles.insightBox}>
-              <Text style={styles.insightLabel}>Core Learnings</Text>
-              <PDFBulletList items={notes.keyInsights} />
+              <View style={styles.insightBox}>
+                <Text style={styles.insightLabel}>Core Learnings</Text>
+                <PDFBulletList items={notes.keyInsights} />
+              </View>
             </View>
           </View>
         )}
 
         {notes.actionableTakeaways && notes.actionableTakeaways.length > 0 && (
           <View style={styles.section}>
-            <View minPresenceAhead={120}>
+            <View wrap={false}>
               <Text style={styles.sectionLabel}>Actionable Takeaways</Text>
               <View style={styles.divider} />
-            </View>
-            <View style={styles.takeawayBox}>
-              <Text style={styles.takeawayLabel}>Next Steps</Text>
-              <PDFBulletList items={notes.actionableTakeaways} isCheck={true} />
+              <View style={styles.takeawayBox}>
+                <Text style={styles.takeawayLabel}>Next Steps</Text>
+                <PDFBulletList items={notes.actionableTakeaways} isCheck={true} />
+              </View>
             </View>
           </View>
         )}
         
         {notes.examples && notes.examples.length > 0 && (
           <View style={styles.section}>
-            <View minPresenceAhead={120}>
+            <View wrap={false}>
               <Text style={styles.sectionLabel}>Real-World Examples</Text>
               <View style={styles.divider} />
-            </View>
-            <View style={styles.exampleBox}>
-              <Text style={styles.exampleLabel}>Applications</Text>
-              <PDFBulletList items={notes.examples} />
+              <View style={styles.exampleBox}>
+                <Text style={styles.exampleLabel}>Applications</Text>
+                <PDFBulletList items={notes.examples} />
+              </View>
             </View>
           </View>
         )}

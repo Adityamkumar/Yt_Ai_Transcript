@@ -15,6 +15,7 @@ interface AuthContextType {
   register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
+  deleteAccount: (password: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -74,8 +75,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const deleteAccount = async (password: string) => {
+    if (!user) throw new Error('Not authenticated');
+    await axiosInstance.delete(`/api/v1/user/delete/${user.id}`, {
+      data: { password },
+    });
+    setUser(null);
+    localStorage.removeItem('isAuthenticated');
+    navigate('/');
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, refreshUser }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, refreshUser, deleteAccount }}>
       {children}
     </AuthContext.Provider>
   );
