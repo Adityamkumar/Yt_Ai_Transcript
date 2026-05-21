@@ -23,7 +23,6 @@ export function HeroSection() {
       className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden"
       style={{ background: '#050816' }}
     >
-      {/* Animated DotField Background */}
       <DotField
         dotRadius={2.2}
         dotSpacing={26}
@@ -33,7 +32,6 @@ export function HeroSection() {
         cursorRadius={280}
       />
 
-      {/* Radial spotlight glow - top center */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
@@ -42,7 +40,6 @@ export function HeroSection() {
         }}
       />
 
-      {/* Secondary accent glow */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
@@ -51,7 +48,6 @@ export function HeroSection() {
         }}
       />
 
-      {/* Animated blur orb */}
       <motion.div
         className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full pointer-events-none"
         style={{
@@ -66,14 +62,12 @@ export function HeroSection() {
         transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
       />
 
-      {/* Content */}
       <motion.div
         className="relative z-10 flex flex-col items-center text-center px-4 sm:px-6 max-w-5xl mx-auto pt-24 pb-16"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
       >
-        {/* Subtle glow behind heading */}
         <div 
           className="absolute top-[25%] left-1/2 -translate-x-1/2 w-[80%] max-w-[800px] h-[300px] pointer-events-none -z-10"
           style={{
@@ -81,7 +75,6 @@ export function HeroSection() {
             filter: 'blur(60px)'
           }}
         />
-        {/* Badge */}
         <motion.div variants={itemVariants} className="mb-8">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[rgba(124,92,255,0.3)] bg-[rgba(124,92,255,0.08)] backdrop-blur-sm">
             <Sparkles size={13} className="text-[#7C5CFF]" />
@@ -91,7 +84,6 @@ export function HeroSection() {
           </div>
         </motion.div>
 
-        {/* Headline */}
         <motion.h1
           variants={itemVariants}
           className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold text-[#F5F7FF] leading-[1.2] tracking-tight mb-10"
@@ -111,7 +103,6 @@ export function HeroSection() {
           </span>
         </motion.h1>
 
-        {/* Subheadline */}
         <motion.p
           variants={itemVariants}
           className="text-base sm:text-lg lg:text-xl text-[#94A3B8] max-w-2xl mx-auto leading-relaxed mb-10"
@@ -120,12 +111,10 @@ export function HeroSection() {
           from any YouTube video instantly.
         </motion.p>
 
-        {/* CTA Buttons */}
         <motion.div
           variants={itemVariants}
           className="flex flex-col sm:flex-row gap-4 items-center justify-center mt-8"
         >
-          {/* Primary CTA */}
           <Link
             to="/signup"
             id="hero-cta-primary"
@@ -138,7 +127,6 @@ export function HeroSection() {
             <ArrowRight size={15} className="relative group-hover:translate-x-0.5 transition-transform duration-200" />
           </Link>
 
-          {/* Secondary CTA */}
           <a
             href="https://github.com/Adityamkumar/Yt_Ai_Transcript"
             target="_blank"
@@ -151,7 +139,6 @@ export function HeroSection() {
           </a>
         </motion.div>
 
-        {/* Trust badges */}
         <motion.div
           variants={itemVariants}
           className="mt-16 flex flex-col items-center gap-3"
@@ -170,7 +157,6 @@ export function HeroSection() {
         </motion.div>
       </motion.div>
 
-      {/* Bottom fade */}
       <div
         className="absolute bottom-0 left-0 right-0 h-32 pointer-events-none"
         style={{

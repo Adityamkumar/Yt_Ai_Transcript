@@ -2,7 +2,6 @@ import { Navbar } from '@/components/landing/Navbar';
 import { HeroSection } from '@/components/landing/HeroSection';
 import { FeaturesSection } from '@/components/landing/FeaturesSection';
 import { ShowcaseSection } from '@/components/landing/ShowcaseSection';
-import { TrustSection } from '@/components/landing/TrustSection';
 import { Footer } from '@/components/landing/Footer';
 
 export default function LandingPage() {
@@ -16,7 +15,6 @@ export default function LandingPage() {
         <HeroSection />
         <FeaturesSection />
         <ShowcaseSection />
-        <TrustSection />
       </main>
       <Footer />
     </div>

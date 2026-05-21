@@ -17,6 +17,7 @@ import { TypingIndicator } from './TypingIndicator';
 import type { ChatMessage } from '@/types';
 import { formatRelativeTime } from '@/utils';
 import { cn } from '@/utils/cn';
+import { stripMarkdown } from '@/utils/stripMarkdown';
 
 interface MessageBubbleProps {
   message: ChatMessage;
@@ -42,7 +43,8 @@ export function MessageBubble({ message, onRetry, onEdit, children }: MessageBub
 
   const copyToClipboard = useCallback(async () => {
     try {
-      await navigator.clipboard.writeText(message.content);
+      const cleaned = stripMarkdown(message.content);
+      await navigator.clipboard.writeText(cleaned);
       setCopied(true);
       window.setTimeout(() => setCopied(false), 1800);
     } catch {}

@@ -61,7 +61,6 @@ export function Navbar() {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 sm:h-18">
-            {/* Logo */}
             <Link to="/" onClick={handleLogoClick} className="flex items-center gap-2.5 group flex-shrink-0">
               <div className="relative w-8 h-8 rounded-lg bg-gradient-to-br from-[#7C5CFF] to-[#4DA2FF] flex items-center justify-center shadow-[0_0_16px_rgba(124,92,255,0.5)] group-hover:shadow-[0_0_24px_rgba(124,92,255,0.7)] transition-shadow duration-300">
                 <Zap size={16} className="text-white" fill="white" />
@@ -71,7 +70,6 @@ export function Navbar() {
               </span>
             </Link>
 
-            {/* Desktop Nav */}
             <nav className="hidden md:flex items-center gap-1">
               {navLinks.map((link) => (
                 link.external ? (
@@ -97,7 +95,6 @@ export function Navbar() {
               ))}
             </nav>
 
-            {/* Auth Buttons */}
             <div className="hidden md:flex items-center gap-2">
               {user ? (
                 <>
@@ -135,7 +132,6 @@ export function Navbar() {
               )}
             </div>
 
-            {/* Mobile Hamburger */}
             <button
               id="mobile-menu-btn"
               onClick={() => setMobileOpen(!mobileOpen)}
@@ -158,7 +154,6 @@ export function Navbar() {
         </div>
       </motion.header>
 
-      {/* Mobile Drawer */}
       <AnimatePresence>
         {mobileOpen && (
           <>

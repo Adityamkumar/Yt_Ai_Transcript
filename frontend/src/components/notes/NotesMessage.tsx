@@ -7,6 +7,7 @@ import { ChatMessage, IBookmark, NotesResponse } from "@/types";
 import { useBookmarks } from "@/hooks/useBookmarks";
 import toast from "react-hot-toast";
 import { PDFDownloadButton } from "../pdf/PDFDownloadBtn";
+import { stripMarkdown } from "@/utils/stripMarkdown";
 
 interface NotesMessageProps {
   message: ChatMessage;
@@ -77,7 +78,8 @@ export function NotesMessage({ message, videoId: _videoId }: NotesMessageProps) 
     try {
       if (!parsedNotes) return;
       const formattedText = `# ${parsedNotes.title}\n${parsedNotes.subtitle}\n\n## Overview\n${parsedNotes.overview.join("\n\n")}\n\n## Main Concepts\n${parsedNotes.mainConcepts.map((c) => `### ${c.heading}\n${c.points.map((p) => `- ${p}`).join("\n")}`).join("\n\n")}\n\n## Key Insights\n${parsedNotes.keyInsights.map((i) => `- ${i}`).join("\n")}\n\n## Actionable Takeaways\n${parsedNotes.actionableTakeaways.map((t) => `- ${t}`).join("\n")}`;
-      await navigator.clipboard.writeText(formattedText);
+      const cleaned = stripMarkdown(formattedText);
+      await navigator.clipboard.writeText(cleaned);
       setCopied(true);
       toast.success("Notes copied");
       setTimeout(() => setCopied(false), 2000);
