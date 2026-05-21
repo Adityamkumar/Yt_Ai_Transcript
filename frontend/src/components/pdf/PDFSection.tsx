@@ -5,12 +5,20 @@ import { ReactNode } from "react";
 interface Props {
   title: string;
   children: ReactNode;
+  sectionNumber?: string;
 }
 
-export function PDFSection({ title, children }: Props) {
+export function PDFSection({ title, children, sectionNumber }: Props) {
   return (
     <View style={styles.section}>
-      <Text style={styles.sectionLabel}>{title}</Text>
+      {sectionNumber ? (
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionNumber}>{sectionNumber}</Text>
+          <Text style={styles.sectionLabel}>{title}</Text>
+        </View>
+      ) : (
+        <Text style={styles.sectionLabel}>{title}</Text>
+      )}
       <View style={styles.divider} />
       {children}
     </View>

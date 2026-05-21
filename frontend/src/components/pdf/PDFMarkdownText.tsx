@@ -17,15 +17,15 @@ export function PDFMarkdownText({ children, style }: Props) {
         if (segment.startsWith("**") && segment.endsWith("**")) {
           return (
             <Text key={index} style={styles.keyword}>
-              {segment.slice(2, -2)}
+              {` ${segment.slice(2, -2)} `}
             </Text>
           );
         }
-        
+
         if (segment.startsWith("`") && segment.endsWith("`")) {
           return (
             <Text key={index} style={styles.code}>
-              {segment.slice(1, -1)}
+              {` ${segment.slice(1, -1)} `}
             </Text>
           );
         }
