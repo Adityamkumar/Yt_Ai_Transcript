@@ -127,7 +127,7 @@ With a beautiful, responsive dark-mode UI, smooth animations, and a seamless hyb
    ```
    Create a `.env.local` file in the `frontend/` directory (if needed for Vite):
    ```env
-   VITE_API_BASE_URL=http://localhost:8000
+   VITE_API_BASE_URL=http://localhost:5173
    ```
    Run the frontend development server:
    ```bash
