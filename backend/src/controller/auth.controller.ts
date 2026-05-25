@@ -85,7 +85,7 @@ export const userLogin = asyncHandler(async (req, res) => {
     res.status(200).json({
       message: "User Logged In successfully",
       user: {
-        user: { ...loggedInUser.toObject(), hasPassword: !!user.password },
+        user: { ...loggedInUser!.toObject(), hasPassword: !!user.password },
         accessToken,
         refreshToken,
       },

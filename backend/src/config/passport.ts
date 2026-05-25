@@ -25,7 +25,6 @@ passport.use(
       done
     ) => {
 
-      console.log(profile);
 
       return done(null, profile);
     }
