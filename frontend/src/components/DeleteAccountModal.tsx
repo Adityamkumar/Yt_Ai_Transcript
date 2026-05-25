@@ -1,8 +1,16 @@
-import { AnimatePresence, motion } from 'framer-motion';
-import { AlertTriangle, Eye, EyeOff, Loader2, Lock, X } from 'lucide-react';
-import { useState } from 'react';
-import { useAuth } from '@/store/AuthContext';
-import toast from 'react-hot-toast';
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  AlertTriangle,
+  Eye,
+  EyeOff,
+  Loader2,
+  Lock,
+  X,
+  Info,
+} from "lucide-react";
+import { useState } from "react";
+import { useAuth } from "@/store/AuthContext";
+import toast from "react-hot-toast";
 
 interface Props {
   isOpen: boolean;
@@ -21,7 +29,12 @@ const modalVariants = {
     opacity: 1,
     scale: 1,
     y: 0,
-    transition: { type: 'spring' as const, stiffness: 380, damping: 28, delay: 0.05 },
+    transition: {
+      type: "spring" as const,
+      stiffness: 380,
+      damping: 28,
+      delay: 0.05,
+    },
   },
   exit: {
     opacity: 0,
@@ -39,37 +52,39 @@ const shakeVariants = {
 };
 
 export function DeleteAccountModal({ isOpen, onClose }: Props) {
-  const { deleteAccount } = useAuth();
-  const [password, setPassword] = useState('');
+  const { user, deleteAccount } = useAuth();
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [shouldShake, setShouldShake] = useState(false);
+
+  const requiresPassword = user?.hasPassword;
 
   const handleClose = () => {
     if (isDeleting) return;
-    setPassword('');
-    setError('');
+    setPassword("");
+    setError("");
     setShowPassword(false);
     setShouldShake(false);
     onClose();
   };
 
   const handleDelete = async () => {
-    if (!password.trim()) {
-      setError('Please enter your password');
+    if (requiresPassword && !password.trim()) {
+      setError("Please enter your password");
       triggerShake();
       return;
     }
 
     setIsDeleting(true);
-    setError('');
+    setError("");
 
     try {
-      await deleteAccount(password);
-      toast.success('Account deleted successfully');
+      await deleteAccount(!requiresPassword ? undefined : password);
+      toast.success("Account deleted successfully");
     } catch (err: any) {
-      const message = err?.message || 'Failed to delete account';
+      const message = err?.message || "Failed to delete account";
       setError(message);
       triggerShake();
     } finally {
@@ -83,7 +98,7 @@ export function DeleteAccountModal({ isOpen, onClose }: Props) {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !isDeleting) {
+    if (e.key === "Enter" && !isDeleting) {
       handleDelete();
     }
   };
@@ -123,8 +138,12 @@ export function DeleteAccountModal({ isOpen, onClose }: Props) {
                     <AlertTriangle size={20} className="text-red-400" />
                   </span>
                   <div>
-                    <h2 className="text-base font-semibold text-white">Delete Account</h2>
-                    <p className="text-xs text-[var(--text-muted)]">This cannot be undone</p>
+                    <h2 className="text-base font-semibold text-white">
+                      Delete Account
+                    </h2>
+                    <p className="text-xs text-[var(--text-muted)]">
+                      This cannot be undone
+                    </p>
                   </div>
                 </div>
                 <button
@@ -140,63 +159,80 @@ export function DeleteAccountModal({ isOpen, onClose }: Props) {
             {/* Content */}
             <div className="px-6 py-5 space-y-4">
               <p className="text-sm leading-relaxed text-[var(--text-secondary)]">
-                All your conversations, bookmarks, and notes will be permanently deleted.
-                Enter your password to confirm.
+                All your conversations, bookmarks, and notes will be permanently
+                deleted.
+                {requiresPassword && " Enter your password to confirm."}
               </p>
 
-              {/* Password field */}
-              <motion.div
-                animate={shouldShake ? 'shake' : undefined}
-                variants={shakeVariants}
-              >
-                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">
-                  Confirm Password
-                </label>
-                <div className="relative">
-                  <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]">
-                    <Lock size={16} />
-                  </span>
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    value={password}
-                    onChange={(e) => {
-                      setPassword(e.target.value);
-                      if (error) setError('');
-                    }}
-                    onKeyDown={handleKeyDown}
-                    disabled={isDeleting}
-                    placeholder="Enter your password"
-                    autoFocus
-                    className={`w-full rounded-xl border bg-white/[0.04] py-3 pl-10 pr-11 text-sm text-white placeholder-[var(--text-muted)] transition-colors focus:outline-none disabled:opacity-50 ${
-                      error
-                        ? 'border-red-500/40 focus:border-red-500/60'
-                        : 'border-white/[0.1] focus:border-white/[0.2]'
-                    }`}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    disabled={isDeleting}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] transition-colors hover:text-white disabled:opacity-50"
-                  >
-                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </button>
+              {!requiresPassword ? (
+                <div className="rounded-xl border border-blue-500/20 bg-blue-500/10 p-4">
+                  <div className="flex items-start gap-3">
+                    <Info size={18} className="mt-0.5 text-blue-400 shrink-0" />
+                    <div>
+                      <p className="text-sm font-medium text-blue-300">
+                        Connected with Google
+                      </p>
+                      <p className="mt-1 text-xs text-blue-400/80">
+                        This account is managed via Google authentication. No
+                        password exists for this account.
+                      </p>
+                    </div>
+                  </div>
                 </div>
-
-                {/* Error message */}
-                <AnimatePresence>
-                  {error && (
-                    <motion.p
-                      initial={{ opacity: 0, y: -4, height: 0 }}
-                      animate={{ opacity: 1, y: 0, height: 'auto' }}
-                      exit={{ opacity: 0, y: -4, height: 0 }}
-                      className="mt-2 text-xs font-medium text-red-400"
+              ) : (
+                <motion.div
+                  animate={shouldShake ? "shake" : undefined}
+                  variants={shakeVariants}
+                >
+                  <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">
+                    Confirm Password
+                  </label>
+                  <div className="relative">
+                    <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]">
+                      <Lock size={16} />
+                    </span>
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => {
+                        setPassword(e.target.value);
+                        if (error) setError("");
+                      }}
+                      onKeyDown={handleKeyDown}
+                      disabled={isDeleting}
+                      placeholder="Enter your password"
+                      autoFocus
+                      className={`w-full rounded-xl border bg-white/[0.04] py-3 pl-10 pr-11 text-sm text-white placeholder-[var(--text-muted)] transition-colors focus:outline-none disabled:opacity-50 ${
+                        error
+                          ? "border-red-500/40 focus:border-red-500/60"
+                          : "border-white/[0.1] focus:border-white/[0.2]"
+                      }`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      disabled={isDeleting}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] transition-colors hover:text-white disabled:opacity-50"
                     >
-                      {error}
-                    </motion.p>
-                  )}
-                </AnimatePresence>
-              </motion.div>
+                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Error message */}
+              <AnimatePresence>
+                {error && (
+                  <motion.p
+                    initial={{ opacity: 0, y: -4, height: 0 }}
+                    animate={{ opacity: 1, y: 0, height: "auto" }}
+                    exit={{ opacity: 0, y: -4, height: 0 }}
+                    className="mt-2 text-xs font-medium text-red-400"
+                  >
+                    {error}
+                  </motion.p>
+                )}
+              </AnimatePresence>
             </div>
 
             {/* Actions */}
@@ -210,7 +246,7 @@ export function DeleteAccountModal({ isOpen, onClose }: Props) {
               </button>
               <button
                 onClick={handleDelete}
-                disabled={isDeleting || !password.trim()}
+                disabled={isDeleting || (requiresPassword && !password.trim())}
                 className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-red-500/25 bg-red-500/15 py-2.5 text-sm font-semibold text-red-400 transition-all hover:bg-red-500/25 hover:text-red-300 hover:shadow-lg hover:shadow-red-500/10 disabled:cursor-not-allowed disabled:opacity-40 active:scale-[0.97]"
               >
                 {isDeleting ? (

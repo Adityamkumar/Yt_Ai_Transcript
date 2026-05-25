@@ -8,6 +8,7 @@ import messageRouter from './routes/message.route.js'
 import bookmarkRouter from './routes/bookmark.route.js'
 import pdfRouter from './routes/pdf.route.js'
 import cookieParser from 'cookie-parser'
+import passport from "./config/passport.js";
 
 const app = express();
 
@@ -30,6 +31,7 @@ app.use(cors({
 
 app.use(express.json());
 app.use(cookieParser())
+app.use(passport.initialize())
 
 app.use("/api/v1/video", videoRouter);
 app.use("/api/v1/chat", chatRouter);

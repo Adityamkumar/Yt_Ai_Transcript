@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Eye, EyeOff, Zap, ArrowRight, Loader2, Check, AlertCircle } from 'lucide-react';
 import DotField from '@/components/landing/DotField';
 import { useAuth } from '@/store/AuthContext';
+import { GoogleAuthButton } from '@/components/auth/GoogleAuthButton';
 
 const passwordStrengthLabel = (pw: string): { label: string; color: string; width: string } => {
   if (pw.length === 0) return { label: '', color: 'transparent', width: '0%' };
@@ -301,6 +302,16 @@ export default function SignupPage() {
             </p>
           </form>
 
+          {/* ─── Google OAuth ──────────────────────────────── */}
+          <div className="flex items-center gap-3 mt-5 mb-4">
+            <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.07)' }} />
+            <span className="text-xs text-[#94A3B8]/60">or</span>
+            <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.07)' }} />
+          </div>
+
+          <GoogleAuthButton label="Sign up with Google" />
+
+          {/* ─── Login link ──────────────────────────────── */}
           <div className="flex items-center gap-3 my-5">
             <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.07)' }} />
             <span className="text-xs text-[#94A3B8]/60">Already have an account?</span>

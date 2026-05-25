@@ -5,8 +5,11 @@ import jwt from "jsonwebtoken";
 export interface IUser extends Document{
    name: string;
    email: string;
-   password: string;
-   refreshToken: string;
+   password?: string;
+   avatar?:string;
+   googleId?:string;
+   provider: 'local' | 'google'
+   refreshToken?: string;
    isPasswordCorrect(
      password: string
    ): Promise<boolean>;
@@ -18,7 +21,26 @@ const userSchema = new Schema<IUser>(
   {
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
+    password: {
+      type: String,
+      // Required only for local (email/password) accounts.
+      // Google OAuth users are created without a password.
+      required: function (this: any) {
+        return this.provider === 'local';
+      },
+    },
+    googleId:{
+      type: String
+    },
+    avatar:{
+      type:String,
+      default: ""
+    },
+    provider:{
+      type:String,
+      enum:['local', 'google'],
+      default: 'local'
+    },
     refreshToken: { type: String },
   },
   {
@@ -29,7 +51,8 @@ const userSchema = new Schema<IUser>(
 userSchema.pre("save", async function () {
   if (!this.isModified("password")) return;
 
-  this.password = await bcrypt.hash(this.password, 10);
+  const hashed = await bcrypt.hash(this.password as string, 10);
+  this.password = hashed;
 });
 
 userSchema.methods.isPasswordCorrect = async function (password: string) {

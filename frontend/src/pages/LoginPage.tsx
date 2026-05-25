@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Eye, EyeOff, Zap, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
 import DotField from '@/components/landing/DotField';
 import { useAuth } from '@/store/AuthContext';
+import { GoogleAuthButton } from '@/components/auth/GoogleAuthButton';
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -211,6 +212,16 @@ export default function LoginPage() {
             </button>
           </form>
 
+          {/* ─── Google OAuth ──────────────────────────────── */}
+          <div className="flex items-center gap-3 mt-5 mb-4">
+            <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.07)' }} />
+            <span className="text-xs text-[#94A3B8]/60">or</span>
+            <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.07)' }} />
+          </div>
+
+          <GoogleAuthButton />
+
+          {/* ─── Sign up link ─────────────────────────────── */}
           <div className="flex items-center gap-3 my-6">
             <div className="flex-1 h-px bg-white/07" />
             <span className="text-xs text-[#94A3B8]/60">New to EchoMind?</span>

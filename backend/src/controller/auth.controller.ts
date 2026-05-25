@@ -49,6 +49,7 @@ export const userRegister = asyncHandler(async (req, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
+        hasPassword: true,
       },
     });
   } catch (error) {
@@ -84,7 +85,7 @@ export const userLogin = asyncHandler(async (req, res) => {
     res.status(200).json({
       message: "User Logged In successfully",
       user: {
-        user: loggedInUser,
+        user: { ...loggedInUser.toObject(), hasPassword: !!user.password },
         accessToken,
         refreshToken,
       },
@@ -132,7 +133,7 @@ export const refreshAccessToken = asyncHandler(async (req, res) => {
 
 export const userLogout = asyncHandler(async (req, res) => {
   await User.findByIdAndUpdate(
-    req.user?._id,
+    (req.user as any)?._id,
     {
       $unset: {
         refreshToken: 1,
@@ -153,38 +154,82 @@ export const userLogout = asyncHandler(async (req, res) => {
 });
 
 export const getCurrentUser = asyncHandler(async (req, res) => {
+  const userId = (req.user as any)?._id;
+  const userWithPassword = await User.findById(userId).select("password");
+
   return res.status(200).json({
     user: {
-      id: req.user?._id,
-      name: req.user?.name,
-      email: req.user?.email,
+      id: userId,
+      name: (req.user as any)?.name,
+      email: (req.user as any)?.email,
+      avatar: (req.user as any)?.avatar,
+      provider: (req.user as any)?.provider,
+      hasPassword: !!userWithPassword?.password,
     },
   });
 });
 
 export const deleteUser = asyncHandler(async (req, res) => {
-  const userId = req.params.id;   
-    const { password } = req.body;
+  const userId = req.params.id;
+  const { password } = req.body;
 
-  if (userId !== req.user?._id.toString()) {
-     throw new ApiError(403, "Forbidden: You can only delete your own account");
+  if (userId !== String((req.user as any)?._id)) {
+    throw new ApiError(403, "Forbidden: You can only delete your own account");
   }
 
   const user = await User.findById(userId);
   if (!user) {
     throw new ApiError(404, "User not found");
   }
-  const isPasswordMatched = await user.isPasswordCorrect(password);
-  if (!isPasswordMatched) {
-    throw new ApiError(400, "Invalid password");
+
+  if (user.password) {
+    const isPasswordMatched = await user.isPasswordCorrect(password);
+    if (!isPasswordMatched) {
+      throw new ApiError(400, "Invalid password");
+    }
   }
 
   await User.findByIdAndDelete(userId);
-  
+
   res
-  .status(200)
-  .clearCookie("accessToken", accessCookieOptions)
-  .clearCookie("refreshToken", refreshCookieOptions)
-  .json(new ApiResponse(200, "User deleted successfully"));
-}
-);
+    .status(200)
+    .clearCookie("accessToken", accessCookieOptions)
+    .clearCookie("refreshToken", refreshCookieOptions)
+    .json(new ApiResponse(200, "Account deleted successfully"));
+});
+
+export const googleCallbackController = asyncHandler(async (req, res) => {
+  const profile: any = req.user;
+  const googleId = profile.id;
+  const name = profile.displayName;
+  const email = profile.emails?.[0]?.value;
+  const avatar = profile.photos?.[0]?.value;
+  let user = await User.findOne({ email });
+
+  if (!user) {
+    user = await User.create({
+      name,
+      email,
+      avatar,
+      googleId,
+      provider: "google",
+    });
+  }
+  if (user.provider === "local" && !user.googleId) {
+    user.googleId = googleId;
+
+    user.avatar = avatar;
+
+    user.provider = "google";
+
+    await user.save();
+  }
+
+  const { accessToken, refreshToken } =
+    await generateAccessTokenAndRefreshToken(user._id);
+
+  res.cookie("accessToken", accessToken, accessCookieOptions);
+  res.cookie("refreshToken", refreshToken, refreshCookieOptions);
+
+  return res.redirect("http://localhost:5173");
+});

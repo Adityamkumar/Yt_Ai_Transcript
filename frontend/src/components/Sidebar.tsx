@@ -9,7 +9,6 @@ import {
   Settings,
   Sparkles,
   Trash2,
-  User,
   X,
   LogOut,
   FileText,
@@ -25,6 +24,7 @@ import { listItemVariants, sidebarVariants, staggerContainer } from '@/animation
 import { cn } from '@/utils/cn';
 import { useAuth } from '@/store/AuthContext';
 import { SettingsModal } from './SettingsModal';
+import { UserAvatar } from '@/components/auth/UserAvatar';
 
 interface SidebarProps {
   onNewChat: () => void;
@@ -233,9 +233,7 @@ export function Sidebar({ onNewChat }: SidebarProps) {
 
           <div className="border-t border-white/[0.07] p-3 space-y-1">
             <div className="flex items-center gap-3 px-3 py-2.5 rounded-2xl bg-white/[0.03]">
-              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-white/[0.1] bg-white/[0.055] text-[var(--text-secondary)]">
-                <User size={16} />
-              </span>
+              <UserAvatar name={user?.name || 'Guest'} avatar={user?.avatar} size={36} />
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-sm font-medium text-white">{user?.name || 'Guest'}</span>
                 <span className="block text-xs text-[var(--text-muted)] truncate">{user?.email}</span>
