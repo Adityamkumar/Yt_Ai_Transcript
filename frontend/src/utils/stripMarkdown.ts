@@ -8,3 +8,4 @@ export function stripMarkdown(text: string): string {
     useImgAltText: false,
   });
 }
+

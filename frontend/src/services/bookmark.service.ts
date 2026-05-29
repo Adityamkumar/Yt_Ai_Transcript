@@ -23,3 +23,4 @@ export const bookmarkService = {
     return response.data.data;
   },
 };
+

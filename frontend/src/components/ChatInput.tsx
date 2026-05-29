@@ -92,3 +92,4 @@ export function ChatInput({ onSend, onStop, disabled, isPending, placeholder }: 
     </div>
   );
 }
+

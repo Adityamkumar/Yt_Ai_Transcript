@@ -106,3 +106,4 @@ export function SummaryMessage({ message, videoId }: SummaryMessageProps) {
     </div>
   );
 }
+

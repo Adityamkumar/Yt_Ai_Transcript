@@ -36,7 +36,6 @@ export function PdfUploadCard({ onUploadSuccess, onUploadingStateChange }: PdfUp
       return;
     }
 
-    // 10MB Limit requested by the user
     if (selectedFile.size > 10 * 1024 * 1024) {
       setErrorMsg("File exceeds the maximum 10MB limit");
       toast.error("File is too large. Max size is 10MB.");
@@ -184,3 +183,4 @@ export function PdfUploadCard({ onUploadSuccess, onUploadingStateChange }: PdfUp
     </div>
   );
 }
+

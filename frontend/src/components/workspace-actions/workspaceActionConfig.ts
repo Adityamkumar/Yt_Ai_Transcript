@@ -57,3 +57,4 @@ export const WORKSPACE_ACTIONS: WorkspaceAction[] = [
     icon: 'Layers',
   },
 ];
+

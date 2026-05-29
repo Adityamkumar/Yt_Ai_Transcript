@@ -101,3 +101,4 @@ export const pageVariants: Variants = {
     transition: { duration: 0.3, ease: 'easeIn' }
   }
 };
+

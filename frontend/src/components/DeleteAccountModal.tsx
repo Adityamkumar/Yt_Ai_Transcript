@@ -113,13 +113,13 @@ export function DeleteAccountModal({ isOpen, onClose }: Props) {
           animate="visible"
           exit="exit"
         >
-          {/* Backdrop */}
+          {}
           <motion.div
             className="absolute inset-0 bg-black/70 backdrop-blur-md"
             onClick={handleClose}
           />
 
-          {/* Modal */}
+          {}
           <motion.div
             variants={modalVariants}
             initial="hidden"
@@ -127,10 +127,10 @@ export function DeleteAccountModal({ isOpen, onClose }: Props) {
             exit="exit"
             className="relative w-full max-w-sm overflow-hidden rounded-2xl border border-red-500/15 bg-[#0e1019]/98 shadow-2xl shadow-red-900/10 backdrop-blur-xl"
           >
-            {/* Danger gradient strip */}
+            {}
             <div className="h-1 w-full bg-gradient-to-r from-red-600 via-red-500 to-orange-500" />
 
-            {/* Header */}
+            {}
             <div className="px-6 pt-5 pb-0">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
@@ -156,7 +156,7 @@ export function DeleteAccountModal({ isOpen, onClose }: Props) {
               </div>
             </div>
 
-            {/* Content */}
+            {}
             <div className="px-6 py-5 space-y-4">
               <p className="text-sm leading-relaxed text-[var(--text-secondary)]">
                 All your conversations, bookmarks, and notes will be permanently
@@ -220,7 +220,7 @@ export function DeleteAccountModal({ isOpen, onClose }: Props) {
                 </motion.div>
               )}
 
-              {/* Error message */}
+              {}
               <AnimatePresence>
                 {error && (
                   <motion.p
@@ -235,7 +235,7 @@ export function DeleteAccountModal({ isOpen, onClose }: Props) {
               </AnimatePresence>
             </div>
 
-            {/* Actions */}
+            {}
             <div className="flex items-center gap-3 border-t border-white/[0.07] px-6 py-4">
               <button
                 onClick={handleClose}
@@ -265,3 +265,4 @@ export function DeleteAccountModal({ isOpen, onClose }: Props) {
     </AnimatePresence>
   );
 }
+

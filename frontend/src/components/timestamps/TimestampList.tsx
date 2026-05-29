@@ -44,3 +44,4 @@ export function TimestampList({ items, videoId, dotColor = 'bg-purple-500' }: Ti
     </ul>
   );
 }
+

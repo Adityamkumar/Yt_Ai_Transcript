@@ -98,3 +98,4 @@ export function WorkspaceActions({ onAction, disabled = false }: WorkspaceAction
     </div>
   );
 }
+

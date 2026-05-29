@@ -19,7 +19,6 @@ export function PdfIndexingStatus({ fileName }: PdfIndexingStatusProps) {
   ];
 
   useEffect(() => {
-    // Simple mock animation progression to make the indexing feel premium and alive
     const interval = setInterval(() => {
       setCurrentStep((prev) => {
         if (prev < steps.length - 1) {
@@ -48,7 +47,7 @@ export function PdfIndexingStatus({ fileName }: PdfIndexingStatusProps) {
       </div>
 
       <div className="relative flex flex-col gap-6 pl-4">
-        {/* Progress Line */}
+        {}
         <div className="absolute left-9 top-4 bottom-4 w-0.5 bg-white/[0.06]">
           <motion.div
             className="w-full bg-[var(--accent)] origin-top"
@@ -67,7 +66,7 @@ export function PdfIndexingStatus({ fileName }: PdfIndexingStatusProps) {
 
           return (
             <div key={step.label} className="relative flex gap-5 items-start">
-              {/* Step Circle */}
+              {}
               <div
                 className={cn(
                   "relative z-10 grid h-10 w-10 shrink-0 place-items-center rounded-xl border transition-all duration-300",
@@ -86,7 +85,7 @@ export function PdfIndexingStatus({ fileName }: PdfIndexingStatusProps) {
                 <Icon size={18} className={cn(isActive && idx < steps.length - 1 && "animate-pulse")} />
               </div>
 
-              {/* Step Info */}
+              {}
               <div className="min-w-0 pt-0.5 text-left">
                 <p
                   className={cn(
@@ -109,3 +108,4 @@ export function PdfIndexingStatus({ fileName }: PdfIndexingStatusProps) {
     </div>
   );
 }
+

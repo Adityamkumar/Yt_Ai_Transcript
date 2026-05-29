@@ -10,7 +10,6 @@ import {
 
 const router = Router();
 
-// Configure multer for memory storage with 10MB limit
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
@@ -33,3 +32,4 @@ router.post("/ask", askPdfQuestion);
 router.delete("/:documentId", deletePdfDocument);
 
 export default router;
+

@@ -239,3 +239,4 @@ export function NotesMessage({ message, videoId: _videoId }: NotesMessageProps) 
     </motion.div>
   );
 }
+

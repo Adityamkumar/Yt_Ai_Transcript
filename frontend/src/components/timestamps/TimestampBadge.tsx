@@ -24,3 +24,4 @@ export function TimestampBadge({ seconds, videoId, className = "", children }: T
     </button>
   );
 }
+

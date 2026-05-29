@@ -24,3 +24,4 @@ export const messageService = {
     return response.data.data;
   },
 };
+

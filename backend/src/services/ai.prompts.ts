@@ -107,3 +107,4 @@ FORMATTING RULES:
   • "\`redis.set()\` — stores data; \`redis.get()\` — retrieves it"
   • "**Middleware** — intercepts requests before reaching route handler"
 `;
+

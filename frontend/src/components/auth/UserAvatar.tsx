@@ -1,10 +1,5 @@
 import { useState } from 'react';
 
-/**
- * UserAvatar — displays a user's Google profile picture or a gradient
- * initials fallback consistent with the app's dark glassmorphism aesthetic.
- */
-
 interface UserAvatarProps {
   name?: string;
   avatar?: string;
@@ -36,7 +31,6 @@ export function UserAvatar({ name = 'User', avatar, size = 36, className = '' }:
 
   const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
-  // Proxy Google images through backend to avoid CORS issues
   const avatarUrl = avatar && avatar.includes('googleusercontent.com')
     ? `${baseURL}/api/v1/user/avatar-proxy?url=${encodeURIComponent(avatar)}`
     : avatar;
@@ -48,7 +42,7 @@ export function UserAvatar({ name = 'User', avatar, size = 36, className = '' }:
         alt={`${name}'s avatar`}
         width={size}
         height={size}
-        className={`rounded-full object-cover flex-shrink-0 ${className}`}
+        className={`rounded-full object-cover shrink-0 ${className}`}
         style={{
           width: size,
           height: size,
@@ -62,7 +56,7 @@ export function UserAvatar({ name = 'User', avatar, size = 36, className = '' }:
 
   return (
     <span
-      className={`flex items-center justify-center rounded-full flex-shrink-0 font-semibold text-white select-none ${className}`}
+      className={`flex items-center justify-center rounded-full shrink-0 font-semibold text-white select-none ${className}`}
       style={{
         width: size,
         height: size,
@@ -75,3 +69,4 @@ export function UserAvatar({ name = 'User', avatar, size = 36, className = '' }:
     </span>
   );
 }
+

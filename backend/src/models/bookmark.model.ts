@@ -49,3 +49,4 @@ const bookmarkSchema = new Schema<IBookmark>(
 );
 
 export const Bookmark = mongoose.model<IBookmark>("Bookmark", bookmarkSchema);
+

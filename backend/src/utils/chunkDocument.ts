@@ -55,7 +55,6 @@ export const chunkDocument = (pages: RawPageInput[]): ChunkOutput[] => {
     for (const sentence of sentences) {
       const sentenceWords = estimateWords(sentence);
       
-      // If single sentence is too long, split it by words
       if (sentenceWords > MAX_WORDS) {
         flush();
         const words = sentence.split(/\s+/).filter(Boolean);
@@ -88,7 +87,6 @@ export const chunkDocument = (pages: RawPageInput[]): ChunkOutput[] => {
       const predictedWords = currentWordCount + sentenceWords;
       const predictedChars = currentBuffer.join(" ").length + sentence.length + 1;
 
-      // If adding this sentence exceeds maximum limits, flush first
       if (predictedWords > MAX_WORDS || predictedChars > MAX_CHARS) {
         flush();
         currentPage = pageObj.page;
@@ -97,7 +95,6 @@ export const chunkDocument = (pages: RawPageInput[]): ChunkOutput[] => {
       currentBuffer.push(sentence);
       currentWordCount += sentenceWords;
 
-      // If we met the minimum criteria, flush
       const currentChars = currentBuffer.join(" ").length;
       if (currentChars >= MIN_CHARS || currentWordCount >= MIN_WORDS) {
         flush();
@@ -105,8 +102,8 @@ export const chunkDocument = (pages: RawPageInput[]): ChunkOutput[] => {
     }
   }
 
-  // Flush remaining buffer
   flush();
 
   return chunks;
 };
+

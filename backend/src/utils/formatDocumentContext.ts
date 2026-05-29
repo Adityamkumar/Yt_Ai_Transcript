@@ -11,3 +11,4 @@ export const formatDocumentContext = (chunks: IPdfChunk[]): string => {
     })
     .join("\n\n---\n\n");
 };
+

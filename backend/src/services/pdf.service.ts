@@ -12,7 +12,6 @@ export const processPdfUpload = async (
 ) => {
   const userObjectId = typeof userId === "string" ? new Types.ObjectId(userId) : userId;
 
-  // 1. Parse and extract text first to validate and fail fast
   let textExtraction;
   try {
     textExtraction = await extractPdfText(fileBuffer);
@@ -21,7 +20,6 @@ export const processPdfUpload = async (
     throw new Error("Failed to extract text from the PDF. Make sure it's a valid, text-based document.");
   }
 
-  // 2. Upload file to ImageKit
   let uploadResult;
   try {
     uploadResult = await uploadPdf(fileBuffer, fileName, userObjectId.toString());
@@ -30,7 +28,6 @@ export const processPdfUpload = async (
     throw new Error("Failed to upload the PDF file to storage.");
   }
 
-  // 3. Create document record with processing status
   const pdfDoc = await PdfDocument.create({
     title,
     fileName,
@@ -42,10 +39,8 @@ export const processPdfUpload = async (
   });
 
   try {
-    // 4. Chunk document semantically
     const chunks = chunkDocument(textExtraction.pages);
     
-    // 5. Store chunks in-document
     pdfDoc.chunks = chunks.map(chunk => ({
       text: chunk.text,
       chunkIndex: chunk.chunkIndex,
@@ -53,7 +48,6 @@ export const processPdfUpload = async (
       wordCount: chunk.wordCount,
     }));
 
-    // 6. Complete status
     pdfDoc.totalChunks = chunks.length;
     pdfDoc.status = "ready";
     await pdfDoc.save();
@@ -66,3 +60,4 @@ export const processPdfUpload = async (
     throw new Error("Failed to index PDF document contents.");
   }
 };
+

@@ -165,3 +165,4 @@ export function PdfChatContainer({ conversationId, pdf, onActionReady }: PdfChat
     </section>
   );
 }
+

@@ -30,3 +30,4 @@ export function MessageRenderer({ message, onEdit, videoId }: MessageRendererPro
     />
   );
 }
+

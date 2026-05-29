@@ -261,3 +261,4 @@ export const styles = StyleSheet.create({
     fontFamily: "Helvetica-Bold",
   },
 });
+

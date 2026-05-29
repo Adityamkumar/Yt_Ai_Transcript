@@ -31,3 +31,4 @@ export function SummaryTimestamp({ timestamp, endTimestamp, videoId, label }: Su
     </TimestampBadge>
   );
 }
+

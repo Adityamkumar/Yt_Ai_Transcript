@@ -17,3 +17,4 @@ export const formatTimestamp = (rawSeconds: number): string => {
     .toString()
     .padStart(2, "0")}`;
 };
+

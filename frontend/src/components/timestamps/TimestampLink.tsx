@@ -21,3 +21,4 @@ export function TimestampLink({ seconds, videoId, children }: TimestampLinkProps
     </button>
   );
 }
+

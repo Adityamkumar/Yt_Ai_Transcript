@@ -30,3 +30,4 @@ export function useKeyboardShortcut(combo: KeyCombo, callback: () => void) {
     return () => window.removeEventListener('keydown', handler);
   }, [combo, callback]);
 }
+

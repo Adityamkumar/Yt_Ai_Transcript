@@ -162,3 +162,4 @@ export default function ResetPasswordPage() {
     if (err instanceof Error && err.message) return err.message;
     return fallback;
   };
+

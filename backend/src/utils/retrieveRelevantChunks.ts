@@ -36,32 +36,27 @@ export const retrieveRelevantChunks = async (
     return [];
   }
 
-  // 1. Preprocess query: tokenize, lowercase, clean non-word, filter stopwords
   const words = question
     .toLowerCase()
     .replace(/[^\w\s]/g, " ")
     .split(/\s+/)
     .filter(w => w.length > 1 && !STOPWORDS.has(w));
 
-  // If no searchable terms left, fallback to first chunks of document
   if (words.length === 0) {
     const sorted = [...pdfDoc.chunks].sort((a, b) => a.chunkIndex - b.chunkIndex);
     return sorted.slice(0, limit);
   }
 
-  // 2. Filter candidate chunks in-memory using keywords
   const candidateChunks = pdfDoc.chunks.filter(chunk => {
     const lowerText = chunk.text.toLowerCase();
     return words.some(word => lowerText.includes(word));
   });
 
-  // If no matches, fallback to first chunks
   if (candidateChunks.length === 0) {
     const sorted = [...pdfDoc.chunks].sort((a, b) => a.chunkIndex - b.chunkIndex);
     return sorted.slice(0, limit);
   }
 
-  // 3. TF-lite scoring based on keyword frequency
   const scoredChunks = candidateChunks.map(chunk => {
     let score = 0;
     const lowerText = chunk.text.toLowerCase();
@@ -74,13 +69,12 @@ export const retrieveRelevantChunks = async (
     return { chunk, score };
   });
 
-  // Sort by score descending and take the top ones
   scoredChunks.sort((a, b) => b.score - a.score);
 
   const topChunks = scoredChunks.slice(0, limit).map(item => item.chunk);
   
-  // Sort by chunkIndex to maintain context flow
   topChunks.sort((a, b) => a.chunkIndex - b.chunkIndex);
 
   return topChunks;
 };
+

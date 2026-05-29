@@ -76,3 +76,4 @@ export function VideoCard({ videoId, youtubeUrl, transcript, isLoading = false }
     </div>
   );
 }
+

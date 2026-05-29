@@ -44,3 +44,4 @@ export const STORAGE_KEYS = {
   ACTIVE_SESSION: 'echomind_active_session',
   SIDEBAR_OPEN: 'echomind_sidebar_open',
 } as const;
+

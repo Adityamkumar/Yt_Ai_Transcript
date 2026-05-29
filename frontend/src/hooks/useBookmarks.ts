@@ -49,3 +49,4 @@ export function useBookmarks() {
     isDeleting: deleteBookmarkMutation.isPending,
   };
 }
+

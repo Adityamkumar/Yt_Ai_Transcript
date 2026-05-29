@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/store/AuthContext';
 
-// Official Google "G" logo SVG
 const GoogleIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -41,7 +40,6 @@ export function GoogleAuthButton({ label = 'Continue with Google' }: GoogleAuthB
 
   const handleClick = () => {
     setIsLoading(true);
-    // loginWithGoogle() does a window.location.href redirect — no async needed
     loginWithGoogle();
   };
 
@@ -85,3 +83,4 @@ export function GoogleAuthButton({ label = 'Continue with Google' }: GoogleAuthB
     </motion.button>
   );
 }
+

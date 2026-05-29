@@ -11,7 +11,6 @@ export const extractPdfText = async (
 ): Promise<{ pages: PageText[]; totalPages: number }> => {
   const pages: PageText[] = [];
 
-  // Custom pagerender to capture text page by page
   const pagerender = async (pageData: any) => {
     const textContent = await pageData.getTextContent();
     let lastY: number | undefined;
@@ -43,7 +42,6 @@ export const extractPdfText = async (
 
   const data = await PdfParse(pdfBuffer, { pagerender });
 
-  // Sort pages by page number ascending
   pages.sort((a, b) => a.page - b.page);
 
   return {
@@ -51,3 +49,4 @@ export const extractPdfText = async (
     totalPages: data.numpages || pages.length,
   };
 };
+

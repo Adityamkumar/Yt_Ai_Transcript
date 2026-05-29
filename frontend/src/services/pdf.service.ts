@@ -10,7 +10,6 @@ export const pdfService = {
       headers: {
         "Content-Type": "multipart/form-data",
       },
-      // Higher timeout for large files upload + initial processing
       timeout: 120000,
     });
     return response.data.data;
@@ -58,3 +57,4 @@ export const pdfService = {
     }
   },
 };
+

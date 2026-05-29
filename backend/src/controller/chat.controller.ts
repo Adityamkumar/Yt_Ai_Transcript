@@ -41,7 +41,6 @@ export const askQuestion = asyncHandler(async (req, res) => {
 
   let transcript = video.transcript;
 
-  // Robust fallback: if transcript is empty, try to re-fetch it
   if (!transcript || (Array.isArray(transcript) && transcript.length === 0)) {
     console.log(`Transcript empty for video ${videoId}, attempting re-fetch...`);
     const fetchedTranscript = await getTranscriptFromYoutube(video.youtubeVideoId);
@@ -76,7 +75,6 @@ export const askQuestion = asyncHandler(async (req, res) => {
 
   const contextMessages = getRecentMessages(recentMessages, 10);
 
-  // Notes should NEVER stream as per architecture requirements
   if (type === "notes" || !isStreamingRequest(req.body as AskQuestionBody, req.headers.accept)) {
     const answer = await askAiAboutTranscript(transcript, question || "", contextMessages, type);
 
@@ -118,3 +116,4 @@ export const askQuestion = asyncHandler(async (req, res) => {
     }
   }
 });
+

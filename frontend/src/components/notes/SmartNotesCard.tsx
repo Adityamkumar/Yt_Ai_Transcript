@@ -37,7 +37,7 @@ export function SmartNotesCard({
       disabled={disabled || isLoading}
       className={`group relative flex w-full h-full flex-col items-start p-5 rounded-3xl border border-white/10 bg-[#1A1A1A]/40 backdrop-blur-md transition-all disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden shadow-sm ${selectedColor.split(' ').slice(4).join(' ')}`}
     >
-      {/* Background Glow */}
+      {}
       <div className={`absolute -right-8 -top-8 w-32 h-32 rounded-full blur-3xl transition-all duration-500 ${glowColor}`} />
       
       <div className={`relative flex items-center justify-center w-12 h-12 mb-4 rounded-2xl transition-colors ${selectedColor.split(' ').slice(0, 4).join(' ')}`}>
@@ -68,3 +68,4 @@ export function SmartNotesCard({
     </motion.button>
   );
 }
+

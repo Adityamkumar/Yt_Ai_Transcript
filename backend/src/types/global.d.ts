@@ -9,3 +9,4 @@ namespace NodeJS {
     GEMINI_API_KEY: string;
   }
 }
+

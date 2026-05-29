@@ -50,7 +50,6 @@ export const uploadPdf = asyncHandler(async (req: any, res) => {
     throw new ApiError(400, "No PDF file uploaded");
   }
 
-  // Enforce the 10MB limit requested by the user
   if (req.file.size > 10 * 1024 * 1024) {
     throw new ApiError(400, "PDF file exceeds the maximum size limit of 10MB");
   }
@@ -58,7 +57,6 @@ export const uploadPdf = asyncHandler(async (req: any, res) => {
   const originalName = req.file.originalname;
   const fileBuffer = req.file.buffer;
 
-  // Extract a preview of text to generate a smart title
   let parsedText = "";
   try {
     const textRes = await extractPdfText(fileBuffer);
@@ -70,10 +68,8 @@ export const uploadPdf = asyncHandler(async (req: any, res) => {
   const aiTitle = await generatePdfTitle(parsedText);
   const title = resolvePdfTitle(aiTitle, originalName);
 
-  // Upload to ImageKit, parse text, chunk, save chunks
   const pdfDoc = await processPdfUpload(fileBuffer, originalName, req.user._id, title);
 
-  // Create new workspace conversation
   const conversation = await Conversation.create({
     userId: req.user._id,
     pdfDocumentId: pdfDoc._id,
@@ -112,11 +108,9 @@ export const askPdfQuestion = asyncHandler(async (req, res) => {
     throw new ApiError(404, "PDF Document not found");
   }
 
-  // Retrieve relevant semantic chunks
   const chunks = await retrieveRelevantChunks(pdfDoc._id, question || "", 8);
   const contextText = formatDocumentContext(chunks);
 
-  // Check if we should stream the response
   const acceptHeader = req.headers.accept || "";
   const isStreaming = stream || acceptHeader.includes("text/event-stream") || (acceptHeader.includes("text/plain") && !acceptHeader.includes("application/json"));
 
@@ -125,7 +119,6 @@ export const askPdfQuestion = asyncHandler(async (req, res) => {
     return res.status(200).json(new ApiResponse(200, answer, "Answer generated successfully"));
   }
 
-  // Stream output using Event Stream / plain text chunks
   res.status(200);
   res.setHeader("Content-Type", "text/plain; charset=utf-8");
   res.setHeader("Cache-Control", "no-cache, no-transform");
@@ -164,17 +157,14 @@ export const deletePdfDocument = asyncHandler(async (req: any, res) => {
     throw new ApiError(404, "PDF Document not found or unauthorized");
   }
 
-  // 1. Delete file from ImageKit cloud
   try {
     await deletePdf(pdfDoc.fileId);
   } catch (err) {
     console.error("Failed to delete PDF from ImageKit storage:", err);
   }
 
-  // 2. Delete document metadata
   await PdfDocument.findByIdAndDelete(pdfDoc._id);
 
-  // 3. Delete conversations and messages associated with this PDF document
   const conversations = await Conversation.find({ pdfDocumentId: pdfDoc._id });
   for (const conv of conversations) {
     await mongoose.model("Message").deleteMany({ conversationId: conv._id });
@@ -183,3 +173,4 @@ export const deletePdfDocument = asyncHandler(async (req: any, res) => {
 
   return res.status(200).json(new ApiResponse(200, {}, "PDF Document and all associated workspaces deleted successfully"));
 });
+

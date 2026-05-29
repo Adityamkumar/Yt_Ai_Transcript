@@ -38,7 +38,7 @@ const pdfChunkSchema = new Schema<IPdfChunk>(
   }
 );
 
-// Index for fast query routing and search
 pdfChunkSchema.index({ documentId: 1, chunkIndex: 1 });
 
 export const PdfChunk = mongoose.model<IPdfChunk>("PdfChunk", pdfChunkSchema);
+

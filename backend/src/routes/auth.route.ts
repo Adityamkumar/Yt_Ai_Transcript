@@ -20,16 +20,13 @@ const router = express.Router();
 router.post("/register", userRegister);
 router.post("/login", userLogin);
 
-// secured routes
 router.post("/logout", authMiddleware, userLogout);
 router.post("/refresh-token", refreshAccessToken);
 router.get("/current-user", authMiddleware, getCurrentUser);
 router.delete("/delete/:id", authMiddleware, deleteUser);
 
-// Avatar proxy for Google images (no auth needed)
 router.get("/avatar-proxy", avatarProxyController);
 
-//Google Auth
 router.get(
   "/google",
 
@@ -59,3 +56,4 @@ router.post(
   resetPasswordController
 );
 export default router;
+

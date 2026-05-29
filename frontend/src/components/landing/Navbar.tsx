@@ -11,7 +11,6 @@ const navLinks = [
   { label: 'Github', href: 'https://github.com/Adityamkumar/Yt_Ai_Transcript', icon: Github, external: true },
 ];
 
-// ─── User Dropdown ────────────────────────────────────────────────────────────
 
 interface UserDropdownProps {
   name: string;
@@ -36,7 +35,7 @@ function UserDropdown({ name, email, avatar, onLogout, onClose }: UserDropdownPr
         backdropFilter: 'blur(24px)',
       }}
     >
-      {/* User info header */}
+      {}
       <div className="px-4 py-3.5 border-b border-white/[0.07]">
         <div className="flex items-center gap-3">
           <UserAvatar name={name} avatar={avatar} size={38} />
@@ -47,7 +46,7 @@ function UserDropdown({ name, email, avatar, onLogout, onClose }: UserDropdownPr
         </div>
       </div>
 
-      {/* Menu items */}
+      {}
       <div className="p-1.5">
         <Link
           to="/app"
@@ -69,7 +68,6 @@ function UserDropdown({ name, email, avatar, onLogout, onClose }: UserDropdownPr
   );
 }
 
-// ─── Navbar ───────────────────────────────────────────────────────────────────
 
 export function Navbar() {
   const { user, logout } = useAuth();
@@ -95,7 +93,6 @@ export function Navbar() {
     return () => { document.body.style.overflow = ''; };
   }, [mobileOpen]);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     if (!dropdownOpen) return;
     const handler = (e: MouseEvent) => {
@@ -171,10 +168,9 @@ export function Navbar() {
               ))}
             </nav>
 
-            {/* Desktop auth area */}
+            {}
             <div className="hidden md:flex items-center gap-2">
               {user ? (
-                // ─── Authenticated: avatar button + dropdown ───────────────
                 <div ref={dropdownRef} className="relative">
                   <motion.button
                     id="user-menu-btn"
@@ -208,7 +204,6 @@ export function Navbar() {
                   </AnimatePresence>
                 </div>
               ) : (
-                // ─── Unauthenticated: login + get started ─────────────────
                 <>
                   <Link
                     to="/login"
@@ -228,7 +223,7 @@ export function Navbar() {
               )}
             </div>
 
-            {/* Mobile hamburger */}
+            {}
             <button
               id="mobile-menu-btn"
               onClick={() => setMobileOpen(!mobileOpen)}
@@ -251,7 +246,7 @@ export function Navbar() {
         </div>
       </motion.header>
 
-      {/* Mobile Drawer */}
+      {}
       <AnimatePresence>
         {mobileOpen && (
           <>
@@ -277,7 +272,7 @@ export function Navbar() {
                 </button>
               </div>
 
-              {/* Mobile user info (when authenticated) */}
+              {}
               {user && (
                 <div className="mx-4 mb-2 px-3 py-3 rounded-2xl border border-white/[0.08] bg-white/[0.03] flex items-center gap-3">
                   <UserAvatar name={user.name} avatar={user.avatar} size={38} />
@@ -359,3 +354,4 @@ export function Navbar() {
     </>
   );
 }
+

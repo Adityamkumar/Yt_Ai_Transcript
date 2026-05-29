@@ -52,3 +52,4 @@ const videoUrl = new Schema<IVideo>(
 );
 
 export const Video = mongoose.model<IVideo>("Video", videoUrl);
+

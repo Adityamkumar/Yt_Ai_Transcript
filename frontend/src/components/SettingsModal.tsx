@@ -99,7 +99,7 @@ function ProviderBadge({
       }}
     >
       <div className="flex items-center gap-2.5">
-        {/* Icon */}
+        {}
         <span
           className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg"
           style={{
@@ -132,7 +132,7 @@ function ProviderBadge({
           )}
         </span>
 
-        {/* Text */}
+        {}
         <div>
           <p
             className="text-xs font-medium"
@@ -154,7 +154,7 @@ function ProviderBadge({
         </div>
       </div>
 
-      {/* Verified checkmark */}
+      {}
       <span
         className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full"
         style={{
@@ -191,13 +191,13 @@ export function SettingsModal({ isOpen, onClose }: Props) {
             animate="visible"
             exit="exit"
           >
-            {/* Backdrop */}
+            {}
             <motion.div
               className="absolute inset-0 bg-black/60 backdrop-blur-sm"
               onClick={onClose}
             />
 
-            {/* Modal */}
+            {}
             <motion.div
               variants={modalVariants}
               initial="hidden"
@@ -205,7 +205,7 @@ export function SettingsModal({ isOpen, onClose }: Props) {
               exit="exit"
               className="relative w-full max-w-md overflow-hidden rounded-2xl border border-white/[0.1] bg-[#0e1019]/95 shadow-2xl shadow-black/40 backdrop-blur-xl"
             >
-              {/* Header */}
+              {}
               <div className="flex items-center justify-between border-b border-white/[0.07] px-6 py-4">
                 <div className="flex items-center gap-3">
                   <span className="grid h-9 w-9 place-items-center rounded-xl border border-white/[0.1] bg-white/[0.06] text-[var(--text-secondary)]">
@@ -231,15 +231,15 @@ export function SettingsModal({ isOpen, onClose }: Props) {
                 </button>
               </div>
 
-              {/* Content */}
+              {}
               <div className="p-6 space-y-6">
-                {/* ── Profile ────────────────────────────────────────────── */}
+                {}
                 <div>
                   <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--text-muted)]">
                     Profile
                   </h3>
                   <div className="space-y-2">
-                    {/* Avatar + name card */}
+                    {}
                     <div className="flex items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.025] px-4 py-3">
                       <UserAvatar
                         name={user?.name || "Guest"}
@@ -256,7 +256,7 @@ export function SettingsModal({ isOpen, onClose }: Props) {
                       </div>
                     </div>
 
-                    {/* Name row */}
+                    {}
                     <div className="flex items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.025] px-4 py-3">
                       <User
                         size={16}
@@ -270,7 +270,7 @@ export function SettingsModal({ isOpen, onClose }: Props) {
                       </div>
                     </div>
 
-                    {/* Email row */}
+                    {}
                     <div className="flex items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.025] px-4 py-3">
                       <Mail
                         size={16}
@@ -288,7 +288,7 @@ export function SettingsModal({ isOpen, onClose }: Props) {
                   </div>
                 </div>
 
-                {/* ── Account Provider ───────────────────────────────────── */}
+                {}
                 <div>
                   <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--text-muted)]">
                     Account Provider
@@ -299,7 +299,7 @@ export function SettingsModal({ isOpen, onClose }: Props) {
                   />
                 </div>
 
-                {/* ── Danger Zone ────────────────────────────────────────── */}
+                {}
                 <div>
                   <h3 className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-red-400/80">
                     <Shield size={12} />
@@ -340,7 +340,7 @@ export function SettingsModal({ isOpen, onClose }: Props) {
                 </div>
               </div>
 
-              {/* Footer */}
+              {}
               <div className="border-t border-white/[0.07] px-6 py-3">
                 <p className="text-center text-[11px] text-[var(--text-muted)]">
                   EchoMind AI · v1.0
@@ -358,3 +358,4 @@ export function SettingsModal({ isOpen, onClose }: Props) {
     </>
   );
 }
+

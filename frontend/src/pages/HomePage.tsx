@@ -31,20 +31,16 @@ export default function HomePage({ onActionReady }: HomePageProps) {
   const [isPdfProcessing, setIsPdfProcessing] = useState(false);
   const [processingFileName, setProcessingFileName] = useState("");
 
-  // Find active conversation from the list
   const activeConversation = conversations.find((c) => c._id === conversationId);
 
-  // Extract transcript mutation state
   const [isExtracting, setIsExtracting] = useState(false);
 
   const handleTranscriptSubmit = useCallback(
     async (url: string) => {
       try {
         setIsExtracting(true);
-        // 1. Get transcript and video data
         const videoData = await videoService.getTranscript(url);
         
-        // 2. Create conversation
         const conversation = await createConversation({
           videoId: videoData._id,
           title: videoData.title || 'New Chat'
@@ -52,7 +48,6 @@ export default function HomePage({ onActionReady }: HomePageProps) {
 
         toast.success('Source indexed and ready to chat');
         
-        // 3. Redirect to workspace
         navigate(`/workspace/${conversation._id}`);
       } catch (err) {
         toast.error(err instanceof Error ? err.message : 'Indexing failed');
@@ -67,7 +62,6 @@ export default function HomePage({ onActionReady }: HomePageProps) {
     (conversation: IConversation) => {
       setIsPdfProcessing(false);
       
-      // Update cache instantly to prevent dashboard redirection flashes
       queryClient.setQueryData<IConversation[]>(['conversations'], (old) => {
         if (!old) return [conversation];
         if (old.some((c) => c._id === conversation._id)) return old;
@@ -159,7 +153,7 @@ export default function HomePage({ onActionReady }: HomePageProps) {
                   transition={{ delay: 0.16, duration: 0.35 }}
                   className="flex flex-col gap-6"
                 >
-                  {/* Source Selector tabs */}
+                  {}
                   <div className="mx-auto flex w-full max-w-sm items-center gap-1 rounded-2xl border border-white/[0.08] bg-[#0c1018]/90 p-1.5 backdrop-blur-md">
                     <button
                       onClick={() => setSourceType("video")}
@@ -187,7 +181,6 @@ export default function HomePage({ onActionReady }: HomePageProps) {
                       onUploadSuccess={handlePdfUploadSuccess}
                       onUploadingStateChange={(uploading) => {
                         handlePdfUploadingState(uploading);
-                        // Extract file name from upload input to display in indexing widget
                         const inputEl = document.querySelector('input[type="file"]') as HTMLInputElement;
                         if (inputEl?.files?.[0]) {
                           setProcessingFileName(inputEl.files[0].name);
@@ -204,3 +197,4 @@ export default function HomePage({ onActionReady }: HomePageProps) {
     </AnimatePresence>
   );
 }
+

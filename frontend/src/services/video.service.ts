@@ -9,3 +9,4 @@ export const videoService = {
     return response.data.data;
   },
 };
+

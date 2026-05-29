@@ -30,12 +30,12 @@ export function PdfPreviewCard({ document, isLoading = false }: PdfPreviewCardPr
   return (
     <div className="overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.045] shadow-sm backdrop-blur-xl">
       <div className="grid gap-4 p-3 sm:grid-cols-[100px_minmax(0,1fr)] sm:p-4">
-        {/* Document Icon Box */}
+        {}
         <div className="grid aspect-[3/4] h-24 place-items-center rounded-xl bg-[#10141d] border border-white/[0.06] text-[var(--accent)]">
           <FileText size={32} />
         </div>
 
-        {/* Content Details */}
+        {}
         <div className="flex flex-col justify-center min-w-0">
           <div className="mb-1.5 flex flex-wrap items-center gap-2">
             <span className="rounded-full border border-white/[0.08] bg-white/[0.045] px-2 py-0.5 text-[11px] font-medium text-[var(--text-secondary)]">
@@ -91,3 +91,4 @@ export function PdfPreviewCard({ document, isLoading = false }: PdfPreviewCardPr
     </div>
   );
 }
+

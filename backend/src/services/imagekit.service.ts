@@ -33,3 +33,4 @@ export const uploadPdf = async (
 export const deletePdf = async (fileId: string): Promise<void> => {
   await imagekit.deleteFile(fileId);
 };
+

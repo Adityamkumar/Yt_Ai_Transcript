@@ -124,3 +124,4 @@ export function TranscriptLoader({ onSubmit, isLoading = false, error }: Transcr
     </div>
   );
 }
+

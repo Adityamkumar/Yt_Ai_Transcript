@@ -64,3 +64,4 @@ export function Header({ onNewChat, workspaceActions }: HeaderProps) {
     </header>
   );
 }
+

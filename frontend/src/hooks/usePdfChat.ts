@@ -260,3 +260,4 @@ export function usePdfChat(conversationId: string | undefined, documentId: strin
     isNotesRequest,
   };
 }
+

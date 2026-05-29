@@ -84,3 +84,4 @@ export default function ForgotPasswordPage() {
     if (err instanceof Error && err.message) return err.message;
     return fallback;
   };
+

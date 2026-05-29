@@ -302,3 +302,4 @@ export function MessageBubble({ message, onRetry, onEdit, children }: MessageBub
     </motion.article>
   );
 }
+

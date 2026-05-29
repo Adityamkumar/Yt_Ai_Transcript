@@ -155,7 +155,7 @@ export function ShowcaseSection() {
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-        {/* ── Top capability pills ── */}
+        {}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -178,7 +178,7 @@ export function ShowcaseSection() {
           ))}
         </motion.div>
 
-        {/* ── Section header ── */}
+        {}
         <div className="text-center mb-16">
           <motion.div
             initial={{ opacity: 0, y: 16 }}
@@ -221,7 +221,7 @@ export function ShowcaseSection() {
           </motion.p>
         </div>
 
-        {/* ── App mockup ── */}
+        {}
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -229,7 +229,7 @@ export function ShowcaseSection() {
           transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
           className="relative max-w-5xl mx-auto mb-16"
         >
-          {/* Glow behind */}
+          {}
           <div
             className="absolute -inset-px rounded-2xl opacity-60 blur-2xl pointer-events-none"
             style={{
@@ -237,7 +237,7 @@ export function ShowcaseSection() {
             }}
           />
 
-          {/* Browser frame */}
+          {}
           <div
             className="relative rounded-2xl overflow-hidden"
             style={{
@@ -247,7 +247,7 @@ export function ShowcaseSection() {
                 '0 50px 100px rgba(0,0,0,0.7), 0 0 0 1px rgba(124,92,255,0.12), inset 0 1px 0 rgba(255,255,255,0.07)',
             }}
           >
-            {/* Chrome bar */}
+            {}
             <div
               className="flex items-center gap-2 px-4 py-3 border-b"
               style={{ borderColor: 'rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.025)' }}
@@ -289,9 +289,9 @@ export function ShowcaseSection() {
               </div>
             </div>
 
-            {/* 3-column layout */}
+            {}
             <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr_260px] min-h-[480px]">
-              {/* Sidebar */}
+              {}
               <div
                 className="hidden lg:flex flex-col border-r p-4 gap-2"
                 style={{ borderColor: 'rgba(255,255,255,0.05)' }}
@@ -340,9 +340,9 @@ export function ShowcaseSection() {
                 </div>
               </div>
 
-              {/* Chat area */}
+              {}
               <div className="flex flex-col">
-                {/* Video header */}
+                {}
                 <div
                   className="flex items-center gap-3 px-4 py-3 border-b"
                   style={{ borderColor: 'rgba(255,255,255,0.05)' }}
@@ -371,7 +371,7 @@ export function ShowcaseSection() {
                   </span>
                 </div>
 
-                {/* Messages */}
+                {}
                 <div className="flex-1 p-4 space-y-3.5 overflow-hidden">
                   {mockMessages.map((msg, i) => (
                     <AnimatedMessage key={i} msg={msg} index={i} />
@@ -406,7 +406,7 @@ export function ShowcaseSection() {
                   </motion.div>
                 </div>
 
-                {/* Input */}
+                {}
                 <div className="p-3 border-t" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
                   <div
                     className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl"
@@ -428,7 +428,7 @@ export function ShowcaseSection() {
                 </div>
               </div>
 
-              {/* Summary panel */}
+              {}
               <div
                 className="hidden lg:flex flex-col border-l p-4 gap-5"
                 style={{ borderColor: 'rgba(255,255,255,0.05)' }}
@@ -488,7 +488,7 @@ export function ShowcaseSection() {
             </div>
           </div>
 
-          {/* Floating badges */}
+          {}
           <motion.div
             className="absolute -left-5 top-1/3 hidden lg:block"
             animate={{ y: [0, -7, 0] }}
@@ -545,3 +545,4 @@ export function ShowcaseSection() {
     </section>
   );
 }
+

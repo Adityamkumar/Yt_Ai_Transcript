@@ -14,8 +14,6 @@ axiosInstance.interceptors.request.use((config) => config, (error) => Promise.re
 axiosInstance.interceptors.response.use((response) => response, async (error) => {
     const originalRequest = error.config;
 
-    // 'current-user' is excluded so silent session probes (e.g. OAuth return detection)
-    // never trigger the forced window.location.href redirect on 401.
     const isAuthRequest =
       originalRequest.url?.includes('login') ||
       originalRequest.url?.includes('register') ||
@@ -40,3 +38,4 @@ axiosInstance.interceptors.response.use((response) => response, async (error) =>
 });
 
 export default axiosInstance;
+

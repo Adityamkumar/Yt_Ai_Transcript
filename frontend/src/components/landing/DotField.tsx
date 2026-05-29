@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEffect, useRef, memo } from 'react';
 
 import './DotField.css';
@@ -136,7 +135,6 @@ const DotField = memo(({
       const len = dots.length;
       const t = frameCount * 0.02;
 
-      // Always show a baseline engagement if dots aren't visible
       const targetEngagement = Math.max(0.2, Math.min(m.speed / 5, 1));
       engagement.current += (targetEngagement - engagement.current) * 0.06;
       const eng = engagement.current;
@@ -232,7 +230,6 @@ const DotField = memo(({
       window.removeEventListener('resize', resize);
       window.removeEventListener('mousemove', onMouseMove);
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

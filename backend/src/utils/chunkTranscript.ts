@@ -271,3 +271,4 @@ export const chunkTranscript = (
 
   return enforceHardLimits(optimized).sort((a, b) => a.start - b.start);
 };
+

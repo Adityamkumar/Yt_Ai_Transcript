@@ -178,3 +178,4 @@ export function ChatContainer({ conversationId, video, onActionReady }: ChatCont
     </section>
   );
 }
+

@@ -88,3 +88,4 @@ const pdfDocumentSchema = new Schema<IPdfDocument>(
 
 export const PdfDocument = mongoose.model<IPdfDocument>("PdfDocument", pdfDocumentSchema);
 
+

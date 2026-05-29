@@ -20,7 +20,6 @@ export function BookmarkCard({ bookmark, onDelete }: BookmarkCardProps) {
     if (bookmark.type === 'notes') {
       try {
         const parsed = JSON.parse(bookmark.content);
-        // Show subtitle or first main concept as preview
         return parsed.subtitle || (parsed.overview?.[0]) || bookmark.content;
       } catch (e) {
         console.error("Error parsing bookmark content:", e);
@@ -93,3 +92,4 @@ export function BookmarkCard({ bookmark, onDelete }: BookmarkCardProps) {
     </motion.div>
   );
 }
+
