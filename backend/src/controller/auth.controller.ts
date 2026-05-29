@@ -233,3 +233,27 @@ export const googleCallbackController = asyncHandler(async (req, res) => {
 
   return res.redirect("http://localhost:5173");
 });
+
+export const avatarProxyController = asyncHandler(async (req, res) => {
+  const { url } = req.query;
+
+  if (!url || typeof url !== "string") {
+    throw new ApiError(400, "Invalid image URL");
+  }
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new ApiError(502, "Failed to fetch image");
+    }
+
+    const contentType = response.headers.get("content-type") || "image/jpeg";
+    const buffer = await response.arrayBuffer();
+
+    res.set("Content-Type", contentType);
+    res.set("Cache-Control", "public, max-age=86400");
+    res.send(Buffer.from(buffer));
+  } catch (error) {
+    throw new ApiError(502, "Failed to proxy image");
+  }
+});

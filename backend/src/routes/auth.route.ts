@@ -7,6 +7,7 @@ import {
   getCurrentUser,
   deleteUser,
   googleCallbackController,
+  avatarProxyController,
 } from "../controller/auth.controller.js";
 import { authMiddleware } from "../middleware/auth.middleware.js";
 import passport from "passport";
@@ -21,6 +22,9 @@ router.post("/logout", authMiddleware, userLogout);
 router.post("/refresh-token", refreshAccessToken);
 router.get("/current-user", authMiddleware, getCurrentUser);
 router.delete("/delete/:id", authMiddleware, deleteUser);
+
+// Avatar proxy for Google images (no auth needed)
+router.get("/avatar-proxy", avatarProxyController);
 
 //Google Auth
 router.get(

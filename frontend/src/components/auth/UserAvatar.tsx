@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 /**
  * UserAvatar — displays a user's Google profile picture or a gradient
  * initials fallback consistent with the app's dark glassmorphism aesthetic.
@@ -6,11 +8,10 @@
 interface UserAvatarProps {
   name?: string;
   avatar?: string;
-  size?: number;       // pixel size (width + height)
+  size?: number;
   className?: string;
 }
 
-// Derive a consistent gradient from the user's name
 function getAvatarGradient(name: string): string {
   const hue = name
     .split('')
@@ -28,27 +29,33 @@ function getInitials(name: string): string {
 }
 
 export function UserAvatar({ name = 'User', avatar, size = 36, className = '' }: UserAvatarProps) {
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
   const initials = getInitials(name);
   const gradient = getAvatarGradient(name);
 
-  if (avatar) {
+  const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+
+  // Proxy Google images through backend to avoid CORS issues
+  const avatarUrl = avatar && avatar.includes('googleusercontent.com')
+    ? `${baseURL}/api/v1/user/avatar-proxy?url=${encodeURIComponent(avatar)}`
+    : avatar;
+
+  if (avatar && !imageError) {
     return (
       <img
-        src={avatar}
+        src={avatarUrl}
         alt={`${name}'s avatar`}
         width={size}
         height={size}
         className={`rounded-full object-cover flex-shrink-0 ${className}`}
-        style={{ width: size, height: size }}
-        onError={(e) => {
-          // Fallback to initials if image fails to load
-          const target = e.currentTarget as HTMLImageElement;
-          target.style.display = 'none';
-          const parent = target.parentElement;
-          if (parent) {
-            parent.style.background = gradient;
-          }
+        style={{
+          width: size,
+          height: size,
+          display: imageLoaded ? 'block' : 'none',
         }}
+        onLoad={() => setImageLoaded(true)}
+        onError={() => setImageError(true)}
       />
     );
   }
