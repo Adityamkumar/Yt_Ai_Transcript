@@ -8,6 +8,9 @@ import {
   deleteUser,
   googleCallbackController,
   avatarProxyController,
+  forgetPassword,
+  resetPasswordController,
+  validateResetPasswordTokenController,
 } from "../controller/auth.controller.js";
 import { authMiddleware } from "../middleware/auth.middleware.js";
 import passport from "passport";
@@ -46,4 +49,13 @@ router.get(
   googleCallbackController,
 );
 
+router.post('/forgot-password', forgetPassword)
+router.get(
+  "/reset-password/:token/validate",
+  validateResetPasswordTokenController
+);
+router.post(
+  "/reset-password/:token",
+  resetPasswordController
+);
 export default router;

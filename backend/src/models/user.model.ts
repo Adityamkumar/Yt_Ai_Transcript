@@ -1,6 +1,7 @@
 import mongoose, {Document, Schema} from "mongoose";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import crypto from 'node:crypto'
 
 export interface IUser extends Document{
    name: string;
@@ -10,11 +11,14 @@ export interface IUser extends Document{
    googleId?:string;
    provider: 'local' | 'google'
    refreshToken?: string;
+   resetPasswordToken?: string;
+   resetPasswordExpiry?: Date;
    isPasswordCorrect(
      password: string
    ): Promise<boolean>;
    generateAccessToken(): string;
-   generateRefreshToken(): string
+   generateRefreshToken(): string;
+   generateResetPasswordToken(): string;
 }
 
 const userSchema = new Schema<IUser>(
@@ -23,8 +27,6 @@ const userSchema = new Schema<IUser>(
     email: { type: String, required: true, unique: true },
     password: {
       type: String,
-      // Required only for local (email/password) accounts.
-      // Google OAuth users are created without a password.
       required: function (this: any) {
         return this.provider === 'local';
       },
@@ -42,6 +44,12 @@ const userSchema = new Schema<IUser>(
       default: 'local'
     },
     refreshToken: { type: String },
+    resetPasswordToken:{
+      type: String
+    },
+    resetPasswordExpiry:{
+      type: Date
+    }
   },
   {
     timestamps: true,
@@ -82,6 +90,23 @@ userSchema.methods.generateRefreshToken = function () {
   );
 };
 
+userSchema.methods.generateResetPasswordToken =
+function () {
+
+  const resetToken =
+    crypto.randomBytes(32).toString("hex");
+
+  this.resetPasswordToken =
+    crypto
+      .createHash("sha256")
+      .update(resetToken)
+      .digest("hex");
+
+  this.resetPasswordExpiry =
+    Date.now() + 5 * 60 * 1000;
+
+  return resetToken;
+};
 const User = mongoose.model<IUser>("User", userSchema);
 
 export default User;

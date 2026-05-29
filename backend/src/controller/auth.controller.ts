@@ -9,6 +9,10 @@ import { generateAccessTokenAndRefreshToken } from "../services/auth.service.js"
 import type { CustomJwtPayload } from "../types/jwt.types.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
+import { sendEmail } from "../utils/sendEmail.js";
+import crypto from "node:crypto";
+import { generateResetPasswordEmail } from "../utils/emailTemplates.js";
+
 
 export const userRegister = asyncHandler(async (req, res) => {
   try {
@@ -257,3 +261,120 @@ export const avatarProxyController = asyncHandler(async (req, res) => {
     throw new ApiError(502, "Failed to proxy image");
   }
 });
+
+export const forgetPassword = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+  if (!email) {
+    throw new ApiError(400, "Email is required");
+  }
+
+  const user = await User.findOne({ email: email });
+  if (!user) {
+    throw new ApiError(404, "Couldn't find the user with this email");
+  }
+
+  if (!user.password) {
+    return res.status(400).json({
+      success: false,
+      message: "This account uses Google Sign-In.",
+    });
+  }
+
+  const resetToken = user.generateResetPasswordToken();
+  await user.save({
+    validateBeforeSave: false,
+  });
+
+  const clientUrl = process.env.CLIENT_URL || "http://localhost:5173";
+  const resetLink = `${clientUrl}/reset-password/${resetToken}`;
+  const template = generateResetPasswordEmail(resetLink, user.name);
+
+  await sendEmail({
+    to: user.email,
+    subject: template.subject,
+    html: template.html,
+  });
+  res
+    .status(200)
+    .json(new ApiResponse(200, "Reset password link sent successfully."));
+});
+
+
+export const resetPasswordController =
+asyncHandler(async (req, res) => {
+
+  const rawToken = req.params.token;
+  const token = typeof rawToken === "string" ? rawToken : "";
+
+  const { password } = req.body;
+
+  if (!token) {
+    throw new ApiError(400, "Reset token is required");
+  }
+
+  const hashedToken =
+    crypto
+      .createHash("sha256")
+      .update(token)
+      .digest("hex");
+
+  const user = await User.findOne({
+    resetPasswordToken: hashedToken,
+
+    resetPasswordExpiry: {
+      $gt: new Date(),
+    },
+  });
+
+  if (!user) {
+    throw new ApiError(
+      400,
+      "Invalid or expired reset token"
+    );
+  }
+
+  if (!password || typeof password !== "string") {
+    throw new ApiError(400, "Password is required");
+  }
+
+  user.password = password;
+  await user.save();
+  await User.findByIdAndUpdate(user._id, {
+    $unset: {
+      resetPasswordToken: 1,
+      resetPasswordExpiry: 1,
+    },
+  });
+
+  return res.status(200).json({
+    success: true,
+    message:
+      "Password reset successfully",
+  });
+});
+
+export const validateResetPasswordTokenController = asyncHandler(
+  async (req, res) => {
+    const rawToken = req.params.token;
+    const token = typeof rawToken === "string" ? rawToken : "";
+
+    if (!token) {
+      throw new ApiError(400, "Reset token is required");
+    }
+
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+    const user = await User.findOne({
+      resetPasswordToken: hashedToken,
+      resetPasswordExpiry: { $gt: new Date() },
+    }).select("_id");
+
+    if (!user) {
+      throw new ApiError(400, "Invalid or expired reset token");
+    }
+
+    return res.status(200).json(
+      new ApiResponse(200, "Reset token is valid")
+    );
+  }
+);
