@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema } from "mongoose";
+import mongoose, { Document, Schema, Types } from "mongoose";
 
 export interface ITranscriptChunk {
   text: string;
@@ -12,6 +12,12 @@ export interface IVideo extends Document {
   title: string;
   transcript: ITranscriptChunk[];
   youtubeVideoId: string;
+  uploadedBy?: Types.ObjectId;
+  totalChunks: number;
+  status: "processing" | "ready" | "failed";
+  ragStatus?: "processing" | "ready" | "failed";
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 const videoUrl = new Schema<IVideo>(
@@ -28,6 +34,28 @@ const videoUrl = new Schema<IVideo>(
     title: {
       type: String,
       required: true,
+    },
+    uploadedBy: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: false,
+    },
+    totalChunks: {
+      type: Number,
+      required: true,
+      default: 0,
+      min: 0,
+    },
+    status: {
+      type: String,
+      enum: ["processing", "ready", "failed"],
+      default: "ready",
+      required: true,
+    },
+    ragStatus: {
+      type: String,
+      enum: ["processing", "ready", "failed"],
+      required: false,
     },
     transcript: [
       {

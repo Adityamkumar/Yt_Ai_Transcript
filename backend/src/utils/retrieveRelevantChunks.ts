@@ -1,5 +1,4 @@
-import { PdfDocument } from "../models/pdfDocument.model.js";
-import type { IPdfChunk } from "../models/pdfDocument.model.js";
+import { PdfChunk, type IPdfChunk } from "../models/pdfChunk.model.js";
 import { Types } from "mongoose";
 
 const STOPWORDS = new Set([
@@ -31,8 +30,8 @@ export const retrieveRelevantChunks = async (
 ): Promise<IPdfChunk[]> => {
   const docId = typeof documentId === "string" ? new Types.ObjectId(documentId) : documentId;
 
-  const pdfDoc = await PdfDocument.findById(docId);
-  if (!pdfDoc || !pdfDoc.chunks || pdfDoc.chunks.length === 0) {
+  const chunks = await PdfChunk.find({ documentId: docId });
+  if (!chunks || chunks.length === 0) {
     return [];
   }
 
@@ -43,17 +42,17 @@ export const retrieveRelevantChunks = async (
     .filter(w => w.length > 1 && !STOPWORDS.has(w));
 
   if (words.length === 0) {
-    const sorted = [...pdfDoc.chunks].sort((a, b) => a.chunkIndex - b.chunkIndex);
+    const sorted = [...chunks].sort((a, b) => a.chunkIndex - b.chunkIndex);
     return sorted.slice(0, limit);
   }
 
-  const candidateChunks = pdfDoc.chunks.filter(chunk => {
+  const candidateChunks = chunks.filter(chunk => {
     const lowerText = chunk.text.toLowerCase();
     return words.some(word => lowerText.includes(word));
   });
 
   if (candidateChunks.length === 0) {
-    const sorted = [...pdfDoc.chunks].sort((a, b) => a.chunkIndex - b.chunkIndex);
+    const sorted = [...chunks].sort((a, b) => a.chunkIndex - b.chunkIndex);
     return sorted.slice(0, limit);
   }
 

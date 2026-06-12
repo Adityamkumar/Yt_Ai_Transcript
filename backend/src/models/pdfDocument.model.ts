@@ -1,44 +1,26 @@
 import mongoose, { Document, Schema, Types } from "mongoose";
 
-export interface IPdfChunk {
-  text: string;
-  chunkIndex: number;
-  page: number;
-  wordCount: number;
-}
-
 export interface IPdfDocument extends Document {
   title: string;
   fileName: string;
   fileUrl: string;
   fileId: string;
+  /** SHA-256 hash of the raw PDF bytes — used for deduplication */
+  documentHash: string;
   pageCount: number;
   totalChunks: number;
   uploadedBy: Types.ObjectId;
   status: "processing" | "ready" | "failed";
-  chunks: IPdfChunk[];
+  ragStatus?: "processing" | "ready" | "failed";
+  /**
+   * Tracks how many automatic ingestion attempts have been made.
+   * Auto-retries are capped at MAX_AUTO_RETRIES (2).
+   * Manual retries are tracked separately via retryCount as well (total cap = 4).
+   */
+  retryCount: number;
   createdAt: Date;
   updatedAt: Date;
 }
-
-const pdfChunkSubSchema = new Schema<IPdfChunk>({
-  text: {
-    type: String,
-    required: true,
-  },
-  chunkIndex: {
-    type: Number,
-    required: true,
-  },
-  page: {
-    type: Number,
-    required: true,
-  },
-  wordCount: {
-    type: Number,
-    required: true,
-  },
-});
 
 const pdfDocumentSchema = new Schema<IPdfDocument>(
   {
@@ -57,6 +39,12 @@ const pdfDocumentSchema = new Schema<IPdfDocument>(
     fileId: {
       type: String,
       required: true,
+    },
+    documentHash: {
+      type: String,
+      required: true,
+      unique: true,
+      index: true,
     },
     pageCount: {
       type: Number,
@@ -79,7 +67,16 @@ const pdfDocumentSchema = new Schema<IPdfDocument>(
       default: "processing",
       required: true,
     },
-    chunks: [pdfChunkSubSchema],
+    ragStatus: {
+      type: String,
+      enum: ["processing", "ready", "failed"],
+      required: false,
+    },
+    retryCount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
   },
   {
     timestamps: true,
@@ -87,5 +84,3 @@ const pdfDocumentSchema = new Schema<IPdfDocument>(
 );
 
 export const PdfDocument = mongoose.model<IPdfDocument>("PdfDocument", pdfDocumentSchema);
-
-

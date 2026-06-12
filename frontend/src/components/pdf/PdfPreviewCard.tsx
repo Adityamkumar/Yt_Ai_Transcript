@@ -24,8 +24,12 @@ export function PdfPreviewCard({ document, isLoading = false }: PdfPreviewCardPr
     );
   }
 
-  const isFailed = document.status === "failed";
-  const isProcessing = document.status === "processing";
+
+  // Use ragStatus as the authoritative AI-readiness signal; fall back to status for legacy docs
+  const effectiveStatus = document.ragStatus ?? document.status;
+  const isReady = effectiveStatus === "ready";
+  const isAiFailed = effectiveStatus === "failed";
+  const isAiProcessing = effectiveStatus === "processing";
 
   return (
     <div className="overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.045] shadow-sm backdrop-blur-xl">
@@ -41,21 +45,21 @@ export function PdfPreviewCard({ document, isLoading = false }: PdfPreviewCardPr
             <span className="rounded-full border border-white/[0.08] bg-white/[0.045] px-2 py-0.5 text-[11px] font-medium text-[var(--text-secondary)]">
               Document
             </span>
-            {document.status === "ready" && (
+            {isReady && (
               <span className="inline-flex items-center gap-1 rounded-full bg-[rgba(52,211,153,0.1)] px-2 py-0.5 text-[11px] font-medium text-[var(--success)]">
                 <CheckCircle2 size={12} />
                 Indexed
               </span>
             )}
-            {isProcessing && (
+            {isAiProcessing && (
               <span className="inline-flex items-center gap-1 rounded-full bg-yellow-500/10 px-2 py-0.5 text-[11px] font-medium text-yellow-500 animate-pulse">
                 <Loader2 size={12} className="animate-spin" />
                 Indexing
               </span>
             )}
-            {isFailed && (
+            {isAiFailed && (
               <span className="inline-flex items-center gap-1 rounded-full bg-red-500/10 px-2 py-0.5 text-[11px] font-medium text-[var(--danger)]">
-                Failed
+                AI Failed
               </span>
             )}
           </div>

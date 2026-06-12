@@ -7,7 +7,11 @@ export const chatService = {
     return response.data;
   },
 
-  streamQuestion: async (payload: AskQuestionPayload, onToken: (token: string) => void) => {
+  streamQuestion: async (
+    payload: AskQuestionPayload,
+    onToken: (token: string) => void,
+    signal?: AbortSignal,
+  ) => {
     const url = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/v1/chat/ask`;
 
     const response = await fetch(url, {
@@ -18,6 +22,7 @@ export const chatService = {
       },
       credentials: 'include',
       body: JSON.stringify({ ...payload, stream: true }),
+      signal,
     });
 
     if (!response.ok) {
@@ -29,11 +34,16 @@ export const chatService = {
     if (!reader) throw new Error('No reader available');
 
     const decoder = new TextDecoder();
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      const chunk = decoder.decode(value);
-      onToken(chunk);
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value);
+        onToken(chunk);
+      }
+    } catch (err: any) {
+      reader.cancel();
+      if (err?.name !== 'AbortError') throw err;
     }
   },
 };

@@ -28,6 +28,7 @@ export function ChatContainer({ conversationId, video, onActionReady }: ChatCont
     generateNotes,
     generateSummary,
     triggerAction,
+    stopStreaming,
     isStreaming,
     streamingMessage,
     isNotesRequest,
@@ -171,7 +172,7 @@ export function ChatContainer({ conversationId, video, onActionReady }: ChatCont
 
       <ChatInput
         onSend={(message) => sendMessage(message)}
-        onStop={() => {}}
+        onStop={stopStreaming}
         isPending={isStreaming}
         placeholder="Ask about the video..."
       />

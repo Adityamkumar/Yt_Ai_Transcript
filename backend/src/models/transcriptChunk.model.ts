@@ -1,17 +1,19 @@
-import mongoose, { Document, Schema } from "mongoose";
+import mongoose, { Document, Schema, Types } from "mongoose";
 import { RAG_CONFIG } from "../rag/config/rag.config.js";
-import type { PdfChunkFields } from "../types/ragChunk.types.js";
+import type { TranscriptChunkFields } from "../types/ragChunk.types.js";
 
-export interface IPdfChunk extends PdfChunkFields, Document {}
+export interface ITranscriptChunk
+  extends TranscriptChunkFields,
+    Document {}
 
 const validateEmbeddingDimensions = (embedding: number[]) =>
   embedding.length === RAG_CONFIG.embeddings.dimensions;
 
-const pdfChunkSchema = new Schema<IPdfChunk>(
+const transcriptChunkSchema = new Schema<ITranscriptChunk>(
   {
-    documentId: {
+    videoDocumentId: {
       type: Schema.Types.ObjectId,
-      ref: "PdfDocument",
+      ref: "Video",
       required: true,
     },
     text: {
@@ -27,17 +29,22 @@ const pdfChunkSchema = new Schema<IPdfChunk>(
         message: `Embedding must contain ${RAG_CONFIG.embeddings.dimensions} dimensions.`,
       },
     },
-    chunkIndex: {
+    start: {
       type: Number,
       required: true,
       min: 0,
     },
-    page: {
+    end: {
       type: Number,
       required: true,
-      min: 1,
+      min: 0,
     },
-    wordCount: {
+    duration: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    chunkIndex: {
       type: Number,
       required: true,
       min: 0,
@@ -45,12 +52,14 @@ const pdfChunkSchema = new Schema<IPdfChunk>(
   },
   {
     timestamps: { createdAt: true, updatedAt: false },
-    collection: "pdfchunks",
-  }
+    collection: "transcriptchunks",
+  },
 );
 
-pdfChunkSchema.index({ documentId: 1, chunkIndex: 1 }, { unique: true });
-pdfChunkSchema.index({ documentId: 1, page: 1 });
+transcriptChunkSchema.index({ videoDocumentId: 1, chunkIndex: 1 }, { unique: true });
+transcriptChunkSchema.index({ videoDocumentId: 1, start: 1 });
 
-export const PdfChunk = mongoose.model<IPdfChunk>("PdfChunk", pdfChunkSchema);
-
+export const TranscriptChunk = mongoose.model<ITranscriptChunk>(
+  "TranscriptChunk",
+  transcriptChunkSchema,
+);

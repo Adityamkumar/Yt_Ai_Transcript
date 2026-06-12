@@ -18,6 +18,7 @@ import type { ChatMessage } from '@/types';
 import { formatRelativeTime } from '@/utils';
 import { cn } from '@/utils/cn';
 import { stripMarkdown } from '@/utils/stripMarkdown';
+import { fixInlineLists } from '@/utils/fixInlineLists';
 
 interface MessageBubbleProps {
   message: ChatMessage;
@@ -175,7 +176,7 @@ export function MessageBubble({ message, onRetry, onEdit, children }: MessageBub
         </div>
 
         <div className={cn('min-w-0 flex-1', isUser && 'flex flex-col items-end')}>
-          <div className={cn('max-w-full', isUser ? 'w-fit max-w-[88%]' : 'w-full')}>
+          <div className={cn(isUser ? 'w-fit max-w-[75%] sm:max-w-[65%]' : 'w-full')}>
             <div className={cn('mb-3 flex items-center gap-2.5 px-1', isUser && 'justify-end')}>
               <span className="text-[13px] font-semibold text-white/90">{isUser ? 'You' : 'EchoMind AI'}</span>
               <span className="text-[12px] text-white/40">
@@ -189,7 +190,7 @@ export function MessageBubble({ message, onRetry, onEdit, children }: MessageBub
                 isUser
                   ? isEditing 
                     ? 'bg-white/[0.06] border border-white/15 p-1.5 w-full sm:min-w-[450px] lg:min-w-[550px]' 
-                    : 'bg-white px-5 py-4 shadow-xl'
+                    : 'bg-white px-5 py-4 shadow-xl w-full'
                   : 'border border-white/[0.1] bg-white/[0.06] px-5 py-5 text-white/95 backdrop-blur-2xl sm:px-6'
               )}
               style={{ fontSize: '17px' }}
@@ -232,7 +233,7 @@ export function MessageBubble({ message, onRetry, onEdit, children }: MessageBub
                         <ReactMarkdown
                           remarkPlugins={[remarkGfm]}
                           components={markdownComponents}
-                          children={message.content}
+                          children={fixInlineLists(message.content)}
                         />
                         <span className="streaming-cursor" />
                       </div>
@@ -248,7 +249,7 @@ export function MessageBubble({ message, onRetry, onEdit, children }: MessageBub
                       <ReactMarkdown
                         remarkPlugins={[remarkGfm]}
                         components={markdownComponents}
-                        children={message.content}
+                        children={fixInlineLists(message.content)}
                       />
                     </div>
                   )}

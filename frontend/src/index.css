@@ -273,6 +273,18 @@ p {
 .markdown-content ul {
   padding-left: 1.5rem;
   list-style: disc;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.markdown-content ul li {
+  padding-left: 0.25rem;
+  line-height: 1.65;
+}
+
+.markdown-content ul li + li {
+  margin-top: 0;
 }
 
 .markdown-content ol {
@@ -312,9 +324,6 @@ p {
   flex-shrink: 0;
 }
 
-.markdown-content ul li + li {
-  margin-top: 0.25rem;
-}
 
 .markdown-content a {
   color: #aeb9ff;

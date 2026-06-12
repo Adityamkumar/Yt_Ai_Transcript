@@ -24,8 +24,12 @@ export function generateId(): string {
 }
 
 export function formatRelativeTime(date: Date | string): string {
+  if (!date) return '';
+  const parsed = new Date(date);
+  if (isNaN(parsed.getTime())) return '';
+
   const now = new Date();
-  const diff = now.getTime() - new Date(date).getTime();
+  const diff = now.getTime() - parsed.getTime();
   const minutes = Math.floor(diff / 60000);
   const hours = Math.floor(diff / 3600000);
   const days = Math.floor(diff / 86400000);
@@ -34,7 +38,7 @@ export function formatRelativeTime(date: Date | string): string {
   if (minutes < 60) return `${minutes}m ago`;
   if (hours < 24) return `${hours}h ago`;
   if (days < 7) return `${days}d ago`;
-  return new Date(date).toLocaleDateString();
+  return parsed.toLocaleDateString();
 }
 
 export function truncate(str: string, max: number): string {

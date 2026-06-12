@@ -1,0 +1,116 @@
+import { Types } from "mongoose";
+import { Video } from "../../models/VideoUrl.model.js";
+import { TranscriptChunk } from "../../models/transcriptChunk.model.js";
+import { chunkTranscriptForRag } from "../chunking/transcriptChunking.service.js";
+import { generateDocumentEmbeddingWithRetry } from "../utils/embeddingRetry.util.js";
+
+export type IngestVideoForRagInput = {
+  videoDocumentId: string | Types.ObjectId;
+};
+
+const toObjectId = (value: string | Types.ObjectId): Types.ObjectId =>
+  typeof value === "string" ? new Types.ObjectId(value) : value;
+
+const EMBEDDING_BATCH_SIZE = 5;
+const EMBEDDING_BATCH_DELAY_MS = 200;
+
+const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+
+const generateEmbeddingsForChunks = async (
+  chunks: Array<{ text: string; chunkIndex: number; start: number; end: number; duration: number }>,
+  title: string,
+): Promise<Array<{ text: string; chunkIndex: number; start: number; end: number; duration: number; embedding: number[] }>> => {
+  const result: Array<{ text: string; chunkIndex: number; start: number; end: number; duration: number; embedding: number[] }> = [];
+
+  for (let i = 0; i < chunks.length; i += EMBEDDING_BATCH_SIZE) {
+    const batch = chunks.slice(i, i + EMBEDDING_BATCH_SIZE);
+
+    const batchResults = await Promise.all(
+      batch.map(async (chunk) => {
+        const embedding = await generateDocumentEmbeddingWithRetry(chunk.text, title);
+        return { ...chunk, embedding };
+      }),
+    );
+
+    result.push(...batchResults);
+
+    const isLastBatch = i + EMBEDDING_BATCH_SIZE >= chunks.length;
+    if (!isLastBatch) {
+      await sleep(EMBEDDING_BATCH_DELAY_MS);
+    }
+  }
+
+  return result;
+};
+
+/**
+ * Background ingestion service that processes a video transcript for RAG.
+ * It chunks the transcript, generates vector embeddings, and stores them.
+ */
+export const ingestVideoForRag = async ({
+  videoDocumentId,
+}: IngestVideoForRagInput): Promise<void> => {
+  const videoObjectId = toObjectId(videoDocumentId);
+
+  // Update RAG status to processing
+  await Video.findByIdAndUpdate(videoObjectId, {
+    ragStatus: "processing",
+  });
+
+  try {
+    const video = await Video.findById(videoObjectId);
+    if (!video) {
+      throw new Error(`Video not found for id ${videoObjectId}`);
+    }
+
+    // Chunk the transcript
+    const chunks = chunkTranscriptForRag(video.transcript);
+
+    if (chunks.length === 0) {
+      throw new Error(
+        `No transcript chunks were generated for video "${video.title}".`,
+      );
+    }
+
+    // Generate embeddings for chunks
+    const embeddedChunks = await generateEmbeddingsForChunks(chunks, video.title);
+
+    // Clean up any existing chunks for this video (idempotency)
+    await TranscriptChunk.deleteMany({ videoDocumentId: videoObjectId });
+
+    // Store chunks in transcriptchunks collection
+    await TranscriptChunk.insertMany(
+      embeddedChunks.map((chunk) => ({
+        videoDocumentId: videoObjectId,
+        text: chunk.text,
+        embedding: chunk.embedding,
+        chunkIndex: chunk.chunkIndex,
+        start: chunk.start,
+        end: chunk.end,
+        duration: chunk.duration,
+      })),
+    );
+
+    // Update video RAG status to ready
+    await Video.findByIdAndUpdate(videoObjectId, {
+      ragStatus: "ready",
+      totalChunks: embeddedChunks.length,
+    });
+
+    console.info(
+      `[RAG] Video ingestion complete. videoDocumentId=${videoObjectId}, chunks=${embeddedChunks.length}`,
+    );
+  } catch (error: any) {
+    // Set RAG status to failed
+    await Video.findByIdAndUpdate(videoObjectId, {
+      ragStatus: "failed",
+    });
+
+    // Clean up any partially ingested chunks
+    await TranscriptChunk.deleteMany({ videoDocumentId: videoObjectId });
+
+    throw new Error(
+      `[RAG] Video ingestion failed for videoDocumentId=${videoObjectId}: ${error?.message ?? "Unknown error"}`,
+    );
+  }
+};

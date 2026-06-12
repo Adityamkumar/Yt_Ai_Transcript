@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { ArrowDown } from "lucide-react";
 import { useMessages } from "@/hooks/useMessages";
 import { usePdfChat } from "@/hooks/usePdfChat";
@@ -7,8 +7,11 @@ import { MessageRenderer } from "../MessageRenderer";
 import { ChatInput } from "../ChatInput";
 import { PdfEmptyState } from "./PdfEmptyState";
 import { PdfPreviewCard } from "./PdfPreviewCard";
+import { PdfProcessingState } from "./PdfProcessingState";
+import { PdfFailedState } from "./PdfFailedState";
 import { PdfDocument } from "@/types";
 import { WorkspaceAction } from "../workspace-actions/workspaceActionConfig";
+import { pdfService } from "@/services/pdf.service";
 
 interface PdfChatContainerProps {
   conversationId: string;
@@ -16,10 +19,87 @@ interface PdfChatContainerProps {
   onActionReady?: (trigger: (action: WorkspaceAction) => void) => void;
 }
 
+const POLL_INTERVAL_MS = 4000;
+
+/** Must match MAX_TOTAL_RETRIES on the backend (4 = 2 auto + 2 manual). */
+const MAX_RETRIES_DISPLAY = 4;
+
+/**
+ * Derives the authoritative RAG status from a PdfDocument.
+ * Falls back to `status` for documents that pre-date the ragStatus field.
+ */
+function resolveRagStatus(doc: PdfDocument): "processing" | "ready" | "failed" {
+  return doc.ragStatus ?? doc.status;
+}
+
 export function PdfChatContainer({ conversationId, pdf, onActionReady }: PdfChatContainerProps) {
+  const [livePdf, setLivePdf] = useState<PdfDocument>(pdf);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // ---------- ragStatus derivation ----------
+  const ragStatus = resolveRagStatus(livePdf);
+
+  // ---------- Polling ----------
+  const startPolling = useCallback(() => {
+    if (pollRef.current) return; // already polling
+    pollRef.current = setInterval(async () => {
+      try {
+        const { ragStatus: polledRagStatus, totalChunks, retryCount, maxRetries } = await pdfService.getPdfStatus(livePdf._id);
+        setLivePdf((prev) => ({
+          ...prev,
+          ragStatus: polledRagStatus,
+          status: polledRagStatus, // keep status in sync for legacy badge
+          totalChunks,
+          retryCount,
+          // Store maxRetries as a transient field for the failed state UI
+          ...(maxRetries !== undefined ? { _maxRetries: maxRetries } as any : {}),
+        }));
+        // Stop polling once we leave the processing state
+        if (polledRagStatus !== "processing") {
+          clearInterval(pollRef.current!);
+          pollRef.current = null;
+        }
+      } catch {
+        // Silently retry next tick — network hiccup should not surface to user
+      }
+    }, POLL_INTERVAL_MS);
+  }, [livePdf._id]);
+
+  const stopPolling = useCallback(() => {
+    if (pollRef.current) {
+      clearInterval(pollRef.current);
+      pollRef.current = null;
+    }
+  }, []);
+
+  // Sync if the parent passes a freshly-fetched pdf (e.g. after sidebar navigation)
+  useEffect(() => {
+    setLivePdf(pdf);
+  }, [pdf._id, pdf.ragStatus, pdf.status]);
+
+  // Start/stop polling based on current ragStatus
+  useEffect(() => {
+    if (ragStatus === "processing") {
+      startPolling();
+    } else {
+      stopPolling();
+    }
+    return stopPolling;
+  }, [ragStatus, startPolling, stopPolling]);
+
+  // ---------- Handle retry: flip back to processing + restart poll ----------
+  const handleRetryStarted = useCallback((newRetryCount?: number) => {
+    setLivePdf((prev) => ({
+      ...prev,
+      ragStatus: "processing",
+      status: "processing",
+      ...(newRetryCount !== undefined ? { retryCount: newRetryCount } : {}),
+    }));
+    // Polling will auto-start via the useEffect above
+  }, []);
+
+  // ---------- Chat logic (only active when ragStatus === "ready") ----------
   const { messages, isLoading } = useMessages(conversationId);
-  const [showScrollButton, setShowScrollButton] = useState(false);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const {
     sendMessage,
@@ -27,10 +107,11 @@ export function PdfChatContainer({ conversationId, pdf, onActionReady }: PdfChat
     generateNotes,
     generateSummary,
     triggerAction,
+    stopStreaming,
     isStreaming,
     streamingMessage,
     isNotesRequest,
-  } = usePdfChat(conversationId, pdf?._id);
+  } = usePdfChat(conversationId, livePdf._id);
 
   useEffect(() => {
     onActionReady?.(triggerAction);
@@ -38,7 +119,6 @@ export function PdfChatContainer({ conversationId, pdf, onActionReady }: PdfChat
 
   const streamingDisplayMessage = useMemo(() => {
     if (!isStreaming) return null;
-
     return {
       _id: "streaming",
       conversationId,
@@ -51,44 +131,55 @@ export function PdfChatContainer({ conversationId, pdf, onActionReady }: PdfChat
     } as any;
   }, [isStreaming, streamingMessage, isNotesRequest, conversationId]);
 
-  const displayMessages = useMemo(() => {
-    return streamingDisplayMessage
-      ? [...messages, streamingDisplayMessage]
-      : messages;
-  }, [messages, streamingDisplayMessage]);
+  const displayMessages = useMemo(
+    () => (streamingDisplayMessage ? [...messages, streamingDisplayMessage] : messages),
+    [messages, streamingDisplayMessage]
+  );
 
   const bottomRef = useAutoScroll(displayMessages);
+
+  const [showScrollButton, setShowScrollButton] = useState(false);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const container = scrollContainerRef.current;
     if (!container) return;
-
     const handleScroll = () => {
       const { scrollTop, scrollHeight, clientHeight } = container;
       const isNearBottom = scrollHeight - scrollTop - clientHeight < 250;
       const canScroll = scrollHeight > clientHeight + 100;
       setShowScrollButton(!isNearBottom && canScroll);
     };
-
     handleScroll();
     container.addEventListener("scroll", handleScroll, { passive: true });
-    return () => {
-      container.removeEventListener("scroll", handleScroll);
-    };
+    return () => container.removeEventListener("scroll", handleScroll);
   }, []);
 
   const scrollToBottom = () => {
-    const container = scrollContainerRef.current;
-    if (!container) return;
-    container.scrollTo({
-      top: container.scrollHeight,
-      behavior: "auto",
-    });
+    scrollContainerRef.current?.scrollTo({ top: scrollContainerRef.current.scrollHeight, behavior: "auto" });
   };
 
-  const handlePromptSelect = (text: string) => {
-    sendMessage(text);
-  };
+  const handlePromptSelect = (text: string) => sendMessage(text);
+
+  // ============================================================
+  //  RAG STATUS SWITCH — the authoritative rendering gate
+  // ============================================================
+
+  if (ragStatus === "processing") {
+    return <PdfProcessingState document={livePdf} />;
+  }
+
+  if (ragStatus === "failed") {
+    return (
+      <PdfFailedState
+        document={livePdf}
+        maxRetries={MAX_RETRIES_DISPLAY}
+        onRetryStarted={handleRetryStarted}
+      />
+    );
+  }
+
+  // ragStatus === "ready" — render full AI workspace
 
   if (isLoading && messages.length === 0) {
     return (
@@ -118,7 +209,7 @@ export function PdfChatContainer({ conversationId, pdf, onActionReady }: PdfChat
           <div className="pb-36 pt-5 sm:pb-40 sm:pt-8">
             <div className="chat-container">
               <div className="mb-8 max-w-130">
-                <PdfPreviewCard document={pdf} />
+                <PdfPreviewCard document={livePdf} />
               </div>
 
               <div className="mb-8">
@@ -139,7 +230,6 @@ export function PdfChatContainer({ conversationId, pdf, onActionReady }: PdfChat
                   onEdit={editMessage}
                 />
               ))}
-
               <div ref={bottomRef} className="h-2 w-full" />
             </div>
           </div>
@@ -158,11 +248,10 @@ export function PdfChatContainer({ conversationId, pdf, onActionReady }: PdfChat
 
       <ChatInput
         onSend={(message) => sendMessage(message)}
-        onStop={() => {}}
+        onStop={stopStreaming}
         isPending={isStreaming}
         placeholder="Ask about the document..."
       />
     </section>
   );
 }
-

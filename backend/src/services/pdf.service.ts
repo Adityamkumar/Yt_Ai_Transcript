@@ -1,14 +1,27 @@
+import crypto from "crypto";
 import { PdfDocument } from "../models/pdfDocument.model.js";
 import { extractPdfText } from "../utils/extractPdfText.js";
-import { chunkDocument } from "../utils/chunkDocument.js";
 import { uploadPdf } from "./imagekit.service.js";
 import { Types } from "mongoose";
 
+/**
+ * Generates a SHA-256 hex hash from raw PDF file bytes.
+ * This is the canonical identity of a physical document for deduplication.
+ */
+export const hashPdfBuffer = (buffer: Buffer): string => {
+  return crypto.createHash("sha256").update(buffer).digest("hex");
+};
+
+/**
+ * Uploads the PDF file to storage and creates the metadata document.
+ * Callers must have already checked for deduplication before calling this.
+ */
 export const processPdfUpload = async (
   fileBuffer: Buffer,
   fileName: string,
   userId: string | Types.ObjectId,
-  title: string
+  title: string,
+  documentHash: string
 ) => {
   const userObjectId = typeof userId === "string" ? new Types.ObjectId(userId) : userId;
 
@@ -33,31 +46,12 @@ export const processPdfUpload = async (
     fileName,
     fileUrl: uploadResult.url,
     fileId: uploadResult.fileId,
+    documentHash,
     pageCount: textExtraction.totalPages,
     uploadedBy: userObjectId,
     status: "processing",
+    retryCount: 0,
   });
 
-  try {
-    const chunks = chunkDocument(textExtraction.pages);
-    
-    pdfDoc.chunks = chunks.map(chunk => ({
-      text: chunk.text,
-      chunkIndex: chunk.chunkIndex,
-      page: chunk.page,
-      wordCount: chunk.wordCount,
-    }));
-
-    pdfDoc.totalChunks = chunks.length;
-    pdfDoc.status = "ready";
-    await pdfDoc.save();
-
-    return pdfDoc;
-  } catch (error: any) {
-    console.error("PDF chunking/indexing failure:", error);
-    pdfDoc.status = "failed";
-    await pdfDoc.save();
-    throw new Error("Failed to index PDF document contents.");
-  }
+  return pdfDoc;
 };
-

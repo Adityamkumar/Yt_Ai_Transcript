@@ -16,9 +16,26 @@ export const pdfService = {
   },
 
   getPdfStatus: async (documentId: string) => {
-    const response = await axiosInstance.get<ApiResponse<{ status: "processing" | "ready" | "failed"; totalChunks: number }>>(
-      `/api/v1/pdf/status/${documentId}`
-    );
+    const response = await axiosInstance.get<
+      ApiResponse<{
+        status: "processing" | "ready" | "failed";
+        ragStatus: "processing" | "ready" | "failed";
+        totalChunks: number;
+        retryCount: number;
+        maxRetries: number;
+      }>
+    >(`/api/v1/pdf/status/${documentId}`);
+    return response.data.data;
+  },
+
+  retryIngestion: async (documentId: string) => {
+    const response = await axiosInstance.post<
+      ApiResponse<{
+        ragStatus: "processing" | "ready" | "failed";
+        retryCount: number;
+        maxRetries: number;
+      }>
+    >(`/api/v1/pdf/retry/${documentId}`);
     return response.data.data;
   },
 
@@ -27,7 +44,11 @@ export const pdfService = {
     return response.data;
   },
 
-  streamQuestion: async (payload: PdfAskPayload, onToken: (token: string) => void) => {
+  streamQuestion: async (
+    payload: PdfAskPayload,
+    onToken: (token: string) => void,
+    signal?: AbortSignal,
+  ) => {
     const url = `${import.meta.env.VITE_API_BASE_URL || "http://localhost:8000"}/api/v1/pdf/ask`;
 
     const response = await fetch(url, {
@@ -38,6 +59,7 @@ export const pdfService = {
       },
       credentials: "include",
       body: JSON.stringify({ ...payload, stream: true }),
+      signal,
     });
 
     if (!response.ok) {
@@ -49,11 +71,16 @@ export const pdfService = {
     if (!reader) throw new Error("No reader available");
 
     const decoder = new TextDecoder();
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      const chunk = decoder.decode(value);
-      onToken(chunk);
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value);
+        onToken(chunk);
+      }
+    } catch (err: any) {
+      reader.cancel();
+      if (err?.name !== 'AbortError') throw err;
     }
   },
 };

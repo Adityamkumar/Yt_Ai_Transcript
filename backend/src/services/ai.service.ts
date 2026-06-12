@@ -317,7 +317,7 @@ export const askAiAboutTranscript = async (
 
       console.log(`GENERATING ${type.toUpperCase()}...`);
       const response = await ai.models.generateContent({
-        model: "gemini-3.5-flash",
+        model: "gemini-3-flash-preview",
         contents: prompt,
         config: {
           responseMimeType: "application/json",
@@ -364,7 +364,7 @@ export const askAiAboutTranscript = async (
     }
 
     const response = await ai.models.generateContent({
-      model: "gemini-3.5-flash",
+      model: "gemini-3-flash-preview",
       contents: prompt,
     });
 
@@ -415,7 +415,7 @@ export async function* streamAiAboutTranscript(
     );
 
     const response = await ai.models.generateContentStream({
-      model: "gemini-3.5-flash",
+      model: "gemini-3-flash-preview",
       contents: prompt,
     });
 
@@ -445,29 +445,60 @@ export async function* streamAiAboutTranscript(
 
 export const generateVideoTitle = async (transcript: string | ITranscriptChunk[]) => {
   try {
-    const formattedTranscript = typeof transcript === "string" 
-      ? transcript 
-      : transcript.slice(0, 50).map(c => c.text).join(" ");
-    
+    let transcriptSample = "";
+
+    if (typeof transcript === "string") {
+      // For string transcripts, skip the first 500 chars (intro noise) and take a middle+end sample
+      const stripped = transcript.slice(500);
+      transcriptSample = stripped.slice(0, 4000);
+    } else if (transcript.length > 0) {
+      // Sample intelligently: skip first ~10 chunks (instructor intro / music), then take
+      // chunks from the beginning of actual content, middle, and end to understand the full topic
+      const skip = Math.min(10, Math.floor(transcript.length * 0.08));
+      const total = transcript.length;
+
+      const startChunks = transcript.slice(skip, skip + 20).map(c => c.text);
+      const midStart = Math.floor(total * 0.35);
+      const midChunks = transcript.slice(midStart, midStart + 20).map(c => c.text);
+      const endStart = Math.max(0, total - 20);
+      const endChunks = transcript.slice(endStart).map(c => c.text);
+
+      transcriptSample = [
+        "--- Beginning of video ---",
+        startChunks.join(" "),
+        "--- Middle of video ---",
+        midChunks.join(" "),
+        "--- End of video ---",
+        endChunks.join(" "),
+      ].join("\n\n").slice(0, 5000);
+    }
+
     const response = await ai.models.generateContent({
-      model: "gemini-3.5-flash",
+      model: "gemini-3-flash-preview",
+      contents: `You are a video title generator. Analyze the transcript sample below and generate a single, meaningful, topic-focused title for this video.
 
-      contents: `
-Generate a concise searchable title for this YouTube video.
+IMPORTANT RULES:
+- First, identify the MAIN SUBJECT or TOPIC of the video (e.g. a programming concept, a framework, a tutorial subject, a course topic).
+- Do NOT base the title on the instructor's name, their introduction, greetings, or music segments.
+- Ignore lines like "[Music]", "hi my name is", "welcome to my channel", "subscribe", etc.
+- The title must reflect what the video is actually TEACHING or COVERING.
+- 3 to 7 words maximum.
+- No quotes, no markdown, no asterisks, no filler words.
+- Write only the title — nothing else.
 
-RULES:
-- 2-5 words
-- Educational
-- Topic-focused
-- No quotes
-- No filler words
+Examples of GOOD titles:
+- React Hooks Deep Dive
+- Building REST APIs with Node.js
+- CSS Grid Layout Complete Guide
+- Machine Learning for Beginners
+- Docker Container Orchestration Tutorial
 
 Transcript Sample:
-${formattedTranscript.slice(0, 3000)}
+${transcriptSample}
 `,
     });
 
-    return response.text?.trim().replace(/["']/g, "").replace(/\*\*/g, "");
+    return response.text?.trim().replace(/[\"'`*#]/g, "").replace(/\s+/g, " ").trim();
   } catch {
     return "New Conversation";
   }
@@ -517,7 +548,7 @@ export const askAiAboutPdf = async (
 
       console.log(`GENERATING PDF ${type.toUpperCase()}...`);
       const response = await ai.models.generateContent({
-        model: "gemini-3.5-flash",
+        model: "gemini-3-flash-preview",
         contents: prompt,
         config: {
           responseMimeType: "application/json",
@@ -554,7 +585,7 @@ export const askAiAboutPdf = async (
     }
 
     const response = await ai.models.generateContent({
-      model: "gemini-3.5-flash",
+      model: "gemini-3-flash-preview",
       contents: prompt,
     });
 

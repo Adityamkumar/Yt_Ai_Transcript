@@ -3,6 +3,8 @@ import { Message } from "../models/message.model.js";
 import { Video } from "../models/VideoUrl.model.js";
 import { PdfDocument } from "../models/pdfDocument.model.js";
 import { deletePdf } from "../services/imagekit.service.js";
+import { deletePdfRagArtifacts } from "../rag/services/pdfRagCleanup.service.js";
+import { deleteVideoRagArtifacts } from "../rag/services/transcriptRagCleanup.service.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -101,11 +103,21 @@ export const deleteConversation = asyncHandler(async (req: any, res) => {
       } catch (err) {
         console.error("Failed to delete PDF from ImageKit storage during conversation deletion:", err);
       }
+      try {
+        await deletePdfRagArtifacts(pdfDoc._id);
+      } catch (err: any) {
+        console.error("[RAG Cleanup] Failed to delete RAG chunks for documentId=", pdfDoc._id, ":", err?.message);
+      }
       await PdfDocument.findByIdAndDelete(pdfDocumentId);
     }
   } else if (videoId) {
     const remainingConversations = await Conversation.countDocuments({ videoId });
     if (remainingConversations === 0) {
+      try {
+        await deleteVideoRagArtifacts(videoId);
+      } catch (err: any) {
+        console.error("[RAG Cleanup] Failed to delete RAG chunks for videoId=", videoId, ":", err?.message);
+      }
       await Video.findByIdAndDelete(videoId);
     }
   }

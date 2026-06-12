@@ -1,4 +1,4 @@
-import type { IPdfChunk } from "../models/pdfDocument.model.js";
+import type { IPdfChunk } from "../models/pdfChunk.model.js";
 
 export const formatDocumentContext = (chunks: IPdfChunk[]): string => {
   if (chunks.length === 0) {

@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { messageService } from "@/services/message.service";
 import { pdfService } from "@/services/pdf.service";
@@ -10,6 +10,14 @@ export function usePdfChat(conversationId: string | undefined, documentId: strin
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingMessage, setStreamingMessage] = useState("");
   const [isNotesRequest, setIsNotesRequest] = useState(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  const stopStreaming = useCallback(() => {
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = null;
+    setIsStreaming(false);
+    setStreamingMessage("");
+  }, []);
 
   const sanitizePdfChatResponse = useCallback((text: string, type: MessageType): string => {
     if (type !== "chat" || !text) return text;
@@ -60,6 +68,8 @@ export function usePdfChat(conversationId: string | undefined, documentId: strin
           });
           fullResponse = response.data;
         } else {
+          const controller = new AbortController();
+          abortControllerRef.current = controller;
           await pdfService.streamQuestion(
             {
               documentId,
@@ -70,7 +80,8 @@ export function usePdfChat(conversationId: string | undefined, documentId: strin
             (token) => {
               fullResponse += token;
               setStreamingMessage(fullResponse);
-            }
+            },
+            controller.signal,
           );
         }
 
@@ -87,10 +98,11 @@ export function usePdfChat(conversationId: string | undefined, documentId: strin
           assistantMsg,
         ]);
         setStreamingMessage("");
-      } catch (error) {
-        throw error;
+      } catch (error: any) {
+        if (error?.name !== "AbortError") throw error;
       } finally {
         setIsStreaming(false);
+        setStreamingMessage("");
       }
     },
     [conversationId, documentId, isStreaming, queryClient]
@@ -169,6 +181,8 @@ export function usePdfChat(conversationId: string | undefined, documentId: strin
         }));
 
         let fullResponse = "";
+        const controller = new AbortController();
+        abortControllerRef.current = controller;
         await pdfService.streamQuestion(
           {
             documentId,
@@ -178,7 +192,8 @@ export function usePdfChat(conversationId: string | undefined, documentId: strin
           (token) => {
             fullResponse += token;
             setStreamingMessage(fullResponse);
-          }
+          },
+          controller.signal,
         );
 
         fullResponse = sanitizePdfChatResponse(fullResponse, "chat");
@@ -189,10 +204,11 @@ export function usePdfChat(conversationId: string | undefined, documentId: strin
           assistantMsg,
         ]);
         setStreamingMessage("");
-      } catch (error) {
-        throw error;
+      } catch (error: any) {
+        if (error?.name !== "AbortError") throw error;
       } finally {
         setIsStreaming(false);
+        setStreamingMessage("");
       }
     },
     [conversationId, documentId, isStreaming, queryClient]
@@ -255,6 +271,7 @@ export function usePdfChat(conversationId: string | undefined, documentId: strin
     generateNotes,
     generateSummary,
     triggerAction,
+    stopStreaming,
     isStreaming,
     streamingMessage,
     isNotesRequest,

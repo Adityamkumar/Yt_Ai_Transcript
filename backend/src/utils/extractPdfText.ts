@@ -40,7 +40,7 @@ export const extractPdfText = async (
     return text;
   };
 
-  const data = await PdfParse(pdfBuffer, { pagerender });
+  const data = await PdfParse(pdfBuffer, { pagerender, verbosityLevel: 0 });
 
   pages.sort((a, b) => a.page - b.page);
 

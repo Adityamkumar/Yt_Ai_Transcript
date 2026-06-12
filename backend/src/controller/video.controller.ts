@@ -5,6 +5,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { extractVideoId } from "../utils/extractVideoId.js";
+import { ingestVideoForRag } from "../rag/services/transcriptRagIngestion.service.js";
 
 const GENERIC_VIDEO_TITLES = new Set([
   "new conversation",
@@ -14,14 +15,37 @@ const GENERIC_VIDEO_TITLES = new Set([
   "youtube video",
 ]);
 
+// Patterns that indicate the title was generated from intro noise
+const BAD_TITLE_PATTERNS = [
+  /\[music\]/i,
+  /\bhi\b.*\bmy name\b/i,
+  /\bhello\b.*\beverybody\b/i,
+  /\bwelcome\b.*\bchannel\b/i,
+  /\bsubscribe\b/i,
+  /\banchorman\b/i,
+  /^(hi|hey|hello|what'?s up)\b/i,
+  /\bmy name is\b/i,
+  /\bguys (welcome|today)\b/i,
+];
+
+const isBadTitle = (title: string): boolean => {
+  if (!title) return true;
+  const lower = title.toLowerCase().trim();
+  if (GENERIC_VIDEO_TITLES.has(lower)) return true;
+  return BAD_TITLE_PATTERNS.some((pattern) => pattern.test(title));
+};
+
 const buildTitleFromTranscript = (
   transcript: Array<{ text: string }> = [],
   videoId: string,
 ) => {
+  // Skip first 10 chunks to avoid intro noise
+  const skip = Math.min(10, Math.floor(transcript.length * 0.08));
   const combined = transcript
-    .slice(0, 6)
+    .slice(skip, skip + 8)
     .map((chunk) => chunk.text || "")
     .join(" ")
+    .replace(/\[Music\]/gi, "")
     .replace(/\s+/g, " ")
     .trim();
 
@@ -29,7 +53,7 @@ const buildTitleFromTranscript = (
     return `Video ${videoId}`;
   }
 
-  const words = combined.split(" ").slice(0, 6).join(" ");
+  const words = combined.split(" ").slice(0, 7).join(" ");
   return words.length > 70 ? `${words.slice(0, 67).trim()}...` : words;
 };
 
@@ -39,11 +63,11 @@ const resolveVideoTitle = (
   videoId: string,
 ) => {
   const cleaned = (aiTitle || "")
-    .replace(/["'`*]/g, "")
+    .replace(/[\"'`*#]/g, "")
     .replace(/\s+/g, " ")
     .trim();
 
-  if (cleaned && !GENERIC_VIDEO_TITLES.has(cleaned.toLowerCase())) {
+  if (cleaned && !isBadTitle(cleaned)) {
     return cleaned;
   }
 
@@ -67,9 +91,12 @@ export const getTranscript = asyncHandler(async (req, res) => {
   });
 
   if (videoExists) {
+    let triggerIngestion = false;
+
     if (!videoExists.transcript || (Array.isArray(videoExists.transcript) && videoExists.transcript.length === 0)) {
       videoExists.transcript = await getTranscriptFromYoutube(videoId);
       await videoExists.save();
+      triggerIngestion = true;
     } else {
       const optimized = optimizeStoredTranscript(videoExists.transcript);
       const shouldSave =
@@ -88,14 +115,22 @@ export const getTranscript = asyncHandler(async (req, res) => {
       if (shouldSave) {
         videoExists.transcript = optimized as any;
         await videoExists.save();
+        triggerIngestion = true;
       }
     }
     
-    if (!videoExists.title || GENERIC_VIDEO_TITLES.has(videoExists.title.toLowerCase())) {
+    if (!videoExists.title || isBadTitle(videoExists.title)) {
       const aiTitle = await generateVideoTitle(videoExists.transcript);
       videoExists.title = resolveVideoTitle(aiTitle, videoExists.transcript as any, videoId);
       await videoExists.save();
     }
+
+    if (triggerIngestion || !videoExists.ragStatus || videoExists.ragStatus === "failed") {
+      ingestVideoForRag({ videoDocumentId: videoExists._id }).catch((err) => {
+        console.error("[RAG] Background video ingestion failed:", err.message);
+      });
+    }
+
     return res
       .status(200)
       .json(
@@ -121,6 +156,10 @@ export const getTranscript = asyncHandler(async (req, res) => {
     youtubeVideoId: videoId,
     transcript,
     title,
+  });
+
+  ingestVideoForRag({ videoDocumentId: video._id }).catch((err) => {
+    console.error("[RAG] Background video ingestion failed:", err.message);
   });
 
   res

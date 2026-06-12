@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { messageService } from '@/services/message.service';
 import { chatService } from '@/services/chat.service';
@@ -10,6 +10,14 @@ export function useChat(conversationId: string | undefined, videoId: string | un
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingMessage, setStreamingMessage] = useState('');
   const [isNotesRequest, setIsNotesRequest] = useState(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  const stopStreaming = useCallback(() => {
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = null;
+    setIsStreaming(false);
+    setStreamingMessage('');
+  }, []);
 
   const sendMessage = useCallback(
     async (content: string) => {
@@ -49,6 +57,8 @@ export function useChat(conversationId: string | undefined, videoId: string | un
           });
           fullResponse = response.data;
         } else {
+          const controller = new AbortController();
+          abortControllerRef.current = controller;
           await chatService.streamQuestion(
             {
               videoId,
@@ -59,7 +69,8 @@ export function useChat(conversationId: string | undefined, videoId: string | un
             (token) => {
               fullResponse += token;
               setStreamingMessage(fullResponse);
-            }
+            },
+            controller.signal,
           );
         }
 
@@ -74,10 +85,11 @@ export function useChat(conversationId: string | undefined, videoId: string | un
           assistantMsg,
         ]);
         setStreamingMessage('');
-      } catch (error) {
-        throw error;
+      } catch (error: any) {
+        if (error?.name !== 'AbortError') throw error;
       } finally {
         setIsStreaming(false);
+        setStreamingMessage('');
       }
     },
     [conversationId, videoId, isStreaming, queryClient]
@@ -156,6 +168,8 @@ export function useChat(conversationId: string | undefined, videoId: string | un
         }));
 
         let fullResponse = '';
+        const controller = new AbortController();
+        abortControllerRef.current = controller;
         await chatService.streamQuestion(
           {
             videoId,
@@ -165,7 +179,8 @@ export function useChat(conversationId: string | undefined, videoId: string | un
           (token) => {
             fullResponse += token;
             setStreamingMessage(fullResponse);
-          }
+          },
+          controller.signal,
         );
 
         const assistantMsg = await messageService.createMessage(conversationId, 'assistant', fullResponse);
@@ -175,10 +190,11 @@ export function useChat(conversationId: string | undefined, videoId: string | un
           assistantMsg,
         ]);
         setStreamingMessage('');
-      } catch (error) {
-        throw error;
+      } catch (error: any) {
+        if (error?.name !== 'AbortError') throw error;
       } finally {
         setIsStreaming(false);
+        setStreamingMessage('');
       }
     },
     [conversationId, videoId, isStreaming, queryClient]
@@ -238,6 +254,7 @@ export function useChat(conversationId: string | undefined, videoId: string | un
     generateNotes,
     generateSummary,
     triggerAction,
+    stopStreaming,
     isStreaming,
     streamingMessage,
     isNotesRequest,
