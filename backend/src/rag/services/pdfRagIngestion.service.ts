@@ -89,6 +89,9 @@ export const ingestPdfForRag = async ({
     ragStatus: "processing",
   });
 
+  // Clean up any stale chunks/vector data before starting ingestion attempt (idempotency rule)
+  await PdfChunk.deleteMany({ documentId: documentObjectId });
+
   try {
     const pdfBuffer = await fetchPdfBufferFromUrl(fileUrl);
     const textExtraction = await extractPdfText(pdfBuffer);
@@ -116,25 +119,56 @@ export const ingestPdfForRag = async ({
       })),
     );
 
+    // On success: reset retryCount and clear cooldownUntil
     await PdfDocument.findByIdAndUpdate(documentObjectId, {
       status: "ready",
       ragStatus: "ready",
       totalChunks: embeddedChunks.length,
+      retryCount: 0,
+      $unset: { cooldownUntil: "" },
     });
 
     console.info(
       `[RAG] PDF ingestion complete. documentId=${documentObjectId}, chunks=${embeddedChunks.length}`,
     );
   } catch (error: any) {
-    // Increment retryCount and mark as failed — caller decides whether to re-queue
-    await PdfDocument.findByIdAndUpdate(documentObjectId, {
-      status: "failed",
-      ragStatus: "failed",
-      $inc: { retryCount: 1 },
-    });
+    // Increment retryCount and mark as failed
+    const updatedDoc = await PdfDocument.findByIdAndUpdate(
+      documentObjectId,
+      {
+        status: "failed",
+        ragStatus: "failed",
+        $inc: { retryCount: 1 },
+      },
+      { new: true }
+    );
 
     // Clean up any partially ingested chunks
     await PdfChunk.deleteMany({ documentId: documentObjectId });
+
+    if (updatedDoc) {
+      if (updatedDoc.retryCount < MAX_AUTO_RETRIES) {
+        console.info(`[RAG] Auto-retry ingestion (attempt ${updatedDoc.retryCount + 1}) for documentId=${documentObjectId}`);
+        // Trigger ingestPdfForRag in the background again
+        ingestPdfForRag({
+          pdfDocumentId,
+          title,
+          fileName: _fileName,
+          fileUrl,
+          fileId: _fileId,
+          uploadedBy: _uploadedBy,
+        }).catch((err: Error) => {
+          console.error(`[RAG] Background auto-retry ingestion failed:`, err.message);
+        });
+      } else if (updatedDoc.retryCount >= MAX_TOTAL_RETRIES) {
+        // If we reached or exceeded 4 attempts, set 10-minute cooldown
+        const cooldownTime = new Date(Date.now() + 10 * 60 * 1000);
+        await PdfDocument.findByIdAndUpdate(documentObjectId, {
+          cooldownUntil: cooldownTime,
+        });
+        console.info(`[RAG] Maximum retries reached for documentId=${documentObjectId}. Entering cooldown until ${cooldownTime.toISOString()}.`);
+      }
+    }
 
     throw new Error(
       `[RAG] PDF ingestion failed for documentId=${documentObjectId}: ${error?.message ?? "Unknown error"}`,

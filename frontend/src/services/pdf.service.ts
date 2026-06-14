@@ -23,6 +23,7 @@ export const pdfService = {
         totalChunks: number;
         retryCount: number;
         maxRetries: number;
+        cooldownUntil?: string;
       }>
     >(`/api/v1/pdf/status/${documentId}`);
     return response.data.data;
@@ -34,6 +35,7 @@ export const pdfService = {
         ragStatus: "processing" | "ready" | "failed";
         retryCount: number;
         maxRetries: number;
+        cooldownUntil?: string;
       }>
     >(`/api/v1/pdf/retry/${documentId}`);
     return response.data.data;

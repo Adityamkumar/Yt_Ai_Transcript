@@ -134,8 +134,11 @@ export const uploadPdf = asyncHandler(async (req: any, res) => {
 
     if (effectiveRagStatus === "failed") {
       // CASE C — Previously failed. Re-trigger ingestion on the SAME document.
-      // Only re-trigger if still within auto-retry budget.
-      if (existing.retryCount < MAX_AUTO_RETRIES) {
+      // Only re-trigger if still within auto-retry budget AND not currently cooling down.
+      const now = new Date();
+      const isInCooldown = existing.cooldownUntil && now < existing.cooldownUntil;
+
+      if (existing.retryCount < MAX_AUTO_RETRIES && !isInCooldown) {
         await PdfDocument.findByIdAndUpdate(existing._id, {
           status: "processing",
           ragStatus: "processing",
@@ -152,7 +155,7 @@ export const uploadPdf = asyncHandler(async (req: any, res) => {
           console.error("[RAG] Background re-ingestion (dedup case C) failed:", err.message);
         });
       }
-      // If retryCount >= MAX_AUTO_RETRIES, leave as failed — manual retry button handles it.
+      // If retryCount >= MAX_AUTO_RETRIES or in cooldown, leave as failed.
 
       const conversation = await getOrCreateConversation(
         existing._id as mongoose.Types.ObjectId,
@@ -226,6 +229,7 @@ export const getPdfStatus = asyncHandler(async (req, res) => {
         totalChunks: pdfDoc.totalChunks,
         retryCount: pdfDoc.retryCount,
         maxRetries: MAX_TOTAL_RETRIES,
+        cooldownUntil: pdfDoc.cooldownUntil,
       },
       "Status fetched successfully",
     ),
@@ -249,9 +253,25 @@ export const retryPdfIngestion = asyncHandler(async (req: any, res) => {
     throw new ApiError(400, "Retry is only valid for documents in a failed state");
   }
 
-  // Enforce total retry cap — auto + manual combined
-  if (pdfDoc.retryCount >= MAX_TOTAL_RETRIES) {
-    throw new ApiError(429, "Maximum retry attempts reached. Please contact support if the issue persists.");
+  const now = new Date();
+  const isInCooldown = pdfDoc.cooldownUntil && now < pdfDoc.cooldownUntil;
+  if (isInCooldown) {
+    throw new ApiError(429, "AI indexing is temporarily paused. Please try again shortly.");
+  }
+
+  let nextRetryCount = pdfDoc.retryCount;
+  if (pdfDoc.cooldownUntil && now >= pdfDoc.cooldownUntil) {
+    nextRetryCount = 0;
+    await PdfDocument.findByIdAndUpdate(pdfDoc._id, {
+      retryCount: 0,
+      $unset: { cooldownUntil: "" },
+    });
+  } else if (pdfDoc.retryCount >= MAX_TOTAL_RETRIES) {
+    const cooldownTime = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+    await PdfDocument.findByIdAndUpdate(pdfDoc._id, {
+      cooldownUntil: cooldownTime,
+    });
+    throw new ApiError(429, "Retry limit reached. Entering 10-minute cooldown.");
   }
 
   // Reset status immediately so frontend can start polling
@@ -276,8 +296,9 @@ export const retryPdfIngestion = asyncHandler(async (req: any, res) => {
       200,
       {
         ragStatus: "processing",
-        retryCount: pdfDoc.retryCount,
+        retryCount: nextRetryCount,
         maxRetries: MAX_TOTAL_RETRIES,
+        cooldownUntil: undefined,
       },
       "Re-indexing started successfully",
     ),

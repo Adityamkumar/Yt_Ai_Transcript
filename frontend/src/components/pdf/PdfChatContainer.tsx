@@ -44,13 +44,14 @@ export function PdfChatContainer({ conversationId, pdf, onActionReady }: PdfChat
     if (pollRef.current) return; // already polling
     pollRef.current = setInterval(async () => {
       try {
-        const { ragStatus: polledRagStatus, totalChunks, retryCount, maxRetries } = await pdfService.getPdfStatus(livePdf._id);
+        const { ragStatus: polledRagStatus, totalChunks, retryCount, maxRetries, cooldownUntil } = await pdfService.getPdfStatus(livePdf._id);
         setLivePdf((prev) => ({
           ...prev,
           ragStatus: polledRagStatus,
           status: polledRagStatus, // keep status in sync for legacy badge
           totalChunks,
           retryCount,
+          cooldownUntil,
           // Store maxRetries as a transient field for the failed state UI
           ...(maxRetries !== undefined ? { _maxRetries: maxRetries } as any : {}),
         }));
@@ -93,6 +94,7 @@ export function PdfChatContainer({ conversationId, pdf, onActionReady }: PdfChat
       ...prev,
       ragStatus: "processing",
       status: "processing",
+      cooldownUntil: undefined,
       ...(newRetryCount !== undefined ? { retryCount: newRetryCount } : {}),
     }));
     // Polling will auto-start via the useEffect above

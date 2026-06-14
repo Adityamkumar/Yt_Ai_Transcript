@@ -26,7 +26,6 @@ export interface VideoData {
   _id: string;
   youtubeUrl: string;
   youtubeVideoId: string;
-  transcript: ITranscriptChunk[];
   title: string;
   createdAt: string;
   updatedAt: string;
@@ -58,6 +57,7 @@ export interface PdfDocument {
   ragStatus?: "processing" | "ready" | "failed";
   /** Total ingestion attempts made (auto + manual). Used to gate retry button. */
   retryCount?: number;
+  cooldownUntil?: string;
   uploadedBy: string;
   createdAt: string;
   updatedAt: string;

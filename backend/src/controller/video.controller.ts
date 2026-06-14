@@ -1,11 +1,12 @@
 import { Video } from "../models/VideoUrl.model.js";
-import { getTranscriptFromYoutube, optimizeStoredTranscript } from "../services/transcript.service.js";
+import { getTranscriptFromYoutube } from "../services/transcript.service.js";
 import { generateVideoTitle } from "../services/ai.service.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { extractVideoId } from "../utils/extractVideoId.js";
 import { ingestVideoForRag } from "../rag/services/transcriptRagIngestion.service.js";
+import { TranscriptChunk } from "../models/transcriptChunk.model.js";
 
 const GENERIC_VIDEO_TITLES = new Set([
   "new conversation",
@@ -93,39 +94,26 @@ export const getTranscript = asyncHandler(async (req, res) => {
   if (videoExists) {
     let triggerIngestion = false;
 
-    if (!videoExists.transcript || (Array.isArray(videoExists.transcript) && videoExists.transcript.length === 0)) {
-      videoExists.transcript = await getTranscriptFromYoutube(videoId);
-      await videoExists.save();
+    // Check if transcript chunks exist in the Decoupled RAG database
+    const chunkCount = await TranscriptChunk.countDocuments({ videoDocumentId: videoExists._id });
+    if (chunkCount === 0 || !videoExists.ragStatus || videoExists.ragStatus === "failed") {
       triggerIngestion = true;
-    } else {
-      const optimized = optimizeStoredTranscript(videoExists.transcript);
-      const shouldSave =
-        optimized.length !== videoExists.transcript.length ||
-        optimized.some((chunk, index) => {
-          const existing = videoExists.transcript[index];
-          return (
-            !existing ||
-            existing.start !== chunk.start ||
-            (existing as any).end !== chunk.end ||
-            existing.duration !== chunk.duration ||
-            existing.text !== chunk.text
-          );
-        });
-
-      if (shouldSave) {
-        videoExists.transcript = optimized as any;
-        await videoExists.save();
-        triggerIngestion = true;
-      }
     }
     
     if (!videoExists.title || isBadTitle(videoExists.title)) {
-      const aiTitle = await generateVideoTitle(videoExists.transcript);
-      videoExists.title = resolveVideoTitle(aiTitle, videoExists.transcript as any, videoId);
-      await videoExists.save();
+      const fetchedTranscript = await getTranscriptFromYoutube(videoId);
+      if (fetchedTranscript) {
+        const aiTitle = await generateVideoTitle(fetchedTranscript);
+        videoExists.title = resolveVideoTitle(aiTitle, fetchedTranscript as any, videoId);
+        await videoExists.save();
+      }
     }
 
-    if (triggerIngestion || !videoExists.ragStatus || videoExists.ragStatus === "failed") {
+    if (triggerIngestion) {
+      await Video.findByIdAndUpdate(videoExists._id, {
+        status: "processing",
+        ragStatus: "processing",
+      });
       ingestVideoForRag({ videoDocumentId: videoExists._id }).catch((err) => {
         console.error("[RAG] Background video ingestion failed:", err.message);
       });
@@ -154,8 +142,9 @@ export const getTranscript = asyncHandler(async (req, res) => {
   const video = await Video.create({
     youtubeUrl,
     youtubeVideoId: videoId,
-    transcript,
     title,
+    status: "processing",
+    ragStatus: "processing",
   });
 
   ingestVideoForRag({ videoDocumentId: video._id }).catch((err) => {

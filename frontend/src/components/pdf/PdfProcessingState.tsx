@@ -58,15 +58,13 @@ export function PdfProcessingState({ document }: PdfProcessingStateProps) {
               />
             </div>
             <span className="rounded-full bg-[rgba(139,156,255,0.1)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--accent)]">
-              Indexing Pipeline
+              Preparing
             </span>
             <h2 className="mt-3 text-xl font-semibold text-white">
-              Preparing AI workspace
+              Preparing your AI workspace...
             </h2>
             <p className="mt-1.5 text-sm text-[var(--text-muted)] leading-relaxed">
-              Building semantic embeddings for{" "}
-              <span className="font-medium text-white">&ldquo;{document.title}&rdquo;</span>.
-              {" "}This takes a moment.
+              Your document is safe. This will take a moment.
             </p>
           </div>
 

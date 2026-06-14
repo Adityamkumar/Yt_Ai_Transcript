@@ -1,5 +1,7 @@
 import { Video } from "../models/VideoUrl.model.js";
-import { getTranscriptFromYoutube, optimizeStoredTranscript } from "../services/transcript.service.js";
+import { TranscriptChunk } from "../models/transcriptChunk.model.js";
+import { retrieveRelevantTranscriptChunks } from "../utils/retrieveRelevantTranscriptChunks.js";
+import { ingestVideoForRag } from "../rag/services/transcriptRagIngestion.service.js";
 import {
   askAiAboutTranscript,
   getRecentMessages,
@@ -39,44 +41,34 @@ export const askQuestion = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Video not found");
   }
 
-  let transcript = video.transcript;
+  // Fetch all chunks for the video first
+  let chunks = await TranscriptChunk.find({ videoDocumentId: video._id }).sort({ chunkIndex: 1 });
 
-  if (!transcript || (Array.isArray(transcript) && transcript.length === 0)) {
-    console.log(`Transcript empty for video ${videoId}, attempting re-fetch...`);
-    const fetchedTranscript = await getTranscriptFromYoutube(video.youtubeVideoId);
-    if (fetchedTranscript) {
-      video.transcript = fetchedTranscript;
-      await video.save();
-      transcript = video.transcript;
+  // Fallback: If chunks are empty, trigger RAG ingestion dynamically
+  if (chunks.length === 0) {
+    console.log(`Transcript chunks empty for video ${videoId}, attempting dynamic re-ingestion...`);
+    try {
+      await ingestVideoForRag({ videoDocumentId: video._id });
+      chunks = await TranscriptChunk.find({ videoDocumentId: video._id }).sort({ chunkIndex: 1 });
+    } catch (err: any) {
+      console.error("[Chat] Failed to auto-ingest video transcript:", err.message);
     }
   }
 
-  if (Array.isArray(transcript) && transcript.length > 0) {
-    const optimized = optimizeStoredTranscript(transcript);
-    const shouldSave =
-      optimized.length !== transcript.length ||
-      optimized.some((chunk, index) => {
-        const existing = transcript[index];
-        return (
-          !existing ||
-          existing.start !== chunk.start ||
-          (existing as any).end !== chunk.end ||
-          existing.duration !== chunk.duration ||
-          existing.text !== chunk.text
-        );
-      });
+  if (chunks.length === 0) {
+    throw new ApiError(400, "Transcript is currently being prepared. Please try again shortly.");
+  }
 
-    if (shouldSave) {
-      video.transcript = optimized as any;
-      await video.save();
-      transcript = video.transcript;
-    }
+  // Determine RAG context context: top-N relevant chunks for chat, or all chunks for summaries/notes
+  let relevantChunks: any[] = chunks;
+  if (type === "chat" && question) {
+    relevantChunks = await retrieveRelevantTranscriptChunks(video._id, question, 8);
   }
 
   const contextMessages = getRecentMessages(recentMessages, 10);
 
   if (type === "notes" || !isStreamingRequest(req.body as AskQuestionBody, req.headers.accept)) {
-    const answer = await askAiAboutTranscript(transcript, question || "", contextMessages, type);
+    const answer = await askAiAboutTranscript(relevantChunks, question || "", contextMessages, type);
 
     return res
       .status(200)
@@ -97,7 +89,7 @@ export const askQuestion = asyncHandler(async (req, res) => {
   });
 
   try {
-    for await (const chunk of streamAiAboutTranscript(transcript, question || "", contextMessages, type)) {
+    for await (const chunk of streamAiAboutTranscript(relevantChunks, question || "", contextMessages, type)) {
       if (closed || res.destroyed) break;
       res.write(chunk);
     }

@@ -10,7 +10,6 @@ export interface ITranscriptChunk {
 export interface IVideo extends Document {
   youtubeUrl: string;
   title: string;
-  transcript: ITranscriptChunk[];
   youtubeVideoId: string;
   uploadedBy?: Types.ObjectId;
   totalChunks: number;
@@ -57,22 +56,6 @@ const videoUrl = new Schema<IVideo>(
       enum: ["processing", "ready", "failed"],
       required: false,
     },
-    transcript: [
-      {
-        text: { type: String, required: true },
-        start: { type: Number, required: true },
-        end: {
-          type: Number,
-          required: false,
-          default: function (this: { start?: number; duration?: number }) {
-            const start = typeof this.start === "number" ? this.start : 0;
-            const duration = typeof this.duration === "number" ? this.duration : 0;
-            return start + duration;
-          },
-        },
-        duration: { type: Number, required: true },
-      },
-    ],
   },
   {
     timestamps: true,

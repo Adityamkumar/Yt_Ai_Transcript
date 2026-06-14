@@ -3,6 +3,7 @@ import { Video } from "../../models/VideoUrl.model.js";
 import { TranscriptChunk } from "../../models/transcriptChunk.model.js";
 import { chunkTranscriptForRag } from "../chunking/transcriptChunking.service.js";
 import { generateDocumentEmbeddingWithRetry } from "../utils/embeddingRetry.util.js";
+import { getTranscriptFromYoutube } from "../../services/transcript.service.js";
 
 export type IngestVideoForRagInput = {
   videoDocumentId: string | Types.ObjectId;
@@ -63,8 +64,14 @@ export const ingestVideoForRag = async ({
       throw new Error(`Video not found for id ${videoObjectId}`);
     }
 
+    // Fetch transcript from YouTube
+    const transcript = await getTranscriptFromYoutube(video.youtubeVideoId);
+    if (!transcript || transcript.length === 0) {
+      throw new Error(`Failed to fetch transcript from YouTube for video id ${video.youtubeVideoId}`);
+    }
+
     // Chunk the transcript
-    const chunks = chunkTranscriptForRag(video.transcript);
+    const chunks = chunkTranscriptForRag(transcript);
 
     if (chunks.length === 0) {
       throw new Error(

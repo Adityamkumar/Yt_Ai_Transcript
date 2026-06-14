@@ -18,6 +18,7 @@ export interface IPdfDocument extends Document {
    * Manual retries are tracked separately via retryCount as well (total cap = 4).
    */
   retryCount: number;
+  cooldownUntil?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -76,6 +77,10 @@ const pdfDocumentSchema = new Schema<IPdfDocument>(
       type: Number,
       default: 0,
       min: 0,
+    },
+    cooldownUntil: {
+      type: Date,
+      required: false,
     },
   },
   {
