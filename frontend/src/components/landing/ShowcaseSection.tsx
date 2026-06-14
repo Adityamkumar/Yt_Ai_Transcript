@@ -147,7 +147,6 @@ export function ShowcaseSection() {
   const activeSession = sessionsData.find((s) => s.id === activeSessionId) || sessionsData[0];
 
   useEffect(() => {
-    // Reset state and load initial messages of active session
     setMessages(activeSession.initialMessages);
     setSelectedQ(null);
     setAiResponse('');
@@ -160,11 +159,9 @@ export function ShowcaseSection() {
     setIsTyping(true);
     setAiResponse('');
 
-    // Append user question
     const updatedMessages = [...activeSession.initialMessages, { role: 'user' as const, content: question }];
     setMessages(updatedMessages);
 
-    // Simulate typing answer
     let index = 0;
     const typingInterval = setInterval(() => {
       setAiResponse((prev) => {
@@ -251,17 +248,17 @@ export function ShowcaseSection() {
 
           {/* Core Chrome Frame */}
           <div
-            className="relative rounded-2xl overflow-hidden bg-[#070a12] border border-[var(--border-medium)] shadow-[0_32px_64px_rgba(0,0,0,0.65),0_0_0_1px_rgba(139,156,247,0.06),inset_0_1px_0_rgba(255,255,255,0.05)]"
+            className="relative rounded-2xl overflow-hidden bg-[var(--canvas-subtle)] border border-[var(--border-medium)] shadow-[0_32px_64px_rgba(0,0,0,0.35)]"
           >
             {/* Window Top Bar controls */}
-            <div className="flex items-center justify-between px-4 py-3.5 border-b border-white/[0.05] bg-white/[0.015]">
+            <div className="flex items-center justify-between px-4 py-3.5 border-b border-[var(--border-soft)] bg-[var(--surface-3)]">
               <div className="flex items-center gap-1.5 flex-shrink-0">
                 <div className="w-2.5 h-2.5 rounded-full bg-red-500/60" />
                 <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/60" />
                 <div className="w-2.5 h-2.5 rounded-full bg-green-500/60" />
               </div>
               <div className="flex-1 mx-4 flex items-center justify-center">
-                <div className="rounded-lg px-4 py-1 text-[10px] font-mono text-[var(--text-muted)] border border-white/[0.04] bg-black/30">
+                <div className="rounded-lg px-4 py-1 text-[10px] font-mono text-[var(--text-muted)] border border-[var(--border-soft)] bg-black/5 dark:bg-black/30">
                   echomind.ai/workspace/{activeSessionId}
                 </div>
               </div>
@@ -271,16 +268,16 @@ export function ShowcaseSection() {
               </div>
             </div>
 
-            {/* Mobile Workspace Selector (Mobile-Only tabs switcher, hides on desktop) */}
-            <div className="lg:hidden flex border-b border-white/[0.05] bg-black/40 p-2 overflow-x-auto gap-1">
+            {/* Mobile Workspace Selector */}
+            <div className="lg:hidden flex border-b border-[var(--border-soft)] bg-[var(--surface-3)] p-2 overflow-x-auto gap-1">
               {sessionsData.map((item) => (
                 <button
                   key={item.id}
                   onClick={() => setActiveSessionId(item.id)}
                   className={`px-3 py-1.5 rounded-lg text-[10.5px] font-semibold flex-shrink-0 transition-colors flex items-center gap-1.5 ${
                     activeSessionId === item.id
-                      ? 'bg-[var(--accent-subtle)] border border-[var(--accent)]/30 text-white'
-                      : 'text-[var(--text-secondary)] hover:text-white'
+                      ? 'bg-[var(--accent-subtle)] border border-[var(--accent)]/30 text-[var(--text-primary)] font-bold shadow-sm'
+                      : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
                   }`}
                 >
                   {item.sourceType === 'youtube' ? <Youtube size={11} className="text-red-400" /> : <FileSearch size={11} className="text-emerald-400" />}
@@ -290,11 +287,10 @@ export function ShowcaseSection() {
             </div>
 
             {/* Main Workspace layout split */}
-            {/* Desktop uses 3 columns layout. Mobile-first overrides hide Sidebar and Details columns, rendering only Chat center column */}
             <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr_260px] min-h-[500px]">
               
-              {/* Column 1: Left Sessions Sidebar (Hidden on Mobile, shown on lg) */}
-              <div className="hidden lg:flex flex-col border-r border-white/[0.05] bg-black/20 p-4 gap-2.5">
+              {/* Column 1: Left Sessions Sidebar */}
+              <div className="hidden lg:flex flex-col border-r border-[var(--border-soft)] bg-[var(--surface-3)] p-4 gap-2.5">
                 <div className="text-[9px] font-bold text-[var(--text-muted)] uppercase tracking-[0.15em] mb-2 px-1">
                   Active Sessions
                 </div>
@@ -307,7 +303,7 @@ export function ShowcaseSection() {
                       className={`text-left px-3.5 py-2.5 rounded-xl border transition-all duration-200 ${
                         isActive
                           ? 'bg-[var(--accent-subtle)] border-[var(--accent)]/30 shadow-sm'
-                          : 'bg-transparent border-transparent hover:bg-white/[0.03] hover:border-white/[0.04]'
+                          : 'bg-transparent border-transparent hover:bg-[var(--surface-hover)] hover:border-[var(--border-medium)]'
                       }`}
                     >
                       <div className="flex items-center gap-2 mb-1">
@@ -328,7 +324,7 @@ export function ShowcaseSection() {
                 })}
 
                 {/* Workspace Capabilities */}
-                <div className="mt-auto pt-4 border-t border-white/[0.05] space-y-2">
+                <div className="mt-auto pt-4 border-t border-[var(--border-soft)] space-y-2">
                   <div className="text-[9px] font-bold text-[var(--text-muted)] uppercase tracking-wider mb-2">Capabilities</div>
                   {[
                     { label: 'Transcript Grounding', ok: true },
@@ -344,9 +340,9 @@ export function ShowcaseSection() {
               </div>
 
               {/* Column 2: Center RAG Chat Workspace */}
-              <div className="flex flex-col bg-black/10">
+              <div className="flex flex-col bg-[var(--surface-3)]/30">
                 {/* Media header panel */}
-                <div className="flex items-center gap-3 px-4 py-3 border-b border-white/[0.05] bg-black/20">
+                <div className="flex items-center gap-3 px-4 py-3 border-b border-[var(--border-soft)] bg-[var(--surface-3)]">
                   <div className={`w-10 h-7 rounded-lg flex items-center justify-center ${
                     activeSession.sourceType === 'youtube' ? 'bg-red-500/10 border border-red-500/20' : 'bg-emerald-500/10 border border-emerald-500/20'
                   }`}>
@@ -386,7 +382,7 @@ export function ShowcaseSection() {
                         <div
                           className={`max-w-[85%] px-3.5 py-2.5 rounded-2xl text-[11px] leading-relaxed ${
                             isAi
-                              ? 'bg-white/[0.03] border border-white/[0.07] text-[#CBD5E1] rounded-tl-sm'
+                              ? 'bg-[var(--surface-1)] border border-[var(--border-medium)] text-[var(--text-primary)] rounded-tl-sm shadow-sm'
                               : 'bg-[var(--accent)] text-white rounded-tr-sm font-medium'
                           }`}
                         >
@@ -395,7 +391,7 @@ export function ShowcaseSection() {
                               {line.split(/(\*\*[^*]+\*\*)/).map((part, pIdx) => {
                                 if (part.startsWith('**') && part.endsWith('**')) {
                                   return (
-                                    <strong key={pIdx} className="text-white font-bold">
+                                    <strong key={pIdx} className="text-[var(--text-primary)] font-bold">
                                       {part.slice(2, -2)}
                                     </strong>
                                   );
@@ -416,7 +412,7 @@ export function ShowcaseSection() {
                       <div className="w-5.5 h-5.5 rounded bg-gradient-to-br from-[#7c5cff] to-[#4da2ff] flex items-center justify-center flex-shrink-0 mt-0.5">
                         <Bot size={11} className="text-white" />
                       </div>
-                      <div className="max-w-[85%] px-3.5 py-2.5 rounded-2xl rounded-tl-sm bg-white/[0.03] border border-white/[0.07] text-[#CBD5E1] leading-relaxed text-[11px] min-h-[40px]">
+                      <div className="max-w-[85%] px-3.5 py-2.5 rounded-2xl rounded-tl-sm bg-[var(--surface-1)] border border-[var(--border-medium)] text-[var(--text-primary)] leading-relaxed text-[11px] min-h-[40px] shadow-sm">
                         <span>{aiResponse}</span>
                         {isTyping && (
                           <span className="inline-block w-1.5 h-3.5 bg-[var(--accent)] ml-0.5 animate-pulse" />
@@ -426,8 +422,8 @@ export function ShowcaseSection() {
                   )}
                 </div>
 
-                {/* Suggested Prompt click elements (horizontal flex scroll on mobile, wrap on desktop) */}
-                <div className="px-4 py-2 bg-black/10 border-t border-white/[0.04]">
+                {/* Suggested Prompt click elements */}
+                <div className="px-4 py-2 bg-[var(--canvas)]/40 border-t border-[var(--border-soft)]">
                   <div className="text-[8.5px] font-mono text-[var(--text-muted)] uppercase tracking-wider mb-2 px-1">
                     Ask source questions
                   </div>
@@ -437,7 +433,7 @@ export function ShowcaseSection() {
                         key={idx}
                         disabled={isTyping}
                         onClick={() => handlePromptClick(item.q, item.a)}
-                        className="text-[10px] text-left px-3 py-2 rounded-xl bg-black/40 border border-white/[0.05] hover:border-[var(--accent)]/30 text-[var(--text-secondary)] hover:text-white font-medium flex-shrink-0 lg:flex-shrink"
+                        className="text-[10px] text-left px-3 py-2 rounded-xl bg-[var(--surface-2)] border border-[var(--border-medium)] hover:border-[var(--accent)]/30 text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-medium flex-shrink-0 lg:flex-shrink transition-all"
                       >
                         {item.q}
                       </button>
@@ -446,28 +442,28 @@ export function ShowcaseSection() {
                 </div>
 
                 {/* Chat input placeholder */}
-                <div className="p-3 border-t border-white/[0.05] bg-black/20">
-                  <div className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/[0.06]">
+                <div className="p-3 border-t border-[var(--border-soft)] bg-[var(--surface-3)]">
+                  <div className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-[var(--surface-2)] border border-[var(--border-medium)]">
                     <span className="text-[10.5px] text-[var(--text-muted)] flex-1 truncate">
                       Ask a detailed question...
                     </span>
-                    <button className="p-1.5 rounded-lg bg-white/[0.05] text-[var(--text-muted)]" disabled>
+                    <button className="p-1.5 rounded-lg bg-[var(--surface-3)] text-[var(--text-muted)]" disabled>
                       <Send size={11} />
                     </button>
                   </div>
                 </div>
               </div>
 
-              {/* Column 3: Right Details & Outlines (Hidden on Mobile, shown on lg) */}
-              <div className="hidden lg:flex flex-col border-l border-white/[0.05] bg-black/20 p-4 gap-5">
+              {/* Column 3: Right Details & Outlines */}
+              <div className="hidden lg:flex flex-col border-l border-[var(--border-soft)] bg-[var(--surface-3)] p-4 gap-5">
                 <div>
                   <div className="text-[9px] font-bold text-[var(--text-muted)] uppercase tracking-[0.15em] mb-2">
                     {activeSession.statLabel}
                   </div>
-                  <div className="p-3 rounded-xl bg-black/30 border border-white/5 flex items-center gap-2.5">
+                  <div className="p-3 rounded-xl bg-[var(--surface-2)] border border-[var(--border-medium)] flex items-center gap-2.5">
                     <Clock size={12} className="text-[var(--accent)]" />
                     <div>
-                      <div className="text-[10.5px] font-semibold text-white">
+                      <div className="text-[10.5px] font-semibold text-[var(--text-primary)]">
                         {activeSession.statValue}
                       </div>
                     </div>
@@ -481,7 +477,7 @@ export function ShowcaseSection() {
                   </div>
                   <div className="space-y-2">
                     {activeSession.outline.map((chap, i) => (
-                      <div key={i} className="flex items-start gap-1.5 p-1.5 rounded bg-black/20 text-[10px]">
+                      <div key={i} className="flex items-start gap-1.5 p-1.5 rounded bg-[var(--surface-3)] text-[10px]">
                         <ChevronRight size={10} className="text-[var(--accent)] mt-0.5 flex-shrink-0" />
                         <div className="min-w-0 flex-1">
                           <p className="text-[10px] text-[var(--text-secondary)] truncate">{chap.title}</p>

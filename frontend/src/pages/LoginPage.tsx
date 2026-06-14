@@ -65,13 +65,13 @@ export default function LoginPage() {
 
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <label htmlFor="login-password" className="text-xs font-medium text-[#94A3B8]">
+            <label htmlFor="login-password" className="text-xs font-medium text-[var(--text-secondary)]">
               Password
             </label>
             <Link
               to="/forgot-password"
               id="forgot-password-link"
-              className="text-xs text-[#7C5CFF] hover:text-[#9b7fff] transition-colors duration-200"
+              className="text-xs text-[var(--accent)] hover:text-[var(--accent-strong)] transition-colors duration-200"
             >
               Forgot password?
             </Link>
@@ -100,23 +100,23 @@ export default function LoginPage() {
       </form>
 
       <div className="flex items-center gap-3 mt-5 mb-4">
-        <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.07)" }} />
-        <span className="text-xs text-[#94A3B8]/60">or</span>
-        <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.07)" }} />
+        <div className="flex-1 h-px" style={{ background: "var(--border-soft)" }} />
+        <span className="text-xs text-[var(--text-muted)]">or</span>
+        <div className="flex-1 h-px" style={{ background: "var(--border-soft)" }} />
       </div>
 
       <GoogleAuthButton />
 
       <div className="flex items-center gap-3 my-6">
-        <div className="flex-1 h-px bg-white/07" />
-        <span className="text-xs text-[#94A3B8]/60">New to EchoMind?</span>
-        <div className="flex-1 h-px bg-white/07" />
+        <div className="flex-1 h-px" style={{ background: "var(--border-soft)" }} />
+        <span className="text-xs text-[var(--text-muted)]">New to EchoMind?</span>
+        <div className="flex-1 h-px" style={{ background: "var(--border-soft)" }} />
       </div>
 
       <Link
         to="/signup"
         id="go-to-signup"
-        className="flex items-center justify-center gap-1.5 w-full py-2.5 rounded-xl text-sm text-[#94A3B8] hover:text-[#F5F7FF] border border-white/08 hover:border-white/15 bg-white/02 hover:bg-white/05 transition-all duration-200"
+        className="flex items-center justify-center gap-1.5 w-full py-2.5 rounded-xl text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border-soft)] hover:border-[var(--border-medium)] bg-[var(--surface-3)] hover:bg-[var(--surface-hover)] transition-all duration-200"
       >
         Create your free account
       </Link>

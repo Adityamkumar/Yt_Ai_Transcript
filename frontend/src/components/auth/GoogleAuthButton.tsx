@@ -54,19 +54,19 @@ export function GoogleAuthButton({ label = 'Continue with Google' }: GoogleAuthB
       transition={{ duration: 0.15 }}
       className="relative w-full flex items-center justify-center gap-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed overflow-hidden group"
       style={{
-        background: 'rgba(255,255,255,0.05)',
-        border: '1px solid rgba(255,255,255,0.1)',
-        color: '#E2E8F0',
+        background: 'var(--surface-3)',
+        border: '1px solid var(--border-soft)',
+        color: 'var(--text-primary)',
       }}
       onMouseEnter={(e) => {
         if (!isLoading) {
-          e.currentTarget.style.background = 'rgba(255,255,255,0.09)';
-          e.currentTarget.style.borderColor = 'rgba(255,255,255,0.18)';
+          e.currentTarget.style.background = 'var(--surface-hover)';
+          e.currentTarget.style.borderColor = 'var(--border-medium)';
         }
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
-        e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
+        e.currentTarget.style.background = 'var(--surface-3)';
+        e.currentTarget.style.borderColor = 'var(--border-soft)';
       }}
     >
       {isLoading ? (

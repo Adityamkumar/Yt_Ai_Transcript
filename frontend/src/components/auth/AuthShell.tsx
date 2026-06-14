@@ -42,7 +42,7 @@ export function AuthShell({
               <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[var(--accent)] to-[#6B9EF7] flex items-center justify-center shadow-[0_0_20px_rgba(139,156,247,0.4)]">
                 <Zap size={18} className="text-white" fill="white" />
               </div>
-              <span className="text-[#F5F7FF] font-semibold text-base">
+              <span className="text-[var(--text-primary)] font-semibold text-base">
                 EchoMind <span className="text-[var(--accent)]">AI</span>
               </span>
             </Link>

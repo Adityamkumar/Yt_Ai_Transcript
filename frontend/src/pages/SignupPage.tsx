@@ -107,7 +107,7 @@ export default function SignupPage() {
               animate={{ opacity: 1, height: "auto" }}
               className="space-y-1"
             >
-              <div className="h-1 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.06)" }}>
+              <div className="h-1 rounded-full overflow-hidden" style={{ background: "var(--border-soft)" }}>
                 <motion.div
                   className="h-full rounded-full"
                   initial={{ width: 0 }}
@@ -159,29 +159,29 @@ export default function SignupPage() {
           icon={<ArrowRight size={15} />}
         />
 
-        <p className="text-[10px] text-[#94A3B8]/60 text-center leading-relaxed">
+        <p className="text-[10px] text-[var(--text-muted)] text-center leading-relaxed">
           By creating an account, you agree to our Terms of Service and Privacy Policy.
         </p>
       </form>
 
       <div className="flex items-center gap-3 mt-5 mb-4">
-        <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.07)" }} />
-        <span className="text-xs text-[#94A3B8]/60">or</span>
-        <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.07)" }} />
+        <div className="flex-1 h-px" style={{ background: "var(--border-soft)" }} />
+        <span className="text-xs text-[var(--text-muted)]">or</span>
+        <div className="flex-1 h-px" style={{ background: "var(--border-soft)" }} />
       </div>
 
       <GoogleAuthButton label="Sign up with Google" />
 
       <div className="flex items-center gap-3 my-5">
-        <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.07)" }} />
-        <span className="text-xs text-[#94A3B8]/60">Already have an account?</span>
-        <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.07)" }} />
+        <div className="flex-1 h-px" style={{ background: "var(--border-soft)" }} />
+        <span className="text-xs text-[var(--text-muted)]">Already have an account?</span>
+        <div className="flex-1 h-px" style={{ background: "var(--border-soft)" }} />
       </div>
 
       <Link
         to="/login"
         id="go-to-login"
-        className="flex items-center justify-center gap-1.5 w-full py-2.5 rounded-xl text-sm text-[#94A3B8] hover:text-[#F5F7FF] border border-white/08 hover:border-white/15 bg-white/02 hover:bg-white/05 transition-all duration-200"
+        className="flex items-center justify-center gap-1.5 w-full py-2.5 rounded-xl text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border-soft)] hover:border-[var(--border-medium)] bg-[var(--surface-3)] hover:bg-[var(--surface-hover)] transition-all duration-200"
       >
         Sign in instead
       </Link>

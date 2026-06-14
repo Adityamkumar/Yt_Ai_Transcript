@@ -163,8 +163,8 @@ export function HeroSection() {
         {/* Mobile-First Layout Grid: Stacks on mobile, splits into 12 columns on large screens */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
           
-          {/* Column Left: Copy + Interactive Sandbox */}
-          <div className="lg:col-span-7 xl:col-span-7 flex flex-col items-start text-left max-w-2xl lg:max-w-none">
+          {/* Column Left: Copy and Static CTAs */}
+          <div className="lg:col-span-6 xl:col-span-6 flex flex-col items-start text-left max-w-2xl lg:max-w-none">
             
             {/* Elegant Tag Badge */}
             <motion.div
@@ -203,7 +203,36 @@ export function HeroSection() {
               dialogues from your media library. Crafted for students, writers, and thorough researchers.
             </motion.p>
 
-            {/* INTERACTIVE PLAYGROUND SANDBOX */}
+            {/* CTA Buttons */}
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="flex flex-col sm:flex-row items-center gap-3.5 w-full sm:w-auto"
+            >
+              <Link
+                to="/signup"
+                id="hero-cta-primary"
+                className="w-full sm:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-[#7c5cff] to-[#4da2ff] hover:from-[#6c4cef] hover:to-[#3da2ef] text-white text-xs font-semibold flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-md shadow-indigo-950/30"
+              >
+                <span>Create Account</span>
+                <ArrowRight size={13} />
+              </Link>
+              <a
+                href="https://github.com/Adityamkumar/Yt_Ai_Transcript"
+                target="_blank"
+                rel="noopener noreferrer"
+                id="hero-cta-github"
+                className="w-full sm:w-auto px-6 py-3 rounded-xl border border-[var(--border-medium)] hover:border-[var(--border-strong)] bg-[var(--surface-3)] hover:bg-[var(--surface-hover)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] text-xs font-medium flex items-center justify-center gap-2 transition-all"
+              >
+                <Github size={13} />
+                <span>View Code</span>
+              </a>
+            </motion.div>
+          </div>
+
+          {/* Column Right: Interactive Playground Sandbox */}
+          <div className="lg:col-span-6 xl:col-span-6 w-full">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -221,7 +250,7 @@ export function HeroSection() {
                       <span>workspace_ingestion_sandbox</span>
                     </div>
                     {/* Sandbox source tabs */}
-                    <div className="flex gap-1.5 bg-black/30 p-0.5 rounded-lg border border-[var(--border-soft)]">
+                    <div className="flex gap-1.5 bg-[var(--surface-3)] p-0.5 rounded-lg border border-[var(--border-soft)]">
                       <button
                         onClick={() => { setSourceType('youtube'); setInputUrl(''); }}
                         className={`px-2.5 py-1 rounded-md text-[10px] font-semibold transition-all flex items-center gap-1.5 ${
@@ -258,7 +287,7 @@ export function HeroSection() {
                             placeholder="Paste any YouTube video link..."
                             value={inputUrl}
                             onChange={(e) => setInputUrl(e.target.value)}
-                            className="w-full pl-10 pr-4 py-3 rounded-xl border border-[var(--border-medium)] bg-black/40 text-xs text-[var(--text-primary)] focus:border-[var(--accent-strong)] transition-all font-mono"
+                            className="w-full pl-10 pr-4 py-3 rounded-xl border border-[var(--border-medium)] bg-[var(--surface-3)] text-xs text-[var(--text-primary)] focus:bg-[var(--surface-1)] focus:border-[var(--accent-strong)] transition-all font-mono"
                           />
                         </div>
                         <button
@@ -293,7 +322,7 @@ export function HeroSection() {
                           setInputUrl(demoData.pdf.url);
                           startSimulation();
                         }}
-                        className="border border-dashed border-[var(--border-strong)] bg-black/30 hover:bg-black/50 rounded-xl p-6 flex flex-col items-center justify-center text-center cursor-pointer transition-all hover:border-[var(--accent)] group"
+                        className="border border-dashed border-[var(--border-strong)] bg-[var(--surface-3)] hover:bg-[var(--surface-hover)] rounded-xl p-6 flex flex-col items-center justify-center text-center cursor-pointer transition-all hover:border-[var(--accent)] group"
                       >
                         <UploadCloud size={24} className="text-[var(--text-muted)] group-hover:text-[var(--accent)] transition-colors mb-2" />
                         <span className="text-xs text-[var(--text-secondary)] font-medium group-hover:text-[var(--text-primary)] transition-colors">
@@ -320,28 +349,6 @@ export function HeroSection() {
                       </div>
                     </div>
                   )}
-
-                  {/* Standard Static CTA triggers for registration */}
-                  <div className="flex flex-col sm:flex-row items-center gap-3.5 mt-6 border-t border-[var(--border-soft)] pt-4">
-                    <Link
-                      to="/signup"
-                      id="hero-cta-primary"
-                      className="w-full sm:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-[#7c5cff] to-[#4da2ff] hover:from-[#6c4cef] hover:to-[#3da2ef] text-white text-xs font-semibold flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-md shadow-indigo-950/30"
-                    >
-                      <span>Create Account</span>
-                      <ArrowRight size={13} />
-                    </Link>
-                    <a
-                      href="https://github.com/Adityamkumar/Yt_Ai_Transcript"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      id="hero-cta-github"
-                      className="w-full sm:w-auto px-6 py-3 rounded-xl border border-[var(--border-medium)] hover:border-[var(--border-strong)] bg-white/[0.02] hover:bg-white/[0.05] text-[var(--text-secondary)] hover:text-white text-xs font-medium flex items-center justify-center gap-2 transition-all"
-                    >
-                      <Github size={13} />
-                      <span>View Code</span>
-                    </a>
-                  </div>
                 </div>
               )}
 
@@ -360,7 +367,7 @@ export function HeroSection() {
                     <h4 className="text-sm font-semibold text-[var(--text-primary)]">
                       {sourceType === 'youtube' ? 'Extracting YouTube Speech Index' : 'Parsing Document Index'}
                     </h4>
-                    <div className="h-1 w-48 bg-black/40 rounded-full overflow-hidden mx-auto my-3 border border-[var(--border-soft)]">
+                    <div className="h-1 w-48 bg-[var(--surface-3)] rounded-full overflow-hidden mx-auto my-3 border border-[var(--border-soft)]">
                       <motion.div
                         className="h-full bg-gradient-to-r from-[var(--accent)] to-[#4da2ff]"
                         initial={{ width: '0%' }}
@@ -401,7 +408,7 @@ export function HeroSection() {
                     </div>
                     <button
                       onClick={resetPlayground}
-                      className="p-1 rounded-lg border border-[var(--border-medium)] hover:bg-white/5 text-[var(--text-muted)] hover:text-white transition-colors"
+                      className="p-1 rounded-lg border border-[var(--border-medium)] hover:bg-[var(--surface-hover)] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
                       title="Reset Sandbox"
                     >
                       <RefreshCw size={11} />
@@ -409,7 +416,7 @@ export function HeroSection() {
                   </div>
 
                   {/* Small loaded source item information */}
-                  <div className="bg-black/30 border border-[var(--border-soft)] rounded-xl p-3 flex gap-3 items-center">
+                  <div className="bg-[var(--surface-3)] border border-[var(--border-soft)] rounded-xl p-3 flex gap-3 items-center">
                     <div className={`w-9 h-9 rounded-lg flex-shrink-0 flex items-center justify-center ${
                       sourceType === 'youtube' ? 'bg-red-500/10 border border-red-500/25' : 'bg-emerald-500/10 border border-emerald-500/25'
                     }`}>
@@ -437,7 +444,7 @@ export function HeroSection() {
                       suggested_prompts
                     </div>
                     {/* Suggested Questions */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div className="grid grid-cols-1 gap-2">
                       {(sourceType === 'youtube' ? demoData.youtube.questions : demoData.pdf.questions).map((item, index) => (
                         <button
                           key={index}
@@ -446,7 +453,7 @@ export function HeroSection() {
                           className={`text-left p-2.5 rounded-xl border text-[10.5px] font-medium leading-normal transition-all duration-200 ${
                             selectedQuestion === item.q
                               ? 'bg-[var(--accent-subtle)] border-[var(--accent)] text-[var(--text-primary)]'
-                              : 'bg-black/20 border-[var(--border-soft)] hover:border-[var(--border-medium)] text-[var(--text-secondary)] hover:text-white'
+                              : 'bg-[var(--surface-3)] border-[var(--border-soft)] hover:border-[var(--border-medium)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
                           }`}
                         >
                           {item.q}
@@ -459,9 +466,9 @@ export function HeroSection() {
                       <motion.div
                         initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="border border-[var(--border-soft)] bg-black/40 rounded-xl p-3 space-y-2 mt-2"
+                        className="border border-[var(--border-soft)] bg-[var(--surface-3)] rounded-xl p-3 space-y-2 mt-2"
                       >
-                        <div className="flex justify-between items-center border-b border-white/[0.04] pb-1.5 mb-1.5">
+                        <div className="flex justify-between items-center border-b border-[var(--border-soft)] pb-1.5 mb-1.5">
                           <span className="text-[9px] font-mono text-[var(--text-muted)] uppercase">ai_assistant</span>
                           <span className="text-[9px] font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded">Grounded RAG</span>
                         </div>
@@ -477,7 +484,7 @@ export function HeroSection() {
                   <div className="pt-2 border-t border-[var(--border-soft)] flex justify-end">
                     <Link
                       to="/signup"
-                      className="px-4 py-2 rounded-lg bg-[var(--accent-subtle)] hover:bg-[var(--accent)] border border-[var(--accent)] text-white hover:text-white text-[11px] font-semibold flex items-center gap-1.5 transition-all active:scale-[0.98] shadow-sm shadow-indigo-950/20"
+                      className="px-4 py-2 rounded-lg bg-[var(--accent-subtle)] hover:bg-[var(--accent)] border border-[var(--accent)] text-[var(--accent)] hover:text-white text-[11px] font-semibold flex items-center gap-1.5 transition-all active:scale-[0.98] shadow-sm"
                     >
                       <span>Access full workspace</span>
                       <ArrowUpRight size={12} />
@@ -487,116 +494,6 @@ export function HeroSection() {
               )}
             </motion.div>
           </div>
-
-          {/* Column Right: Floating 3D Depth Card Stack (Hidden on Mobile, progressive layout enhancement) */}
-          <div className="hidden lg:flex lg:col-span-5 xl:col-span-5 relative justify-center h-[520px] items-center pointer-events-none select-none">
-            {/* Base Glowing Core Backdrop */}
-            <div
-              className="absolute w-[320px] h-[320px] rounded-full opacity-30 pointer-events-none"
-              style={{
-                background: 'radial-gradient(circle, var(--accent) 0%, transparent 70%)',
-                filter: 'blur(45px)',
-              }}
-            />
-
-            {/* STACK CONTAINER */}
-            <div className="relative w-[340px] h-[400px]">
-              
-              {/* Card 1: Back (YouTube / PDF source container) */}
-              <motion.div
-                style={{
-                  perspective: 1000,
-                  transformStyle: 'preserve-3d',
-                }}
-                animate={{
-                  x: mouseOffset.x * -16,
-                  y: mouseOffset.y * -16,
-                  rotateY: mouseOffset.x * 6,
-                  rotateX: mouseOffset.y * -6,
-                }}
-                className="absolute top-[30px] left-[10px] w-[270px] bg-[#0b0f19] border border-white/10 rounded-2xl p-4 shadow-[0_12px_40px_rgba(0,0,0,0.5)] transition-all duration-300"
-              >
-                <div className="flex items-center justify-between mb-3.5">
-                  <span className="text-[9px] font-mono text-[var(--text-muted)] tracking-wider">SOURCE_INGEST</span>
-                  <span className="px-1.5 py-0.5 rounded text-[8px] font-semibold text-red-400 bg-red-400/10 border border-red-400/25">YT Stream</span>
-                </div>
-                <div className="relative aspect-video rounded-xl bg-black/50 overflow-hidden mb-3 border border-white/5 flex items-center justify-center">
-                  <div className="w-8 h-8 rounded-full bg-white/10 border border-white/20 flex items-center justify-center">
-                    <Play size={10} className="text-white fill-white translate-x-0.5" />
-                  </div>
-                  {/* Mock status indicator bar */}
-                  <div className="absolute bottom-2 left-2 right-2 flex justify-between items-center text-[7px] font-mono text-white/50 bg-black/60 px-1.5 py-0.5 rounded">
-                    <span>14:02 / 34:15</span>
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                  </div>
-                </div>
-                <div className="space-y-1">
-                  <div className="text-[10.5px] font-semibold text-[var(--text-primary)] truncate">RAG Vector Architecture Study</div>
-                  <div className="text-[8.5px] text-[var(--text-muted)]">Indexed 2,400 chunks successfully</div>
-                </div>
-              </motion.div>
-
-              {/* Card 2: Middle (Live Transcript highlighter pane) */}
-              <motion.div
-                style={{
-                  perspective: 1000,
-                  transformStyle: 'preserve-3d',
-                }}
-                animate={{
-                  x: mouseOffset.x * 8,
-                  y: mouseOffset.y * 8,
-                  rotateY: mouseOffset.x * -4,
-                  rotateX: mouseOffset.y * 4,
-                }}
-                className="absolute top-[160px] left-[50px] w-[270px] bg-[#0d1222] border border-white/10 rounded-2xl p-4 shadow-[0_20px_50px_rgba(0,0,0,0.6)] transition-all duration-300"
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-[9px] font-mono text-[var(--text-muted)] tracking-wider">TRANSCRIPT_INDEX</span>
-                  <span className="text-[8px] font-mono text-[var(--accent)] font-semibold">Live Highlighting</span>
-                </div>
-                <div className="space-y-2 text-[9px] leading-relaxed text-[var(--text-secondary)]">
-                  <p className="opacity-40">...decisions should favor simple code systems...</p>
-                  <p className="bg-[var(--accent-subtle)] border-l-2 border-[var(--accent)] px-1.5 py-1 text-[var(--text-primary)] rounded-r-md">
-                    "The core architectural shift lies in separating transcription database assets from indexing vectors."
-                    <span className="text-[8px] text-[var(--accent)] ml-1 font-mono">@ 04:12</span>
-                  </p>
-                  <p className="opacity-40">...this avoids massive payload spikes on queries...</p>
-                </div>
-              </motion.div>
-
-              {/* Card 3: Front (Claude-like AI message bubble node) */}
-              <motion.div
-                style={{
-                  perspective: 1000,
-                  transformStyle: 'preserve-3d',
-                }}
-                animate={{
-                  x: mouseOffset.x * 24,
-                  y: mouseOffset.y * 24,
-                  rotateY: mouseOffset.x * 10,
-                  rotateX: mouseOffset.y * -8,
-                }}
-                className="absolute top-[280px] left-[20px] w-[290px] bg-[#11172b] border border-[var(--accent)]/40 rounded-2xl p-4 shadow-[0_30px_70px_rgba(0,0,0,0.7)] transition-all duration-300"
-              >
-                <div className="flex items-center gap-2 mb-2 pb-2 border-b border-white/[0.04]">
-                  <div className="w-5 h-5 rounded bg-gradient-to-br from-[#7C5CFF] to-[#4DA2FF] flex items-center justify-center">
-                    <BrainCircuit size={10} className="text-white" />
-                  </div>
-                  <span className="text-[10px] font-semibold text-white">EchoMind AI assistant</span>
-                </div>
-                <div className="space-y-1.5">
-                  <div className="text-[8px] font-semibold text-[var(--text-muted)] uppercase tracking-wide">Question asked</div>
-                  <div className="text-[10px] text-white font-medium bg-white/5 px-2 py-1 rounded-lg">Why decouple vectors?</div>
-                  <div className="text-[8px] font-semibold text-[var(--text-muted)] uppercase tracking-wide mt-2">Response summary</div>
-                  <p className="text-[9.5px] leading-relaxed text-[#d1d5e6]">
-                    Decoupling transcript vector chunks from indexing documents stops metadata pollution and accelerates query processing speed by **4x**.
-                  </p>
-                </div>
-              </motion.div>
-
-            </div>
-          </div>
-
         </div>
       </div>
 

@@ -68,7 +68,7 @@ export default function ResetPasswordPage() {
     >
 
           {tokenStatus === "checking" && (
-            <div className="rounded-xl border border-white/10 bg-white/5 p-4 text-center text-sm text-[#94A3B8] flex items-center justify-center gap-2">
+            <div className="rounded-xl border border-[var(--border-soft)] bg-[var(--surface-3)] p-4 text-center text-sm text-[var(--text-secondary)] flex items-center justify-center gap-2">
               <Loader2 size={15} className="animate-spin" />
               Verifying reset link...
             </div>
@@ -80,8 +80,8 @@ export default function ResetPasswordPage() {
                 <AlertCircle size={16} />
                 <span className="text-sm font-medium">Reset link is invalid or expired</span>
               </div>
-              <p className="text-xs text-[#94A3B8] mb-4">For security, password reset links are time-limited and single-use. Request a new reset link to continue.</p>
-              <Link to="/forgot-password" className="inline-flex items-center gap-2 text-xs px-3 py-2 rounded-lg bg-[#7C5CFF] text-white hover:bg-[#8a6cff] transition-colors">
+              <p className="text-xs text-[var(--text-secondary)] mb-4">For security, password reset links are time-limited and single-use. Request a new reset link to continue.</p>
+              <Link to="/forgot-password" className="inline-flex items-center gap-2 text-xs px-3 py-2 rounded-lg bg-[var(--accent)] text-white hover:bg-[var(--accent-strong)] transition-colors">
                 Request New Link
                 <ArrowRight size={13} />
               </Link>
@@ -93,9 +93,9 @@ export default function ResetPasswordPage() {
               <div className="flex items-center justify-center mb-2 text-green-400">
                 <CheckCircle2 size={20} />
               </div>
-              <p className="text-sm text-[#F5F7FF] mb-1">Password reset successful</p>
-              <p className="text-xs text-[#94A3B8] mb-4">Your password has been updated. You can now sign in with your new password.</p>
-              <Link to="/login" className="inline-flex items-center gap-2 text-xs px-3 py-2 rounded-lg bg-[#7C5CFF] text-white hover:bg-[#8a6cff] transition-colors">
+              <p className="text-sm text-[var(--text-primary)] mb-1">Password reset successful</p>
+              <p className="text-xs text-[var(--text-secondary)] mb-4">Your password has been updated. You can now sign in with your new password.</p>
+              <Link to="/login" className="inline-flex items-center gap-2 text-xs px-3 py-2 rounded-lg bg-[var(--accent)] text-white hover:bg-[var(--accent-strong)] transition-colors">
                 Go to Login
                 <ArrowRight size={13} />
               </Link>
@@ -151,7 +151,7 @@ export default function ResetPasswordPage() {
             </form>
           )}
 
-          <Link to="/login" className="mt-6 inline-flex items-center gap-1.5 text-xs text-[#94A3B8] hover:text-[#F5F7FF] transition-colors">
+          <Link to="/login" className="mt-6 inline-flex items-center gap-1.5 text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
             <ArrowLeft size={14} />
             Back to login
           </Link>

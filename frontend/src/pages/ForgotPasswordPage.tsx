@@ -40,8 +40,8 @@ export default function ForgotPasswordPage() {
               <div className="flex items-center justify-center mb-2 text-green-400">
                 <CheckCircle2 size={20} />
               </div>
-              <p className="text-sm text-[#F5F7FF] mb-1">Reset link sent</p>
-              <p className="text-xs text-[#94A3B8]">Please check your inbox and spam folder for the password reset email.</p>
+              <p className="text-sm text-[var(--text-primary)] mb-1">Reset link sent</p>
+              <p className="text-xs text-[var(--text-secondary)]">Please check your inbox and spam folder for the password reset email.</p>
             </motion.div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -73,7 +73,7 @@ export default function ForgotPasswordPage() {
             </form>
           )}
 
-          <Link to="/login" className="mt-6 inline-flex items-center gap-1.5 text-xs text-[#94A3B8] hover:text-[#F5F7FF] transition-colors">
+          <Link to="/login" className="mt-6 inline-flex items-center gap-1.5 text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
             <ArrowLeft size={14} />
             Back to login
           </Link>

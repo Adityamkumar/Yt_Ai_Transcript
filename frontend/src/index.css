@@ -18,6 +18,10 @@
 
 :root {
   color-scheme: dark;
+  --body-bg: radial-gradient(ellipse 60% 40% at 46% -8%, rgba(102, 117, 246, 0.10), transparent 28rem),
+             radial-gradient(ellipse 50% 30% at 100% 10%, rgba(20, 184, 166, 0.05), transparent 22rem),
+             linear-gradient(180deg, #0a0c10 0%, #080a0e 50%, #060709 100%);
+
 
   /* Layout constants */
   --sidebar-width: 264px;
@@ -141,10 +145,8 @@ body {
   min-width: 320px;
   min-height: 100dvh;
   overflow-x: hidden;
-  background:
-    radial-gradient(ellipse 60% 40% at 46% -8%, rgba(102, 117, 246, 0.10), transparent 28rem),
-    radial-gradient(ellipse 50% 30% at 100% 10%, rgba(20, 184, 166, 0.05), transparent 22rem),
-    linear-gradient(180deg, #0a0c10 0%, #080a0e 50%, #060709 100%);
+  background: var(--body-bg);
+
   color: var(--text-primary);
   font-family: var(--font-sans);
   font-size: 14px;
@@ -578,6 +580,28 @@ p {
 }
 
 .dark {
+  color-scheme: dark;
+  --canvas: #0a0c10;
+  --canvas-subtle: #0d0f14;
+  --surface-1: rgba(13, 15, 21, 0.82);
+  --surface-2: rgba(17, 20, 28, 0.78);
+  --surface-3: rgba(255, 255, 255, 0.035);
+  --surface-hover: rgba(255, 255, 255, 0.055);
+  --surface-active: rgba(255, 255, 255, 0.075);
+  --border-soft: rgba(255, 255, 255, 0.06);
+  --border-medium: rgba(255, 255, 255, 0.10);
+  --border-strong: rgba(255, 255, 255, 0.15);
+  --text-primary: #f0f2f7;
+  --text-secondary: #9ca3b4;
+  --text-muted: #5e6578;
+  --accent: #8b9cf7;
+  --accent-strong: #6675f6;
+  --accent-subtle: rgba(139, 156, 247, 0.12);
+  --accent-glow: rgba(139, 156, 247, 0.08);
+  --body-bg: radial-gradient(ellipse 60% 40% at 46% -8%, rgba(102, 117, 246, 0.10), transparent 28rem),
+             radial-gradient(ellipse 50% 30% at 100% 10%, rgba(20, 184, 166, 0.05), transparent 22rem),
+             linear-gradient(180deg, #0a0c10 0%, #080a0e 50%, #060709 100%);
+
   --background: #0a0c10;
   --foreground: #f9fafb;
   --card: #111827;
@@ -590,9 +614,6 @@ p {
   --secondary-foreground: #f9fafb;
   --muted: #1f2937;
   --muted-foreground: #9ca3af;
-  --accent: #1f2937;
-  --accent-foreground: #f9fafb;
-  --destructive: #f87171;
   --border: rgba(255, 255, 255, 0.08);
   --input: rgba(255, 255, 255, 0.12);
   --ring: #6b7280;
@@ -610,6 +631,60 @@ p {
   --sidebar-border: rgba(255, 255, 255, 0.08);
   --sidebar-ring: #6b7280;
 }
+
+.light {
+  color-scheme: light;
+  --canvas: #e6e4dc;
+  --canvas-subtle: #dfdcd3;
+  --surface-1: rgba(255, 255, 255, 0.82);
+  --surface-2: rgba(255, 255, 255, 0.60);
+  --surface-3: rgba(0, 0, 0, 0.035);
+  --surface-hover: rgba(0, 0, 0, 0.055);
+  --surface-active: rgba(0, 0, 0, 0.075);
+  --border-soft: rgba(0, 0, 0, 0.05);
+  --border-medium: rgba(0, 0, 0, 0.08);
+  --border-strong: rgba(0, 0, 0, 0.13);
+  --text-primary: #2b2d31;
+  --text-secondary: #57595d;
+  --text-muted: #818386;
+  --accent: #5b5df2;
+  --accent-strong: #4a4cd6;
+  --accent-subtle: rgba(91, 93, 242, 0.09);
+  --accent-glow: rgba(91, 93, 242, 0.04);
+  --body-bg: radial-gradient(ellipse 60% 40% at 46% -8%, rgba(91, 93, 242, 0.10), transparent 28rem),
+             radial-gradient(ellipse 50% 30% at 100% 10%, rgba(20, 184, 166, 0.04), transparent 22rem),
+             linear-gradient(180deg, #e6e4dc 0%, #dedbd2 50%, #d6d2c8 100%);
+
+  --background: #e6e4dc;
+  --foreground: #2b2d31;
+  --card: #ffffff;
+  --card-foreground: #2b2d31;
+  --popover: #ffffff;
+  --popover-foreground: #2b2d31;
+  --primary: #2b2d31;
+  --primary-foreground: #ffffff;
+  --secondary: #dfdcd3;
+  --secondary-foreground: #2b2d31;
+  --muted: #dfdcd3;
+  --muted-foreground: #818386;
+  --border: rgba(0, 0, 0, 0.08);
+  --input: rgba(0, 0, 0, 0.08);
+  --ring: #5b5df2;
+  --chart-1: #5b5df2;
+  --chart-2: #4a4cd6;
+  --chart-3: #1e208c;
+  --chart-4: #7b7df5;
+  --chart-5: #b9bbf9;
+  --sidebar: #dfdcd3;
+  --sidebar-foreground: #2b2d31;
+  --sidebar-primary: #5b5df2;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #d6d2c8;
+  --sidebar-accent-foreground: #2b2d31;
+  --sidebar-border: rgba(0, 0, 0, 0.08);
+  --sidebar-ring: #5b5df2;
+}
+
 
 @layer base {
   * {
