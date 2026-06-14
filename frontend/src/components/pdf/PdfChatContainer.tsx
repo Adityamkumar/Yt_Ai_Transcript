@@ -197,7 +197,7 @@ export function PdfChatContainer({ conversationId, pdf, onActionReady }: PdfChat
     <section className="relative flex h-full min-h-0 flex-col overflow-hidden">
       <div
         ref={scrollContainerRef}
-        className="min-h-0 flex-1 overflow-y-auto overscroll-contain"
+        className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain w-full"
       >
         {!hasMessages ? (
           <div className="flex flex-col gap-10 pb-40 pt-10 sm:pb-44 sm:pt-12">

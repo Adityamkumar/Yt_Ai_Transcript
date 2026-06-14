@@ -40,14 +40,14 @@ export default function HomePage({ onActionReady }: HomePageProps) {
       try {
         setIsExtracting(true);
         const videoData = await videoService.getTranscript(url);
-        
+
         const conversation = await createConversation({
           videoId: videoData._id,
           title: videoData.title || 'New Chat'
         });
 
         toast.success('Source indexed and ready to chat');
-        
+
         navigate(`/workspace/${conversation._id}`);
       } catch (err) {
         toast.error(err instanceof Error ? err.message : 'Indexing failed');
@@ -61,7 +61,7 @@ export default function HomePage({ onActionReady }: HomePageProps) {
   const handlePdfUploadSuccess = useCallback(
     (conversation: IConversation) => {
       setIsPdfProcessing(false);
-      
+
       queryClient.setQueryData<IConversation[]>(['conversations'], (old) => {
         if (!old) return [conversation];
         if (old.some((c) => c._id === conversation._id)) return old;
@@ -86,7 +86,7 @@ export default function HomePage({ onActionReady }: HomePageProps) {
           initial="initial"
           animate="animate"
           exit="exit"
-          className="h-full min-h-0"
+          className="h-full min-h-0 w-full"
         >
           {activeConversation.type === 'pdf' ? (
             <PdfChatContainer
@@ -95,8 +95,8 @@ export default function HomePage({ onActionReady }: HomePageProps) {
               onActionReady={onActionReady}
             />
           ) : (
-            <ChatContainer 
-              conversationId={activeConversation._id} 
+            <ChatContainer
+              conversationId={activeConversation._id}
               video={typeof activeConversation.videoId === 'string' ? { _id: activeConversation.videoId } as any : activeConversation.videoId}
               onActionReady={onActionReady}
             />
@@ -109,7 +109,7 @@ export default function HomePage({ onActionReady }: HomePageProps) {
           initial="initial"
           animate="animate"
           exit="exit"
-          className="h-full overflow-y-auto"
+          className="h-full overflow-y-auto w-full"
         >
           <div className="content-container flex min-h-full flex-col justify-center py-8 sm:py-10 lg:py-12">
             <div className="grid items-center gap-8 lg:gap-10">
@@ -133,10 +133,10 @@ export default function HomePage({ onActionReady }: HomePageProps) {
                     className="mx-auto w-full max-w-[520px] py-10"
                   >
                     <div className="mb-6 text-center">
-                      <p className="mb-2 text-xs font-semibold uppercase tracking-[0.24em] text-[var(--accent)]">
+                      <p className="mb-2 text-xs font-semibold uppercase tracking-[0.22em] text-[var(--accent)]">
                         Processing
                       </p>
-                      <h2 className="text-2xl font-semibold text-white">Building video context</h2>
+                      <h2 className="text-2xl font-semibold text-[var(--text-primary)]">Building video context</h2>
                       <p className="mt-2 text-sm text-[var(--text-muted)]">
                         Extracting transcript signals and preparing the workspace.
                       </p>
@@ -148,25 +148,25 @@ export default function HomePage({ onActionReady }: HomePageProps) {
 
               {!(isExtracting || isCreatingConversation || isPdfProcessing) && (
                 <motion.div
-                  initial={{ y: 16, opacity: 0 }}
+                  initial={{ y: 14, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.16, duration: 0.35 }}
+                  transition={{ delay: 0.14, duration: 0.35, ease: [0.25, 0.1, 0.25, 1.0] }}
                   className="flex flex-col gap-6"
                 >
-                  {}
-                  <div className="mx-auto flex w-full max-w-sm items-center gap-1 rounded-2xl border border-white/[0.08] bg-[#0c1018]/90 p-1.5 backdrop-blur-md">
+                  {/* Source Type Toggle */}
+                  <div className="mx-auto flex w-full max-w-sm items-center gap-1 rounded-2xl border border-[var(--border-soft)] bg-[var(--canvas-subtle)]/90 p-1.5 backdrop-blur-md">
                     <button
                       onClick={() => setSourceType("video")}
-                      className={`flex-1 flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold transition ${sourceType === "video" ? "bg-white/[0.08] text-white" : "text-[var(--text-muted)] hover:text-white"}`}
+                      className={`flex-1 flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold transition-colors ${sourceType === "video" ? "bg-[var(--surface-active)] text-[var(--text-primary)]" : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"}`}
                     >
-                      <Youtube size={16} />
+                      <Youtube size={15} />
                       YouTube Video
                     </button>
                     <button
                       onClick={() => setSourceType("pdf")}
-                      className={`flex-1 flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold transition ${sourceType === "pdf" ? "bg-white/[0.08] text-white" : "text-[var(--text-muted)] hover:text-white"}`}
+                      className={`flex-1 flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold transition-colors ${sourceType === "pdf" ? "bg-[var(--surface-active)] text-[var(--text-primary)]" : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"}`}
                     >
-                      <FileText size={16} />
+                      <FileText size={15} />
                       PDF Document
                     </button>
                   </div>
@@ -197,4 +197,3 @@ export default function HomePage({ onActionReady }: HomePageProps) {
     </AnimatePresence>
   );
 }
-

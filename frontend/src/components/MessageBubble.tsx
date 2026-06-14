@@ -32,7 +32,7 @@ export function MessageBubble({ message, onRetry, onEdit, children }: MessageBub
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(message.content);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  
+
   const isUser = message.role === 'user';
 
   useEffect(() => {
@@ -117,7 +117,7 @@ export function MessageBubble({ message, onRetry, onEdit, children }: MessageBub
 
   const markdownComponents = {
     pre: ({ children }: any) => (
-      <pre className="group/code relative overflow-x-auto rounded-xl border border-white/10 bg-[#06080d] p-4">
+      <pre className="group/code relative overflow-x-auto rounded-xl border border-[var(--border-soft)] bg-[#06080d] p-4">
         {children}
       </pre>
     ),
@@ -129,7 +129,7 @@ export function MessageBubble({ message, onRetry, onEdit, children }: MessageBub
         return (
           <code className={cn('block font-mono text-[13px] leading-6 text-gray-100', className)} {...props}>
             {language ? (
-              <span className="mb-2 inline-block rounded-md border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-gray-400">
+              <span className="mb-2 inline-block rounded-md border border-[var(--border-soft)] bg-[var(--surface-3)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">
                 {language}
               </span>
             ) : null}
@@ -141,7 +141,7 @@ export function MessageBubble({ message, onRetry, onEdit, children }: MessageBub
       return (
         <code
           className={cn(
-            'inline rounded-md border border-white/10 bg-white/7 px-1.5 py-0.5 font-mono text-[0.85em] text-white',
+            'inline rounded-md border border-[var(--border-soft)] bg-[var(--surface-3)] px-1.5 py-0.5 font-mono text-[0.85em] text-[var(--text-primary)]',
             className
           )}
           {...props}
@@ -159,41 +159,44 @@ export function MessageBubble({ message, onRetry, onEdit, children }: MessageBub
       variants={chatBubbleVariants}
       initial="initial"
       animate="animate"
-      className="group py-3.5 sm:py-4"
+      className="group py-3 sm:py-4"
     >
       <div className={cn('chat-container flex gap-4 sm:gap-5', isUser && 'flex-row-reverse')}>
+        {/* Avatar */}
         <div className="mt-1 shrink-0">
           <div
             className={cn(
-              'grid h-10 w-10 place-items-center rounded-xl border text-white',
+              'grid h-9 w-9 place-items-center rounded-xl border',
               isUser
-                ? 'border-white/[0.08] bg-white/[0.07]'
-                : 'border-[rgba(139,156,255,0.28)] bg-[rgba(139,156,255,0.16)] text-[var(--accent)]'
+                ? 'border-[var(--border-soft)] bg-[var(--surface-3)] text-[var(--text-primary)]'
+                : 'border-[rgba(139,156,247,0.20)] bg-[var(--accent-subtle)] text-[var(--accent)]'
             )}
           >
-            {isUser ? <User size={18} /> : <Bot size={20} />}
+            {isUser ? <User size={17} /> : <Bot size={18} />}
           </div>
         </div>
 
+        {/* Content */}
         <div className={cn('min-w-0 flex-1', isUser && 'flex flex-col items-end')}>
           <div className={cn(isUser ? 'w-fit max-w-[75%] sm:max-w-[65%]' : 'w-full')}>
-            <div className={cn('mb-3 flex items-center gap-2.5 px-1', isUser && 'justify-end')}>
-              <span className="text-[13px] font-semibold text-white/90">{isUser ? 'You' : 'EchoMind AI'}</span>
-              <span className="text-[12px] text-white/40">
+            {/* Meta */}
+            <div className={cn('mb-2.5 flex items-center gap-2 px-1', isUser && 'justify-end')}>
+              <span className="text-[13px] font-semibold text-[var(--text-primary)]/85">{isUser ? 'You' : 'EchoMind AI'}</span>
+              <span className="text-[11px] text-[var(--text-muted)]">
                 {formatRelativeTime(message.createdAt)}
               </span>
             </div>
 
+            {/* Bubble */}
             <div
               className={cn(
-                'relative rounded-3xl text-[17px] leading-relaxed shadow-md transition-all duration-300',
+                'relative rounded-2xl text-[16px] leading-relaxed transition-all',
                 isUser
-                  ? isEditing 
-                    ? 'bg-white/[0.06] border border-white/15 p-1.5 w-full sm:min-w-[450px] lg:min-w-[550px]' 
-                    : 'bg-white px-5 py-4 shadow-xl w-full'
-                  : 'border border-white/[0.1] bg-white/[0.06] px-5 py-5 text-white/95 backdrop-blur-2xl sm:px-6'
+                  ? isEditing
+                    ? 'bg-[var(--surface-3)] border border-[var(--border-medium)] p-1.5 w-full sm:min-w-[450px] lg:min-w-[550px]'
+                    : 'bg-[var(--text-primary)] px-5 py-4 shadow-md w-full'
+                  : 'border border-[var(--border-soft)] bg-[var(--surface-3)] px-5 py-4 text-[var(--text-primary)]/95 backdrop-blur-md sm:px-6'
               )}
-              style={{ fontSize: '17px' }}
             >
               {isEditing ? (
                 <div className="flex flex-col gap-3 p-1">
@@ -201,24 +204,24 @@ export function MessageBubble({ message, onRetry, onEdit, children }: MessageBub
                     ref={textareaRef}
                     value={editValue}
                     onChange={(e) => setEditValue(e.target.value)}
-                    className="w-full bg-transparent p-3 text-white outline-none resize-none min-h-[120px] text-[17px] leading-relaxed"
+                    className="w-full bg-transparent p-3 text-[var(--text-primary)] outline-none resize-none min-h-[120px] text-[16px] leading-relaxed"
                     placeholder="Edit your message..."
                     autoFocus
                   />
-                  <div className="flex items-center justify-end gap-3 p-3 border-t border-white/10">
+                  <div className="flex items-center justify-end gap-3 p-3 border-t border-[var(--border-soft)]">
                     <button
                       onClick={handleCancel}
-                      className="inline-flex h-10 items-center gap-2 rounded-xl px-4 text-sm font-semibold text-white/70 transition hover:bg-white/10 hover:text-white"
+                      className="inline-flex h-9 items-center gap-2 rounded-xl px-4 text-sm font-medium text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
                     >
-                      <X size={16} />
+                      <X size={15} />
                       Cancel
                     </button>
                     <button
                       onClick={handleSave}
                       disabled={!editValue.trim() || editValue === message.content}
-                      className="inline-flex h-10 items-center gap-2 rounded-xl bg-white px-5 text-sm font-bold text-black transition hover:bg-neutral-100 disabled:opacity-40"
+                      className="inline-flex h-9 items-center gap-2 rounded-xl bg-[var(--text-primary)] px-4 text-sm font-semibold text-[var(--canvas)] transition-all hover:opacity-90 disabled:opacity-40"
                     >
-                      <SendHorizontal size={16} />
+                      <SendHorizontal size={15} />
                       Save & Send
                     </button>
                   </div>
@@ -229,7 +232,7 @@ export function MessageBubble({ message, onRetry, onEdit, children }: MessageBub
                 <>
                   {message.isLoading ? (
                     message.content ? (
-                      <div className="markdown-content streaming-content inline-block w-full text-[17px]">
+                      <div className="markdown-content streaming-content inline-block w-full text-[16px]">
                         <ReactMarkdown
                           remarkPlugins={[remarkGfm]}
                           components={markdownComponents}
@@ -241,11 +244,11 @@ export function MessageBubble({ message, onRetry, onEdit, children }: MessageBub
                       <TypingIndicator />
                     )
                   ) : isUser ? (
-                    <p className="whitespace-pre-wrap text-[17px] !text-black font-medium opacity-100">
+                    <p className="whitespace-pre-wrap text-[16px] !text-[#111827] font-medium opacity-100">
                       {message.content}
                     </p>
                   ) : (
-                    <div className="markdown-content text-[17px]">
+                    <div className="markdown-content text-[16px]">
                       <ReactMarkdown
                         remarkPlugins={[remarkGfm]}
                         components={markdownComponents}
@@ -257,30 +260,32 @@ export function MessageBubble({ message, onRetry, onEdit, children }: MessageBub
               )}
             </div>
 
+            {/* Actions */}
             <AnimatePresence>
               {!message.isLoading && !isEditing && (
-                <motion.div 
-                  initial={{ opacity: 0, y: -8 }}
+                <motion.div
+                  initial={{ opacity: 0, y: -6 }}
                   animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.2, delay: 0.1 }}
                   className={cn(
-                    "mt-3 flex items-center gap-4 px-2",
+                    "mt-2.5 flex items-center gap-3.5 px-1",
                     isUser ? "justify-end" : "justify-start"
                   )}
                 >
                   <button
                     onClick={copyToClipboard}
-                    className="flex items-center gap-2 text-[12px] font-semibold text-white/40 transition hover:text-white"
+                    className="flex items-center gap-1.5 text-[11px] font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--text-primary)]"
                   >
-                    {copied ? <Check size={14} /> : <Copy size={14} />}
+                    {copied ? <Check size={13} /> : <Copy size={13} />}
                     {copied ? 'Copied' : 'Copy'}
                   </button>
-                  
+
                   {isUser && onEdit && (
                     <button
                       onClick={handleEdit}
-                      className="flex items-center gap-2 text-[12px] font-semibold text-white/40 transition hover:text-white"
+                      className="flex items-center gap-1.5 text-[11px] font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--text-primary)]"
                     >
-                      <Pencil size={14} />
+                      <Pencil size={13} />
                       Edit
                     </button>
                   )}
@@ -288,9 +293,9 @@ export function MessageBubble({ message, onRetry, onEdit, children }: MessageBub
                   {message.error && onRetry && (
                     <button
                       onClick={() => onRetry(message._id)}
-                      className="flex items-center gap-2 text-[12px] font-semibold text-rose-400/80 transition hover:text-rose-300"
+                      className="flex items-center gap-1.5 text-[11px] font-medium text-[var(--danger)]/70 transition-colors hover:text-[var(--danger)]"
                     >
-                      <RotateCcw size={14} />
+                      <RotateCcw size={13} />
                       Retry
                     </button>
                   )}
@@ -303,4 +308,3 @@ export function MessageBubble({ message, onRetry, onEdit, children }: MessageBub
     </motion.article>
   );
 }
-

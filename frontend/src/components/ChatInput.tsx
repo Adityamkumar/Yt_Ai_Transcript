@@ -49,12 +49,12 @@ export function ChatInput({ onSend, onStop, disabled, isPending, placeholder }: 
   const canStop = Boolean(isPending && onStop);
 
   return (
-    <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 bg-linear-to-t from-[#050608] via-[#050608]/92 to-transparent pb-4 pt-12 sm:pb-6">
+    <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 bg-linear-to-t from-[#060709] via-[#060709]/92 to-transparent pb-4 pt-12 sm:pb-6">
       <div className="chat-container pointer-events-auto">
         <div
           className={cn(
-            'glass-surface rounded-[24px] p-2 transition duration-200',
-            'focus-within:border-[rgba(139,156,255,0.34)] focus-within:shadow-[0_20px_70px_rgba(0,0,0,0.38),0_0_0_1px_rgba(139,156,255,0.08)]'
+            'glass-surface rounded-[var(--radius-2xl)] p-2 transition-all duration-200',
+            'focus-within:border-[rgba(139,156,247,0.28)] focus-within:shadow-[0_16px_60px_rgba(0,0,0,0.32),0_0_0_1px_rgba(139,156,247,0.06)]'
           )}
         >
           <div className="flex items-end gap-2">
@@ -66,7 +66,7 @@ export function ChatInput({ onSend, onStop, disabled, isPending, placeholder }: 
               placeholder={placeholder ?? 'Message AI...'}
               disabled={disabled || isPending}
               rows={1}
-              className="max-h-45 min-h-12 flex-1 resize-none bg-transparent px-3 py-2.5 text-[17px] leading-7 text-white outline-none placeholder:text-(--text-muted) disabled:cursor-not-allowed disabled:opacity-45 sm:px-4"
+              className="max-h-45 min-h-12 flex-1 resize-none bg-transparent px-3 py-2.5 text-[16px] leading-7 text-[var(--text-primary)] outline-none placeholder:text-[var(--text-muted)] disabled:cursor-not-allowed disabled:opacity-45 sm:px-4"
             />
 
             <button
@@ -74,22 +74,21 @@ export function ChatInput({ onSend, onStop, disabled, isPending, placeholder }: 
               disabled={!canSend && !canStop}
               aria-label={isPending ? 'Generating answer' : 'Send message'}
               className={cn(
-                'mb-1 grid h-10 w-10 shrink-0 place-items-center rounded-2xl transition',
+                'mb-1 grid h-10 w-10 shrink-0 place-items-center rounded-2xl transition-all',
                 canSend || canStop
-                  ? 'bg-white text-neutral-950 shadow-sm hover:scale-[1.03] hover:bg-[#eef1ff]'
-                  : 'cursor-not-allowed bg-white/[0.07] text-(--text-muted)'
+                  ? 'bg-[var(--text-primary)] text-[var(--canvas)] hover:scale-[1.03] hover:opacity-90'
+                  : 'cursor-not-allowed bg-[var(--surface-3)] text-[var(--text-muted)]'
               )}
             >
-              {isPending ? <Square size={15} fill="currentColor" /> : <ArrowUp size={19} />}
+              {isPending ? <Square size={14} fill="currentColor" /> : <ArrowUp size={18} />}
             </button>
           </div>
         </div>
 
-        <p className="mt-2 text-center text-[12px] leading-5 text-(--text-muted)">
+        <p className="mt-2 text-center text-[11px] leading-5 text-[var(--text-muted)]">
           AI responses can be incomplete. Verify important details against the source.
         </p>
       </div>
     </div>
   );
 }
-

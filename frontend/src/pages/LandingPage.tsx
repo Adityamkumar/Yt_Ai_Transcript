@@ -36,7 +36,7 @@ export default function LandingPage() {
   return (
     <div
       className="min-h-screen text-[#F5F7FF] overflow-x-hidden"
-      style={{ background: '#050816' }}
+      style={{ background: 'var(--canvas)' }}
     >
       <Navbar />
       <main>

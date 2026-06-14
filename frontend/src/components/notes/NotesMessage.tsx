@@ -22,28 +22,28 @@ const MarkdownRenderer = ({ content }: { content: string }) => (
 
 export function NotesSkeleton() {
   return (
-    <div className="w-full max-w-4xl mx-auto my-8 px-4 sm:px-6 animate-pulse">
+    <div className="w-full max-w-4xl mx-auto my-6 px-3 sm:px-6 animate-pulse">
       <div className="rounded-3xl border border-white/5 bg-[#121212]/30 backdrop-blur-xl h-[600px] flex flex-col">
-        <div className="px-8 py-6 border-b border-white/5 flex items-center justify-between">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center justify-between px-5 sm:px-8 py-5 sm:py-6 border-b border-white/5">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-white/5" />
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-white/5 shrink-0" />
             <div className="space-y-2">
-              <div className="h-5 w-32 bg-white/5 rounded" />
-              <div className="h-3 w-48 bg-white/5 rounded" />
+              <div className="h-4 sm:h-5 w-28 sm:w-32 bg-white/5 rounded" />
+              <div className="h-3 w-36 sm:w-48 bg-white/5 rounded" />
             </div>
           </div>
           <div className="flex gap-2">
-            <div className="w-10 h-10 rounded-xl bg-white/5" />
-            <div className="w-10 h-10 rounded-xl bg-white/5" />
-            <div className="w-10 h-10 rounded-xl bg-white/5" />
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white/5 shrink-0" />
+            <div className="w-20 sm:w-24 h-9 sm:h-10 rounded-xl bg-white/5 shrink-0" />
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white/5 shrink-0" />
           </div>
         </div>
-        <div className="p-12 space-y-8">
-          <div className="h-10 w-1/3 bg-white/5 rounded" />
+        <div className="p-5 sm:p-12 space-y-6 sm:space-y-8 flex-1 overflow-hidden">
+          <div className="h-8 sm:h-10 w-1/3 bg-white/5 rounded" />
           <div className="space-y-4">
-            <div className="h-4 w-full bg-white/5 rounded" />
-            <div className="h-4 w-full bg-white/5 rounded" />
-            <div className="h-4 w-2/3 bg-white/5 rounded" />
+            <div className="h-3 sm:h-4 w-full bg-white/5 rounded" />
+            <div className="h-3 sm:h-4 w-full bg-white/5 rounded" />
+            <div className="h-3 sm:h-4 w-2/3 bg-white/5 rounded" />
           </div>
         </div>
       </div>

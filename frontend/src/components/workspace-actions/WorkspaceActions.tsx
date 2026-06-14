@@ -55,7 +55,7 @@ export function WorkspaceActions({ onAction, disabled = false }: WorkspaceAction
         disabled={disabled}
         aria-haspopup="true"
         aria-expanded={open}
-        className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-xl border border-white/[0.1] bg-white/[0.055] px-3 text-sm font-medium text-white transition hover:border-white/[0.16] hover:bg-white/[0.09] disabled:pointer-events-none disabled:opacity-40"
+        className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-xl border border-[var(--border-medium)] bg-[var(--surface-3)] px-3 text-sm font-medium text-[var(--text-primary)] transition-colors hover:border-[var(--border-strong)] hover:bg-[var(--surface-hover)] disabled:pointer-events-none disabled:opacity-40"
       >
         <Wand2 size={14} className="text-[var(--accent)]" />
         <span className="hidden sm:inline">AI Tools</span>

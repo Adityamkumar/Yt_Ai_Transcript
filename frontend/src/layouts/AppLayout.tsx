@@ -63,16 +63,16 @@ export function AppLayout({ children }: AppLayoutProps) {
         position="top-right"
         toastOptions={{
           style: {
-            background: 'rgba(13, 16, 23, 0.94)',
-            color: '#f7f8fb',
-            border: '1px solid rgba(255,255,255,0.1)',
-            borderRadius: '14px',
-            boxShadow: '0 18px 50px rgba(0,0,0,0.36)',
+            background: 'var(--surface-1)',
+            color: 'var(--text-primary)',
+            border: '1px solid var(--border-medium)',
+            borderRadius: 'var(--radius-lg)',
+            boxShadow: 'var(--shadow-xl)',
             fontSize: '13px',
+            backdropFilter: 'blur(16px)',
           },
         }}
       />
     </div>
   );
 }
-

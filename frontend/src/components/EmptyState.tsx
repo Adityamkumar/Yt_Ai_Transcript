@@ -27,22 +27,22 @@ interface EmptyStateProps {
 
 const promptIcons = [Sparkles, CheckCircle2, BrainCircuit, FileQuestion, BarChart3, ListChecks];
 
-export function EmptyState({ 
-  onPromptSelect, 
-  onNotesClick, 
+export function EmptyState({
+  onPromptSelect,
+  onNotesClick,
   onSummaryClick,
-  isLoadingNotes, 
-  hasTranscript = false 
+  isLoadingNotes,
+  hasTranscript = false
 }: EmptyStateProps) {
   if (hasTranscript) {
     return (
       <div className="chat-container flex min-h-full flex-col justify-center pb-40 pt-10 sm:pb-44 sm:pt-12">
-        <div className="mb-8 max-w-2xl">
-          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.045] px-3 py-1.5 text-xs font-medium text-[var(--text-secondary)]">
-            <BrainCircuit size={14} className="text-[var(--accent)]" />
+        <div className="mb-10 max-w-2xl">
+          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[var(--border-soft)] bg-[var(--surface-3)] px-3.5 py-1.5 text-xs font-medium text-[var(--text-secondary)]">
+            <BrainCircuit size={13} className="text-[var(--accent)]" />
             Source indexed
           </div>
-          <h1 className="text-[clamp(2rem,5vw,3rem)] font-semibold leading-[1.08] text-white">
+          <h1 className="text-[clamp(1.75rem,4.5vw,2.75rem)] font-semibold leading-[1.1] tracking-tight text-[var(--text-primary)]">
             Ask anything about this video.
           </h1>
           <p className="mt-4 max-w-xl text-base leading-7 text-[var(--text-secondary)]">
@@ -55,28 +55,28 @@ export function EmptyState({
             variants={promptStagger}
             initial="initial"
             animate="animate"
-            className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+            className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-3"
           >
             {onNotesClick && (
               <>
                 <motion.div variants={promptCardVariants}>
-                  <SmartNotesCard 
-                     onClick={onNotesClick} 
-                     isLoading={isLoadingNotes} 
+                  <SmartNotesCard
+                     onClick={onNotesClick}
+                     isLoading={isLoadingNotes}
                   />
                 </motion.div>
                 <motion.div variants={promptCardVariants}>
-                  <SmartNotesCard 
+                  <SmartNotesCard
                     title="Summarize Video"
                     description="Get a conversational summary with key timestamped highlights instantly."
                     color="blue"
-                    onClick={() => onSummaryClick?.()} 
-                    isLoading={isLoadingNotes} 
+                    onClick={() => onSummaryClick?.()}
+                    isLoading={isLoadingNotes}
                   />
                 </motion.div>
               </>
             )}
-            
+
             {SUGGESTED_PROMPTS.slice(onNotesClick ? 1 : 0).map((prompt, index) => {
               const Icon = promptIcons[index + (onNotesClick ? 1 : 0)] ?? MessageSquare;
 
@@ -84,22 +84,22 @@ export function EmptyState({
                 <motion.button
                   key={prompt.label}
                   variants={promptCardVariants}
-                  whileHover={{ y: -3 }}
+                  whileHover={{ y: -2 }}
                   whileTap={{ scale: 0.985 }}
                   onClick={() => onPromptSelect(prompt.text)}
-                  className="group flex min-h-[142px] flex-col rounded-2xl border border-white/[0.08] bg-white/[0.04] p-4 text-left shadow-sm transition hover:border-white/[0.16] hover:bg-white/[0.065]"
+                  className="group flex min-h-[136px] flex-col rounded-2xl border border-[var(--border-soft)] bg-[var(--surface-3)] p-4 text-left transition-colors hover:border-[var(--border-strong)] hover:bg-[var(--surface-hover)]"
                 >
-                  <div className="mb-4 flex items-center justify-between">
-                    <span className="grid h-9 w-9 place-items-center rounded-xl border border-white/[0.08] bg-[#0c1018] text-[var(--accent)]">
-                      <Icon size={17} />
+                  <div className="mb-3.5 flex items-center justify-between">
+                    <span className="grid h-9 w-9 place-items-center rounded-xl border border-[var(--border-soft)] bg-[var(--canvas)] text-[var(--accent)]">
+                      <Icon size={16} />
                     </span>
                     <ArrowRight
-                      size={16}
-                      className="text-[var(--text-muted)] opacity-0 transition group-hover:translate-x-0.5 group-hover:opacity-100"
+                      size={15}
+                      className="text-[var(--text-muted)] opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100"
                     />
                   </div>
-                  <span className="text-sm font-semibold text-white">{prompt.label}</span>
-                  <span className="mt-2 line-clamp-2 text-sm leading-6 text-[var(--text-muted)]">
+                  <span className="text-sm font-semibold text-[var(--text-primary)]">{prompt.label}</span>
+                  <span className="mt-1.5 line-clamp-2 text-sm leading-relaxed text-[var(--text-muted)]">
                     {prompt.text}
                   </span>
                 </motion.button>
@@ -113,31 +113,31 @@ export function EmptyState({
 
   return (
     <section className="relative mx-auto w-full max-w-3xl text-center">
-      <div className="pointer-events-none absolute left-1/2 top-4 h-64 w-64 -translate-x-1/2 rounded-full bg-[rgba(139,156,255,0.12)] blur-3xl" />
+      <div className="pointer-events-none absolute left-1/2 top-4 h-56 w-56 -translate-x-1/2 rounded-full bg-[var(--accent-glow)] blur-3xl opacity-60" />
 
       <motion.div
-        initial={{ opacity: 0, y: 12 }}
+        initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35 }}
+        transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1.0] }}
         className="relative"
       >
-        <div className="mx-auto mb-6 grid h-14 w-14 place-items-center rounded-2xl border border-white/[0.1] bg-white/[0.055] text-[var(--accent)] shadow-[0_18px_50px_rgba(0,0,0,0.24)] backdrop-blur-xl">
-          <BrainCircuit size={27} />
+        <div className="mx-auto mb-6 grid h-14 w-14 place-items-center rounded-2xl border border-[var(--border-medium)] bg-[var(--surface-3)] text-[var(--accent)] shadow-lg backdrop-blur-xl">
+          <BrainCircuit size={26} />
         </div>
 
-        <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.045] px-3 py-1.5 text-xs font-medium text-[var(--text-secondary)]">
-          <Sparkles size={13} className="text-[var(--accent)]" />
+        <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-[var(--border-soft)] bg-[var(--surface-3)] px-3.5 py-1.5 text-xs font-medium text-[var(--text-secondary)]">
+          <Sparkles size={12} className="text-[var(--accent)]" />
           AI learning workspace
         </p>
 
-        <h1 className="mx-auto max-w-2xl text-[clamp(2.25rem,6vw,4.25rem)] font-semibold leading-[1.04] text-white">
+        <h1 className="mx-auto max-w-2xl text-[clamp(2rem,5.5vw,3.75rem)] font-semibold leading-[1.06] tracking-tight text-[var(--text-primary)]">
           {APP_NAME}
         </h1>
         <p className="mx-auto mt-5 max-w-xl text-base leading-7 text-[var(--text-secondary)] sm:text-lg">
           {APP_TAGLINE}
         </p>
 
-        <div className="mx-auto mt-7 grid max-w-2xl grid-cols-1 gap-3 text-left sm:grid-cols-3">
+        <div className="mx-auto mt-8 grid max-w-2xl grid-cols-1 gap-3 text-left sm:grid-cols-3">
           {[
             { icon: Youtube, title: 'Analyze YouTube', text: 'Index transcripts of any educational video.' },
             { icon: FileText, title: 'Chat with PDF', text: 'Upload documents to query grounded facts.' },
@@ -145,11 +145,11 @@ export function EmptyState({
           ].map(({ icon: Icon, title, text }) => (
             <div
               key={title}
-              className="cursor-pointer rounded-2xl border border-white/[0.08] bg-white/[0.035] p-4 shadow-sm hover:border-white/[0.15] transition"
+              className="rounded-2xl border border-[var(--border-soft)] bg-[var(--surface-3)] p-4 transition-colors hover:border-[var(--border-strong)] hover:bg-[var(--surface-hover)]"
             >
-              <Icon size={18} className="mb-3 text-[var(--accent)]" />
-              <p className="text-sm font-semibold text-white">{title}</p>
-              <p className="mt-1 text-sm leading-5 text-[var(--text-muted)]">{text}</p>
+              <Icon size={17} className="mb-3 text-[var(--accent)]" />
+              <p className="text-sm font-semibold text-[var(--text-primary)]">{title}</p>
+              <p className="mt-1 text-sm leading-relaxed text-[var(--text-muted)]">{text}</p>
             </div>
           ))}
         </div>
@@ -157,4 +157,3 @@ export function EmptyState({
     </section>
   );
 }
-

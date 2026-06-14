@@ -16,7 +16,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#050816] flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--canvas)] flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-[#7C5CFF] border-t-transparent rounded-full animate-spin" />
       </div>
     );

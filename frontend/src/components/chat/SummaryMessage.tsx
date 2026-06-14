@@ -64,12 +64,12 @@ export function SummaryMessage({ message, videoId }: SummaryMessageProps) {
   }, [message.content]);
 
   if (!data || data.summary.length === 0) {
-    return <div className="text-gray-300 whitespace-pre-wrap text-[18px] leading-relaxed">{message.content}</div>;
+    return <div className="text-[var(--text-secondary)] whitespace-pre-wrap text-[16px] leading-relaxed">{message.content}</div>;
   }
 
   return (
     <div className="space-y-4 py-1">
-      <h3 className="text-white text-[19px] sm:text-[20px] font-bold leading-tight tracking-tight">
+      <h3 className="text-[var(--text-primary)] text-[17px] sm:text-[18px] font-bold leading-tight tracking-tight">
         {videoId ? 'Key highlights from this video:' : 'Key highlights from this document:'}
       </h3>
 
@@ -84,11 +84,11 @@ export function SummaryMessage({ message, videoId }: SummaryMessageProps) {
           return (
             <div
               key={`${item.timestamp}-${index}`}
-              className="text-gray-100 text-[17px] sm:text-[18px] leading-[1.55]"
+              className="text-[var(--text-primary)]/90 text-[16px] leading-[1.55]"
             >
               <p>
-                <span className="mr-2 align-top text-gray-300">-</span>
-                <span className="font-bold text-white">{parsed.topic}</span>{' '}
+                <span className="mr-2 align-top text-[var(--text-muted)]">-</span>
+                <span className="font-bold text-[var(--text-primary)]">{parsed.topic}</span>{' '}
                 {videoId ? (
                   <SummaryTimestamp
                     timestamp={item.timestamp}

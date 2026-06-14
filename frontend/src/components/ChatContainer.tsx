@@ -109,7 +109,7 @@ export function ChatContainer({ conversationId, video, onActionReady }: ChatCont
   if (isLoading && messages.length === 0) {
     return (
       <div className="flex h-full items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#7C5CFF] border-t-transparent" />
+        <div className="h-7 w-7 animate-spin rounded-full border-[3px] border-[var(--accent)] border-t-transparent" />
       </div>
     );
   }
@@ -120,7 +120,7 @@ export function ChatContainer({ conversationId, video, onActionReady }: ChatCont
     <section className="relative flex h-full min-h-0 flex-col overflow-hidden">
       <div
         ref={scrollContainerRef}
-        className="min-h-0 flex-1 overflow-y-auto overscroll-contain"
+        className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain w-full"
       >
         {!hasMessages ? (
           <div className="flex flex-col gap-10 pb-40 pt-10 sm:pb-44 sm:pt-12">
@@ -144,7 +144,7 @@ export function ChatContainer({ conversationId, video, onActionReady }: ChatCont
               </div>
             </div>
 
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-0.5">
               {displayMessages.map((message) => (
                 <MessageRenderer
                   key={message._id}
@@ -163,10 +163,10 @@ export function ChatContainer({ conversationId, video, onActionReady }: ChatCont
       {showScrollButton && (
         <button
           onClick={scrollToBottom}
-          className="absolute bottom-35 left-1/2 z-50 flex h-11 w-11 -translate-x-1/2 items-center justify-center rounded-full border border-white/10 bg-[#1A1A1A] text-white shadow-[0_8px_30px_rgb(0,0,0,0.6)] backdrop-blur-md transition-all hover:scale-110 hover:bg-[#252525] active:scale-95 sm:bottom-40"
+          className="absolute bottom-35 left-1/2 z-50 flex h-10 w-10 -translate-x-1/2 items-center justify-center rounded-full border border-[var(--border-medium)] bg-[var(--canvas)] text-[var(--text-primary)] shadow-lg backdrop-blur-md transition-all hover:scale-105 hover:bg-[var(--surface-hover)] active:scale-95 sm:bottom-40"
           aria-label="Scroll to bottom"
         >
-          <ArrowDown className="h-6 w-6" />
+          <ArrowDown className="h-5 w-5" />
         </button>
       )}
 
@@ -179,4 +179,3 @@ export function ChatContainer({ conversationId, video, onActionReady }: ChatCont
     </section>
   );
 }
-

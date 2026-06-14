@@ -30,7 +30,7 @@ export function AuthInput({
   return (
     <div className="space-y-1.5">
       {label ? (
-        <label htmlFor={id} className="text-xs font-medium text-[#94A3B8]">{label}</label>
+        <label htmlFor={id} className="text-xs font-medium text-[var(--text-secondary)]">{label}</label>
       ) : null}
       <div className="relative">
         <input
@@ -42,10 +42,10 @@ export function AuthInput({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
-          className="w-full px-3.5 py-2.5 rounded-xl text-sm text-[#F5F7FF] placeholder-[#94A3B8]/50 transition-all duration-200 outline-none"
+          className="w-full px-3.5 py-2.5 rounded-xl text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] transition-all duration-200 outline-none"
           style={{
-            background: "rgba(255,255,255,0.04)",
-            border: hasError ? "1px solid rgba(239, 68, 68, 0.55)" : "1px solid rgba(255,255,255,0.08)",
+            background: "var(--surface-3)",
+            border: hasError ? "1px solid rgba(248, 113, 113, 0.45)" : "1px solid var(--border-soft)",
           }}
         />
         {rightSlot}
@@ -97,7 +97,7 @@ export function AuthPasswordInput({
         <button
           type="button"
           onClick={onToggleVisible}
-          className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 text-[#94A3B8] hover:text-[#F5F7FF] transition-colors duration-200"
+          className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors duration-200"
         >
           {visible ? <EyeOff size={15} /> : <Eye size={15} />}
         </button>

@@ -18,17 +18,17 @@ export function usePdfChat(conversationId: string | undefined, documentId: strin
     setIsStreaming(false);
     setStreamingMessage("");
   }, []);
-
   const sanitizePdfChatResponse = useCallback((text: string, type: MessageType): string => {
     if (type !== "chat" || !text) return text;
     return text
       .replace(/\[\s*Page\s+\d+\s*\]/gi, "")
       .replace(/\(\s*Page\s+\d+\s*\)/gi, "")
       .replace(/\bPage\s+\d+\b/gi, "")
-      .replace(/\s{2,}/g, " ")
-      .replace(/\s+([,.:;!?])/g, "$1")
+      .replace(/[ \t]{2,}/g, " ")
+      .replace(/[ \t]+([,.:;!?])/g, "$1")
       .trim();
   }, []);
+
 
   const sendMessage = useCallback(
     async (content: string) => {

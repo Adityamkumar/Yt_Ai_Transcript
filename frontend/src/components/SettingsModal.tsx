@@ -203,12 +203,12 @@ export function SettingsModal({ isOpen, onClose }: Props) {
               initial="hidden"
               animate="visible"
               exit="exit"
-              className="relative w-full max-w-md overflow-hidden rounded-2xl border border-white/[0.1] bg-[#0e1019]/95 shadow-2xl shadow-black/40 backdrop-blur-xl"
+              className="relative w-full max-w-md overflow-hidden rounded-2xl border border-[var(--border-medium)] bg-[var(--surface-1)] shadow-2xl shadow-black/40 backdrop-blur-xl"
             >
               {}
-              <div className="flex items-center justify-between border-b border-white/[0.07] px-6 py-4">
+              <div className="flex items-center justify-between border-b border-[var(--border-soft)] px-6 py-4">
                 <div className="flex items-center gap-3">
-                  <span className="grid h-9 w-9 place-items-center rounded-xl border border-white/[0.1] bg-white/[0.06] text-[var(--text-secondary)]">
+                  <span className="grid h-9 w-9 place-items-center rounded-xl border border-[var(--border-soft)] bg-[var(--surface-3)] text-[var(--text-secondary)]">
                     <Settings
                       size={17}
                       className="animate-[spin_8s_linear_infinite]"
@@ -240,7 +240,7 @@ export function SettingsModal({ isOpen, onClose }: Props) {
                   </h3>
                   <div className="space-y-2">
                     {}
-                    <div className="flex items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.025] px-4 py-3">
+                    <div className="flex items-center gap-3 rounded-xl border border-[var(--border-soft)] bg-[var(--surface-3)] px-4 py-3">
                       <UserAvatar
                         name={user?.name || "Guest"}
                         avatar={user?.avatar}
@@ -257,7 +257,7 @@ export function SettingsModal({ isOpen, onClose }: Props) {
                     </div>
 
                     {}
-                    <div className="flex items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.025] px-4 py-3">
+                    <div className="flex items-center gap-3 rounded-xl border border-[var(--border-soft)] bg-[var(--surface-3)] px-4 py-3">
                       <User
                         size={16}
                         className="shrink-0 text-[var(--text-muted)]"
@@ -341,7 +341,7 @@ export function SettingsModal({ isOpen, onClose }: Props) {
               </div>
 
               {}
-              <div className="border-t border-white/[0.07] px-6 py-3">
+              <div className="border-t border-[var(--border-soft)] px-6 py-3">
                 <p className="text-center text-[11px] text-[var(--text-muted)]">
                   EchoMind AI · v1.0
                 </p>
