@@ -6,7 +6,8 @@ import {
   Play, Send, CheckCircle, RefreshCw, UploadCloud,
   Database, BrainCircuit, Terminal, ArrowUpRight, Check
 } from 'lucide-react';
-import DotField from './DotField';
+import { BackgroundBeams } from '@/components/ui/background-beams';
+
 
 export function HeroSection() {
   const [sourceType, setSourceType] = useState<'youtube' | 'pdf'>('youtube');
@@ -138,15 +139,9 @@ export function HeroSection() {
       className="relative min-h-[105dvh] flex flex-col justify-center pt-24 pb-20 overflow-hidden"
       style={{ background: 'var(--canvas)' }}
     >
-      {/* Background Interactive Dot Canvas */}
-      <DotField
-        dotRadius={2.0}
-        dotSpacing={28}
-        gradientFrom="rgba(139, 156, 247, 0.65)"
-        gradientTo="rgba(77, 162, 255, 0.4)"
-        glowColor="rgba(139, 156, 247, 0.08)"
-        cursorRadius={260}
-      />
+      {/* Background Animated Beams */}
+      <BackgroundBeams className="opacity-35 pointer-events-none" />
+
 
       {/* Decorative Blur Orbs */}
       <div

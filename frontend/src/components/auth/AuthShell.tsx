@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Zap } from "lucide-react";
-import DotField from "@/components/landing/DotField";
+import { BackgroundBeams } from "@/components/ui/background-beams";
+
 
 interface AuthShellProps {
   title: string;
@@ -18,13 +19,8 @@ export function AuthShell({
 }: AuthShellProps) {
   return (
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden px-4" style={{ background: "var(--canvas)" }}>
-      <DotField
-        dotRadius={1.8}
-        dotSpacing={26}
-        gradientFrom="rgba(139, 156, 247, 0.6)"
-        gradientTo="rgba(107, 158, 247, 0.4)"
-        glowColor="rgba(139, 156, 247, 0.06)"
-      />
+      <BackgroundBeams className="opacity-35 pointer-events-none" />
+
 
       <motion.div
         initial={{ y: 24, opacity: 0, scale: 0.97 }}

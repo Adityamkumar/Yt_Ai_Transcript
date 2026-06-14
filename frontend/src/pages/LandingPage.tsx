@@ -6,7 +6,7 @@ import { FeaturesSection } from '@/components/landing/FeaturesSection';
 import { ShowcaseSection } from '@/components/landing/ShowcaseSection';
 import { Footer } from '@/components/landing/Footer';
 import { useAuth } from '@/store/AuthContext';
-
+import { TracingBeam } from '@/components/ui/tracing-beam';
 
 function useOAuthReturn() {
   const { user, loading, refreshUser } = useAuth();
@@ -40,12 +40,15 @@ export default function LandingPage() {
     >
       <Navbar />
       <main>
-        <HeroSection />
-        <FeaturesSection />
-        <ShowcaseSection />
+        <TracingBeam className="max-w-7xl px-6 md:px-16 lg:px-24">
+          <HeroSection />
+          <FeaturesSection />
+          <ShowcaseSection />
+        </TracingBeam>
       </main>
       <Footer />
     </div>
   );
 }
+
 
