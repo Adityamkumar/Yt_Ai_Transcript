@@ -217,3 +217,39 @@ export const panelRevealItem: Variants = {
     transition: { duration: 0.35, ease: EASE_PREMIUM },
   },
 };
+
+/* ──────────────────────────────────────────
+   Follow-Up Question Chips
+   ────────────────────────────────────────── */
+
+export const followUpStagger: Variants = {
+  initial: {},
+  animate: {
+    transition: {
+      staggerChildren: 0.08,
+      delayChildren: 0.3,
+    },
+  },
+};
+
+export const followUpChipVariants: Variants = {
+  initial: { opacity: 0, y: 10, scale: 0.97 },
+  animate: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { duration: 0.3, ease: EASE_PREMIUM },
+  },
+  exit: {
+    opacity: 0,
+    y: -4,
+    scale: 0.98,
+    transition: { duration: 0.2, ease: 'easeIn' },
+  },
+  hover: {
+    y: -1,
+    transition: { duration: 0.15, ease: 'easeOut' },
+  },
+  tap: { scale: 0.98 },
+};
+

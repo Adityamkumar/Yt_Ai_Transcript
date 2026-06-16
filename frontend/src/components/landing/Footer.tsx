@@ -75,7 +75,6 @@ export function Footer() {
           style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}
         >
           <span>&copy; {new Date().getFullYear()} EchoMind AI. Crafted for learning.</span>
-          <span>Designed with Claude &amp; Linear visual systems.</span>
         </div>
 
       </div>

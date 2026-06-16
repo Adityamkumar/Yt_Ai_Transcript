@@ -482,6 +482,35 @@ p {
   padding: 0;
 }
 
+/* Shiki highlighter container overrides */
+.shiki-container pre {
+  background: none !important;
+  background-color: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: visible !important;
+  box-shadow: none !important;
+}
+
+.shiki-container code {
+  background-color: transparent !important;
+  padding: 0 !important;
+  border: none !important;
+  font-family: inherit !important;
+  font-size: inherit !important;
+}
+
+/* Devicon font normalization */
+i[class^="devicon-"], i[class*=" devicon-"] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  font-style: normal;
+}
+
 /* ──────────────────────────────────────────
    9. STREAMING CURSOR
    ────────────────────────────────────────── */

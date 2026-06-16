@@ -40,6 +40,8 @@ export interface IMessage {
   role: MessageRole;
   type: MessageType;
   content: string;
+  suggestedQuestions?: string[];
+  source?: 'user' | 'suggested_question';
   createdAt: string;
   updatedAt: string;
 }

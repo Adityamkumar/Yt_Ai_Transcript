@@ -138,6 +138,30 @@ export function PdfChatContainer({ conversationId, pdf, onActionReady }: PdfChat
     [messages, streamingDisplayMessage]
   );
 
+  const lastAssistantMessageId = useMemo(() => {
+    for (let i = displayMessages.length - 1; i >= 0; i--) {
+      if (displayMessages[i].role === 'assistant') {
+        return displayMessages[i]._id;
+      }
+    }
+    return null;
+  }, [displayMessages]);
+
+  const getUserQuestionForMessage = useCallback((messageId: string) => {
+    const msgIndex = displayMessages.findIndex(m => m._id === messageId);
+    if (msgIndex === -1) return undefined;
+    for (let i = msgIndex - 1; i >= 0; i--) {
+      if (displayMessages[i].role === 'user') {
+        return displayMessages[i].content;
+      }
+    }
+    return undefined;
+  }, [displayMessages]);
+
+  const handleSelectSuggestedQuestion = useCallback((question: string) => {
+    sendMessage(question, 'suggested_question');
+  }, [sendMessage]);
+
   const bottomRef = useAutoScroll(displayMessages);
 
   const [showScrollButton, setShowScrollButton] = useState(false);
@@ -230,6 +254,9 @@ export function PdfChatContainer({ conversationId, pdf, onActionReady }: PdfChat
                   key={message._id}
                   message={message}
                   onEdit={editMessage}
+                  isLatestAssistant={message._id === lastAssistantMessageId}
+                  userQuestion={getUserQuestionForMessage(message._id)}
+                  onSelectQuestion={handleSelectSuggestedQuestion}
                 />
               ))}
               <div ref={bottomRef} className="h-2 w-full" />

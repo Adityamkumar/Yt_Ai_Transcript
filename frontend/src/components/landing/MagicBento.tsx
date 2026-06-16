@@ -7,7 +7,10 @@ import {
   Play,
   ArrowUpRight,
   Zap,
-  Bot
+  Bot,
+  Search,
+  Link2,
+  BrainCircuit
 } from 'lucide-react';
 
 export interface BentoCardProps {
@@ -41,38 +44,38 @@ const MOBILE_BREAKPOINT = 768;
 const cardData: BentoCardProps[] = [
   {
     color: '#0d0f14',
-    title: 'YouTube Ingest',
-    description: 'Paste URL to segment transcripts.',
+    title: 'Understand Any Video',
+    description: 'Paste a link. AI segments and indexes the full transcript.',
     label: 'Ingestion'
   },
   {
     color: '#0d0f14',
-    title: 'Speech Mapping',
-    description: 'Clickable speech timeline jumps.',
-    label: 'Navigation'
+    title: 'Navigate by Meaning',
+    description: 'Ask a question. Jump to the exact moment it was discussed.',
+    label: 'Retrieval'
   },
   {
     color: '#0d0f14',
-    title: 'Immersive 3-Panel Workspace',
-    description: 'Simultaneous video, chatbot and citation panels.',
+    title: 'Your AI Knowledge Workspace',
+    description: 'Video, chatbot, and source citations — all in one view.',
     label: 'Interface'
   },
   {
     color: '#0d0f14',
-    title: 'PDF Decoupling',
-    description: 'Extract and isolate vectors on upload.',
-    label: 'Performance'
+    title: 'From Upload to Insight',
+    description: 'Documents become a searchable knowledge base instantly.',
+    label: 'Knowledge'
   },
   {
     color: '#0d0f14',
-    title: 'Low Latency RAG',
-    description: 'General queries run under 80ms.',
-    label: 'Database'
+    title: 'Instant Answers',
+    description: 'Context-aware responses grounded in your content.',
+    label: 'Speed'
   },
   {
     color: '#0d0f14',
-    title: 'Smart Citations',
-    description: 'Hallucination-free evidence badges.',
+    title: 'Every Answer Has a Source',
+    description: 'Responses stay connected to the original content.',
     label: 'Accuracy'
   }
 ];
@@ -532,39 +535,44 @@ const renderCardGraphics = (index: number) => {
           <div className="flex items-center gap-2 bg-white/[0.02] border border-white/[0.06] rounded-lg p-2.5">
             <Youtube size={12} className="text-red-400 flex-shrink-0" />
             <span className="text-[var(--text-secondary)] truncate flex-1 select-none">
-              youtube.com/watch?v=RAG_101...
+              youtube.com/watch?v=design_systems
             </span>
             <span className="text-[8px] px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-bold uppercase tracking-wider scale-95 flex-shrink-0">
-              Parsed
+              Ready
             </span>
           </div>
-          <div className="bg-black/30 border border-white/[0.04] rounded-lg p-3 space-y-1.5 text-[var(--text-muted)]">
+          <div className="bg-black/30 border border-white/[0.04] rounded-lg p-3 space-y-2 text-[var(--text-muted)]">
             <p className="text-white/60 font-semibold flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              Vectorizing Speech...
+              Segmenting into semantic contexts...
             </p>
-            <p className="pl-3.5 text-[9.5px]">Segments generated: 28 chunks</p>
+            <p className="pl-3.5 text-[9.5px]">Building retrieval index from transcript</p>
+            <p className="pl-3.5 text-[9.5px] text-emerald-400/70">✓ AI workspace ready · 28 topics identified</p>
           </div>
         </div>
       );
 
-    case 1: // Speech Mapping / Navigation
+    case 1: // Semantic Retrieval / Navigation
       return (
         <div className="mt-4 space-y-2.5 text-left font-sans text-xs w-full flex-1 flex flex-col justify-end">
+          <div className="p-2 rounded-lg bg-white/[0.02] border border-white/[0.06] flex items-center gap-2 mb-1">
+            <Search size={10} className="text-[var(--accent)] flex-shrink-0" />
+            <span className="text-[10px] text-[var(--text-secondary)] italic">"How does caching improve performance?"</span>
+          </div>
           <div className="p-2.5 rounded-lg bg-white/[0.02] border border-white/[0.06] flex items-start gap-2.5">
             <span className="font-mono text-[9px] text-[var(--accent)] bg-[var(--accent-subtle)] px-1.5 py-0.5 rounded flex-shrink-0 mt-0.5 font-bold">
               04:12
             </span>
             <p className="text-[10.5px] text-[var(--text-secondary)] leading-relaxed">
-              "...by partitioning tables horizontally, we reduce latencies..."
+              "...caching at the edge reduces round-trip latency significantly..."
             </p>
           </div>
           <div className="p-2.5 rounded-lg bg-[var(--accent-subtle)] border border-[var(--accent)]/15 flex items-start gap-2.5 shadow-[0_0_15px_rgba(139,156,247,0.1)]">
             <span className="font-mono text-[9px] text-white bg-[var(--accent)] px-1.5 py-0.5 rounded flex-shrink-0 mt-0.5 font-bold">
-              05:35
+              07:48
             </span>
             <p className="text-[10.5px] text-white font-medium leading-relaxed">
-              "This acts as a decoupled database collections layer..."
+              "The cache invalidation strategy ensures data freshness..."
             </p>
           </div>
         </div>
@@ -581,26 +589,26 @@ const renderCardGraphics = (index: number) => {
               <div className="w-1.5 h-1.5 rounded-full bg-green-500/60" />
             </div>
             <span className="text-[8.5px] font-mono text-[var(--text-muted)] tracking-wider">
-              echomind.ai/workspace/decoupled_specs
+              echomind.ai/workspace
             </span>
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.6)]" />
           </div>
           {/* 3 panels split */}
           <div className="grid grid-cols-[85px_1fr_95px] flex-1 min-h-0 text-[9px] text-[var(--text-secondary)]">
-            {/* Left Panel */}
+            {/* Left Panel — Topics */}
             <div className="border-r border-white/[0.04] bg-white/[0.005] p-2 space-y-1.5 font-mono">
-              <span className="text-[7px] text-[var(--text-muted)] uppercase tracking-wider block font-bold">Chapters</span>
+              <span className="text-[7px] text-[var(--text-muted)] uppercase tracking-wider block font-bold">Topics</span>
               <div className="h-2 w-12 bg-white/10 rounded" />
               <div className="h-2 w-8 bg-white/5 rounded" />
               <div className="h-2 w-14 bg-white/5 rounded" />
-              <div className="h-2 w-10 bg-[var(--accent)]/30 rounded border border-[var(--accent)]/20" />
+              <div className="h-2 w-10 bg-[var(--accent)]/30 rounded border border-[var(--accent)]/20 shadow-[0_0_8px_rgba(139,156,247,0.15)]" />
             </div>
             {/* Center Chat Panel */}
             <div className="p-2 bg-black/15 flex flex-col justify-between">
               <div className="space-y-1.5">
                 <div className="flex justify-end">
                   <div className="bg-[var(--accent)] text-white text-[7.5px] px-1.5 py-0.5 rounded-md font-medium">
-                    Summarize page 8 latency tests
+                    What caching strategies are discussed?
                   </div>
                 </div>
                 <div className="flex gap-1.5">
@@ -608,21 +616,27 @@ const renderCardGraphics = (index: number) => {
                     <Bot size={7} />
                   </div>
                   <div className="bg-white/5 border border-white/10 text-[8px] p-1.5 rounded-md text-[var(--text-secondary)] leading-relaxed">
-                    Decoupled tables limit response payload size, reducing general API load times.
+                    The video covers <span className="text-[var(--accent)] font-medium">edge caching</span> at 4:12 and <span className="text-[var(--accent)] font-medium">CDN invalidation</span> at 7:48, both improving response times.
                   </div>
                 </div>
               </div>
               <div className="h-5.5 w-full bg-white/[0.01] border border-white/[0.07] rounded-lg flex items-center px-2 text-[7.5px] text-[var(--text-muted)] font-mono">
-                Ask workspace...
+                Ask about this video...
               </div>
             </div>
             {/* Right Citations Panel */}
             <div className="border-l border-white/[0.04] bg-white/[0.005] p-2 space-y-2">
-              <span className="text-[7px] text-[var(--accent)] uppercase tracking-wider block font-bold font-mono">Grounding</span>
-              <div className="p-1.5 rounded bg-[var(--accent-subtle)] border border-[var(--accent)]/15 space-y-1 shadow-[0_4px_10px_rgba(139,156,247,0.05)]">
-                <span className="text-[6px] font-mono text-[var(--accent)] font-bold block">Page 8 Segment</span>
+              <span className="text-[7px] text-[var(--accent)] uppercase tracking-wider block font-bold font-mono">Sources</span>
+              <div className="p-1.5 rounded bg-[var(--accent-subtle)] border border-[var(--accent)]/15 space-y-1 shadow-[0_0_8px_rgba(139,156,247,0.1)]">
+                <span className="text-[6px] font-mono text-[var(--accent)] font-bold block">04:12 — Edge Caching</span>
                 <p className="text-[6.5px] text-[var(--text-secondary)] leading-tight italic select-none">
-                  "isolated index storage yields 78ms query times."
+                  "caching at the edge cuts round-trip latency by 60%..."
+                </p>
+              </div>
+              <div className="p-1.5 rounded bg-white/[0.02] border border-white/[0.06] space-y-1">
+                <span className="text-[6px] font-mono text-emerald-400 font-bold block">07:48 — CDN Strategy</span>
+                <p className="text-[6.5px] text-[var(--text-secondary)] leading-tight italic select-none">
+                  "invalidation ensures users always get fresh data..."
                 </p>
               </div>
             </div>
@@ -630,67 +644,74 @@ const renderCardGraphics = (index: number) => {
         </div>
       );
 
-    case 3: // PDF Decoupling / Vector Indexing [Spans 2x2]
+    case 3: // Knowledge Mapping [Spans 2x2]
       return (
         <div className="mt-5 flex flex-col sm:flex-row gap-4 flex-1 w-full text-left font-sans min-h-[160px] lg:min-h-[220px]">
-          {/* Drag & drop mock */}
+          {/* Upload preview */}
           <div className="flex-1 border border-dashed border-white/10 rounded-xl p-4 flex flex-col items-center justify-center bg-white/[0.01] hover:bg-white/[0.02] hover:border-[var(--accent)]/30 transition-all duration-300">
             <FileText size={22} className="text-[var(--accent)] mb-2.5 animate-pulse" />
-            <span className="text-[11px] text-white font-medium">vector_specs.pdf</span>
-            <span className="text-[9px] text-[var(--text-muted)] font-mono mt-1">12 pages · 1.4 MB</span>
+            <span className="text-[11px] text-white font-medium">design_systems.pdf</span>
+            <span className="text-[9px] text-[var(--text-muted)] font-mono mt-1">24 pages · 2.1 MB</span>
           </div>
-          {/* Vector Segment Grid Mock */}
+          {/* Concept map */}
           <div className="flex-1 bg-black/40 border border-white/[0.06] rounded-xl p-4 flex flex-col justify-between">
             <div className="flex items-center justify-between border-b border-white/[0.04] pb-2 font-mono">
-              <span className="text-[9px] text-[var(--text-muted)]">RAG Pipeline</span>
-              <span className="text-[8.5px] text-emerald-400 font-bold uppercase tracking-wide">34 Nodes Vectorized</span>
+              <span className="text-[9px] text-[var(--text-muted)]">Concept Map</span>
+              <span className="text-[8.5px] text-emerald-400 font-bold uppercase tracking-wide">18 Topics Linked</span>
             </div>
             <div className="grid grid-cols-6 gap-1.5 py-3.5">
-              {Array.from({ length: 18 }).map((_, i) => {
-                const isActive = i === 2 || i === 8 || i === 13;
-                const isDecoupled = i === 5 || i === 11 || i === 16;
+              {[
+                'Color', 'Type', 'Space', 'Grid', 'Token', 'Scale',
+                'A11y', 'Motion', 'Icon', 'Layer', 'Theme', 'State',
+                'Input', 'Nav', 'Card', 'Modal', 'Toast', 'Form'
+              ].map((concept, i) => {
+                const isHighlighted = i === 2 || i === 8 || i === 13;
+                const isConnected = i === 5 || i === 11 || i === 16;
                 return (
                   <div
                     key={i}
                     className={`aspect-square rounded-md border flex items-center justify-center transition-all duration-300 ${
-                      isActive
+                      isHighlighted
                         ? 'bg-[var(--accent)]/20 border-[var(--accent)] shadow-[0_0_10px_rgba(139,156,247,0.4)]'
-                        : isDecoupled
+                        : isConnected
                           ? 'bg-emerald-500/10 border-emerald-500/20'
                           : 'bg-white/5 border-white/10'
                     }`}
                   >
-                    <span className="text-[6.5px] font-mono text-[var(--text-muted)]">{i + 1}</span>
+                    <span className="text-[5.5px] font-mono text-[var(--text-muted)]">{concept}</span>
                   </div>
                 );
               })}
             </div>
             <span className="text-[8px] text-[var(--text-muted)] font-mono italic">
-              decoding chunks from video metadata database models
+              related concepts linked across video and document sources
             </span>
           </div>
         </div>
       );
 
-    case 4: // Performance Latency
+    case 4: // Instant Answers — Speed
       return (
         <div className="mt-4 flex flex-col justify-end flex-1 w-full text-left font-sans">
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-3xl font-bold text-white tracking-tight">78ms</span>
-            <span className="text-[10px] text-emerald-400 font-bold font-mono bg-emerald-500/10 border border-emerald-500/20 px-1 rounded flex items-center gap-0.5">
-              ↓ 75% latency
+          <div className="flex items-baseline gap-2">
+            <span className="text-2xl font-bold text-white tracking-tight">Instant</span>
+            <span className="text-[10px] text-emerald-400 font-bold font-mono bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded flex items-center gap-0.5">
+              <Zap size={8} /> Sub-second
             </span>
           </div>
+          <p className="text-[10px] text-[var(--text-muted)] mt-1 leading-relaxed">
+            Responses grounded in your content, delivered without delay.
+          </p>
           <div className="mt-3 bg-black/30 border border-white/[0.04] rounded-lg p-2.5 space-y-1.5 font-mono text-[9px]">
             <div className="flex justify-between text-[var(--text-muted)]">
-              <span>Standard RAG</span>
-              <span className="text-red-400">320ms</span>
+              <span>Ask → Retrieve → Answer</span>
+              <span className="text-emerald-400">{'<'} 1s</span>
             </div>
-            <div className="flex justify-between font-bold text-white">
-              <span>Decoupled RAG</span>
-              <span className="text-emerald-400">78ms</span>
+            <div className="flex justify-between text-[var(--text-muted)]">
+              <span>Source grounding</span>
+              <span className="text-[var(--accent)]">Always on</span>
             </div>
-            {/* Sparkline Graphic */}
+            {/* Response quality sparkline */}
             <svg className="w-full h-8 mt-1 text-[var(--accent)]" viewBox="0 0 100 20" fill="none" preserveAspectRatio="none">
               <path d="M0 18 L20 17 L40 16 L60 18 L80 8 L100 2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
               <path d="M0 18 L20 17 L40 16 L60 18 L80 8 L100 2 L100 20 L0 20 Z" fill="url(#bento-spark-grad)" opacity="0.15" />
@@ -701,25 +722,29 @@ const renderCardGraphics = (index: number) => {
                 </linearGradient>
               </defs>
             </svg>
+            <span className="text-[7.5px] text-[var(--text-muted)] italic">Optimized retrieval architecture</span>
           </div>
         </div>
       );
 
-    case 5: // Smart Citation evidence badges
+    case 5: // Source-Grounded Citations
       return (
         <div className="mt-4 space-y-2.5 flex-1 w-full text-left font-sans flex flex-col justify-end">
+          <p className="text-[9px] text-[var(--text-muted)] leading-relaxed">
+            Every answer stays connected to the original source.
+          </p>
           <div className="p-2.5 rounded-xl bg-white/[0.02] border border-white/[0.06] space-y-2">
             <p className="text-[10.5px] text-[var(--text-secondary)] leading-relaxed italic select-none">
-              "...verified in Table 3 decoupled collections testing trials..."
+              "...edge caching reduced API response times by 60% in production..."
             </p>
             <div className="flex flex-wrap gap-1.5">
               <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25 text-[8.5px] font-mono text-emerald-400 font-semibold cursor-pointer hover:bg-emerald-500/25 transition-colors">
-                <span className="w-1 h-1 rounded-full bg-emerald-400" />
-                decoupled_specs.pdf [Page 8]
+                <Link2 size={7} className="text-emerald-400" />
+                design_systems.pdf [Page 12]
               </div>
               <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-[8.5px] font-mono text-red-400 font-semibold cursor-pointer hover:bg-red-500/25 transition-colors">
                 <Play size={7} className="fill-red-400 text-red-400" />
-                04:12 Jump
+                04:12 Jump to moment
               </div>
             </div>
           </div>

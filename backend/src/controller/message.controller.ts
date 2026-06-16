@@ -5,7 +5,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
 export const createMessage = asyncHandler(async (req, res) => {
-  const { conversationId, role, content, type = "chat" } = req.body;
+  const { conversationId, role, content, type = "chat", source } = req.body;
 
   if (!conversationId || !role || !content) {
     throw new ApiError(400, "All fields are required");
@@ -16,6 +16,7 @@ export const createMessage = asyncHandler(async (req, res) => {
     role,
     content,
     type,
+    ...(source ? { source } : {}),
   });
 
   return res
@@ -74,5 +75,28 @@ export const deleteConversationMessages = asyncHandler(async (req, res) => {
   return res
     .status(200)
     .json(new ApiResponse(200, {}, "All messages in conversation deleted"));
+});
+
+export const patchSuggestedQuestions = asyncHandler(async (req, res) => {
+  const { messageId } = req.params;
+  const { suggestedQuestions } = req.body;
+
+  if (!Array.isArray(suggestedQuestions)) {
+    throw new ApiError(400, "suggestedQuestions must be an array of strings");
+  }
+
+  const message = await Message.findByIdAndUpdate(
+    messageId,
+    { suggestedQuestions: suggestedQuestions.slice(0, 3) },
+    { new: true },
+  );
+
+  if (!message) {
+    throw new ApiError(404, "Message not found");
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, message, "Suggested questions updated"));
 });
 

@@ -44,10 +44,7 @@ const generateEmbeddingsForChunks = async (
   return result;
 };
 
-/**
- * Background ingestion service that processes a video transcript for RAG.
- * It chunks the transcript, generates vector embeddings, and stores them.
- */
+
 export const ingestVideoForRag = async ({
   videoDocumentId,
 }: IngestVideoForRagInput): Promise<void> => {

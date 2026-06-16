@@ -46,5 +46,18 @@ export const chatService = {
       if (err?.name !== 'AbortError') throw err;
     }
   },
+
+  getFollowUpQuestions: async (
+    payload: { question: string; answer: string; context?: string },
+    signal?: AbortSignal,
+  ): Promise<string[]> => {
+    try {
+      const response = await axiosInstance.post('/api/v1/chat/followup', payload, { signal });
+      return response.data?.data?.followUpQuestions || [];
+    } catch {
+      return [];
+    }
+  },
 };
+
 

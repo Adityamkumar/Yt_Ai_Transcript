@@ -19,21 +19,41 @@ import { formatRelativeTime } from '@/utils';
 import { cn } from '@/utils/cn';
 import { stripMarkdown } from '@/utils/stripMarkdown';
 import { fixInlineLists } from '@/utils/fixInlineLists';
+import { useFollowUpQuestions } from '@/hooks/useFollowUpQuestions';
+import { FollowUpQuestions } from '@/components/chat/FollowUpQuestions';
+import { CodeBlock } from './chat/CodeBlock';
 
 interface MessageBubbleProps {
   message: ChatMessage;
   onRetry?: (messageId: string) => void;
   onEdit?: (messageId: string, content: string) => void;
   children?: React.ReactNode;
+  isLatestAssistant?: boolean;
+  userQuestion?: string;
+  onSelectQuestion?: (question: string) => void;
 }
 
-export function MessageBubble({ message, onRetry, onEdit, children }: MessageBubbleProps) {
+export function MessageBubble({
+  message,
+  onRetry,
+  onEdit,
+  children,
+  isLatestAssistant,
+  userQuestion,
+  onSelectQuestion,
+}: MessageBubbleProps) {
   const [copied, setCopied] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(message.content);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const isUser = message.role === 'user';
+
+  const { questions, isLoading: isLoadingSuggestions } = useFollowUpQuestions(
+    message,
+    isLatestAssistant || false,
+    userQuestion
+  );
 
   useEffect(() => {
     if (isEditing && textareaRef.current) {
@@ -116,26 +136,13 @@ export function MessageBubble({ message, onRetry, onEdit, children }: MessageBub
   };
 
   const markdownComponents = {
-    pre: ({ children }: any) => (
-      <pre className="group/code relative overflow-x-auto rounded-xl border border-[var(--border-soft)] bg-[#06080d] p-4">
-        {children}
-      </pre>
-    ),
+    pre: ({ children }: any) => <>{children}</>,
     code: ({ className, children, ...props }: any) => {
       const language = typeof className === 'string' ? className.replace('language-', '') : '';
-      const isBlockCode = Boolean(language);
+      const isBlockCode = Boolean(language) || (typeof children === 'string' && children.includes('\n'));
 
       if (isBlockCode) {
-        return (
-          <code className={cn('block font-mono text-[13px] leading-6 text-gray-100', className)} {...props}>
-            {language ? (
-              <span className="mb-2 inline-block rounded-md border border-[var(--border-soft)] bg-[var(--surface-3)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">
-                {language}
-              </span>
-            ) : null}
-            {children}
-          </code>
-        );
+        return <CodeBlock code={String(children).replace(/\n$/, '')} language={language} />;
       }
 
       return (
@@ -259,6 +266,15 @@ export function MessageBubble({ message, onRetry, onEdit, children }: MessageBub
                 </>
               )}
             </div>
+
+            {/* Follow-up Questions */}
+            {!isUser && !message.isLoading && !isEditing && onSelectQuestion && (
+              <FollowUpQuestions
+                questions={questions}
+                isLoading={isLoadingSuggestions}
+                onSelectQuestion={onSelectQuestion}
+              />
+            )}
 
             {/* Actions */}
             <AnimatePresence>

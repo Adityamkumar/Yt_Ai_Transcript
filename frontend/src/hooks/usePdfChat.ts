@@ -31,7 +31,7 @@ export function usePdfChat(conversationId: string | undefined, documentId: strin
 
 
   const sendMessage = useCallback(
-    async (content: string) => {
+    async (content: string, source?: 'user' | 'suggested_question') => {
       if (!conversationId || !documentId || isStreaming) return;
 
       const isNotesIntent = /create notes|generate notes|make notes|structured notes/i.test(content);
@@ -44,7 +44,13 @@ export function usePdfChat(conversationId: string | undefined, documentId: strin
         setIsNotesRequest(messageType === "notes");
         setStreamingMessage("");
 
-        const userMsg = await messageService.createMessage(conversationId, "user", content);
+        const userMsg = await messageService.createMessage(
+          conversationId,
+          "user",
+          content,
+          messageType,
+          source
+        );
 
         queryClient.setQueryData(["messages", conversationId], (old: IMessage[] = []) => [
           ...old,

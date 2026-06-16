@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { ArrowDown } from "lucide-react";
 import { useMessages } from "@/hooks/useMessages";
 import { useChat } from "@/hooks/useChat";
@@ -62,6 +62,30 @@ export function ChatContainer({ conversationId, video, onActionReady }: ChatCont
       ? [...messages, streamingDisplayMessage]
       : messages;
   }, [messages, streamingDisplayMessage]);
+
+  const lastAssistantMessageId = useMemo(() => {
+    for (let i = displayMessages.length - 1; i >= 0; i--) {
+      if (displayMessages[i].role === 'assistant') {
+        return displayMessages[i]._id;
+      }
+    }
+    return null;
+  }, [displayMessages]);
+
+  const getUserQuestionForMessage = useCallback((messageId: string) => {
+    const msgIndex = displayMessages.findIndex(m => m._id === messageId);
+    if (msgIndex === -1) return undefined;
+    for (let i = msgIndex - 1; i >= 0; i--) {
+      if (displayMessages[i].role === 'user') {
+        return displayMessages[i].content;
+      }
+    }
+    return undefined;
+  }, [displayMessages]);
+
+  const handleSelectSuggestedQuestion = useCallback((question: string) => {
+    sendMessage(question, 'suggested_question');
+  }, [sendMessage]);
 
   const bottomRef = useAutoScroll(displayMessages);
 
@@ -151,6 +175,9 @@ export function ChatContainer({ conversationId, video, onActionReady }: ChatCont
                   message={message}
                   onEdit={editMessage}
                   videoId={video?.youtubeVideoId}
+                  isLatestAssistant={message._id === lastAssistantMessageId}
+                  userQuestion={getUserQuestionForMessage(message._id)}
+                  onSelectQuestion={handleSelectSuggestedQuestion}
                 />
               ))}
 

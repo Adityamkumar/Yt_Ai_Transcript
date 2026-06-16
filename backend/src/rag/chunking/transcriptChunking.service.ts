@@ -9,10 +9,7 @@ export type TranscriptRagChunkInput = {
   duration: number;
 };
 
-/**
- * Service to divide video transcript chunks into semantic chunks suited for RAG,
- * preserving timestamp boundaries.
- */
+
 export const chunkTranscriptForRag = (
   transcript: ITranscriptChunk[],
 ): TranscriptRagChunkInput[] => {

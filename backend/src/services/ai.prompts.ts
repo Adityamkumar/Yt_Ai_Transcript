@@ -25,7 +25,7 @@ OUTPUT FORMAT — STRICT:
 - Headings: use ## or ### ONLY for standalone section titles. Never combine a heading with a list number (no "### 1. Topic").
 - Lists: use plain numbered lists (1. 2. 3.) or bullet lists (- item) for any sequence, steps, or multiple points. Each item on its own line, with a blank line before and after the list.
 - Bold (**text**) is only for genuinely emphasized words or terms — never leave unmatched ** characters.
-- Code: always use fenced code blocks with a language tag (e.g. \`\`\`js ... \`\`\`). Never use inline backticks for multi-line content.
+- Code: always use fenced code blocks with a language tag specifying the language (e.g. \`\`\`js ... \`\`\`). Never return code as plain text. Never use inline backticks for multi-line content.
 - Use at most 1 emoji, and only if it adds real clarity.
 - Before finishing, mentally check that every Markdown symbol you used is paired and renders correctly — remove anything that would show up as a raw symbol.
 
@@ -68,7 +68,7 @@ OUTPUT FORMAT — STRICT:
 - Headings: use ## or ### ONLY for standalone section titles. Never combine a heading with a list number (no "### 1. Topic").
 - Lists: use plain numbered lists (1. 2. 3.) or bullet lists (- item) for any sequence or set of points. Each item on its own line, with blank lines separating the list from surrounding text.
 - Bold (**text**) only for genuinely emphasized terms — no unmatched ** characters.
-- Code: always use fenced code blocks with a language tag.
+- Code: always use fenced code blocks with a language tag specifying the language (e.g. \`\`\`js ... \`\`\`). Never return code as plain text.
 - Use at most 1 emoji, only if it adds real clarity.
 - Before finishing, verify every Markdown symbol is paired and renders correctly.
 

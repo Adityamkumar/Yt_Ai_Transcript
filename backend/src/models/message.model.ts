@@ -5,6 +5,8 @@ export interface IMessage extends Document {
   role: "user" | "assistant";
   type: "chat" | "notes" | "summary";
   content: string;
+  suggestedQuestions?: string[];
+  source?: "user" | "suggested_question";
   createdAt: Date;
   updatedAt: Date;
 }
@@ -29,6 +31,15 @@ const messageSchema = new Schema<IMessage>(
     content: {
       type: String,
       required: true,
+    },
+    suggestedQuestions: {
+      type: [String],
+      default: undefined,
+    },
+    source: {
+      type: String,
+      enum: ["user", "suggested_question"],
+      default: undefined,
     },
   },
   {
