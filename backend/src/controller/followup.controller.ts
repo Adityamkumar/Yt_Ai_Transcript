@@ -1,12 +1,8 @@
-import { GoogleGenAI } from "@google/genai";
 import { FOLLOWUP_SYSTEM_PROMPT } from "../services/followup.prompts.js";
+import { aiProviderService } from "../services/ai/providers/aiProvider.service.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-
-const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY!,
-});
 
 const GeminiFollowUpSchema = {
   type: "object",
@@ -44,17 +40,7 @@ Generate follow-up questions:
 `;
 
   try {
-    const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
-      contents: prompt,
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: GeminiFollowUpSchema as any,
-        temperature: 0.7,
-      },
-    });
-
-    const rawText = response.text?.trim();
+    const rawText = await aiProviderService.generateStructuredResponse(prompt, GeminiFollowUpSchema);
 
     if (!rawText) {
       return res
@@ -75,9 +61,27 @@ Generate follow-up questions:
       }
     }
 
-    const questions = (parsed.questions || [])
-      .filter((q: unknown) => typeof q === "string" && q.trim().length > 0)
-      .slice(0, 3);
+    const uniqueQuestions: string[] = [];
+    const seen = new Set<string>();
+
+    for (const q of parsed.questions || []) {
+      if (typeof q !== "string") continue;
+      const trimmed = q.trim();
+      if (trimmed.length === 0) continue;
+
+      // Normalize string for duplicate checks (remove symbols and multiple spaces)
+      const normalized = trimmed.toLowerCase().replace(/[?.,!]/g, "").replace(/\s+/g, " ");
+      if (seen.has(normalized)) continue;
+
+      // Filter out if it's the same as original user question
+      const normalizedUserQ = question.trim().toLowerCase().replace(/[?.,!]/g, "").replace(/\s+/g, " ");
+      if (normalized === normalizedUserQ) continue;
+
+      seen.add(normalized);
+      uniqueQuestions.push(trimmed);
+    }
+
+    const questions = uniqueQuestions.slice(0, 3);
 
     return res
       .status(200)

@@ -1,4 +1,3 @@
-import { GoogleGenAI } from "@google/genai";
 import { z } from "zod";
 import type{ ITranscriptChunk } from "../models/VideoUrl.model.js";
 import { formatTimestamp } from "../utils/formatTimestamp.js";
@@ -9,16 +8,13 @@ import {
   PDF_NOTES_SYSTEM_PROMPT,
   SUMMARY_SYSTEM_PROMPT,
 } from "./ai.prompts.js";
+import { aiProviderService, sanitizeModelOutput } from "./ai/providers/aiProvider.service.js";
 
 export type ConversationMessage = {
   role: "user" | "assistant";
   content: string;
   createdAt?: string;
 };
-
-const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY!,
-});
 
 const NotesSchema = z.object({
   title: z.string(),
@@ -297,6 +293,43 @@ const normalizeSummaryTimeline = (
     });
 };
 
+const extractJsonString = (rawText: string): string => {
+  if (!rawText) return "";
+  const sanitized = sanitizeModelOutput(rawText).trim();
+  if (sanitized.startsWith("{") && sanitized.endsWith("}")) {
+    return sanitized;
+  }
+  if (sanitized.startsWith("[") && sanitized.endsWith("]")) {
+    return sanitized;
+  }
+  
+  const jsonMatch = sanitized.match(/```json\s?([\s\S]*?)\s?```/) || sanitized.match(/```\s?([\s\S]*?)\s?```/);
+  if (jsonMatch) {
+    return jsonMatch[1]!.trim();
+  }
+  const firstBrace = sanitized.indexOf('{');
+  const lastBrace = sanitized.lastIndexOf('}');
+  if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+    return sanitized.substring(firstBrace, lastBrace + 1).trim();
+  }
+  return sanitized;
+};
+
+const extractAndValidateJson = (rawText: string, validator: z.ZodSchema): boolean => {
+  try {
+    const jsonStr = extractJsonString(rawText);
+    const parsed = JSON.parse(jsonStr);
+    validator.parse(parsed);
+    return true;
+  } catch (err: any) {
+    console.error("[AI Validation Error]:", err.message || err);
+    if (err.errors) {
+      console.error("[AI Validation Zod Errors]:", JSON.stringify(err.errors, null, 2));
+    }
+    return false;
+  }
+};
+
 export const askAiAboutTranscript = async (
   transcript: string | ITranscriptChunk[],
   question: string,
@@ -315,30 +348,16 @@ export const askAiAboutTranscript = async (
       const schema = type === "notes" ? GeminiNotesSchema : GeminiSummarySchema;
       const validator = type === "notes" ? NotesSchema : SummarySchema;
 
-      console.log(`GENERATING ${type.toUpperCase()}...`);
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: prompt,
-        config: {
-          responseMimeType: "application/json",
-          responseSchema: schema as any,
-        },
-      });
 
-      const rawText = response.text?.trim();
+      const rawText = await aiProviderService.generateStructuredResponse(
+        prompt,
+        schema,
+        undefined,
+        (text) => extractAndValidateJson(text, validator)
+      );
       if (!rawText) throw new Error(`Empty ${type} response received`);
 
-      let jsonStr = rawText;
-      const jsonMatch = rawText.match(/```json\s?([\s\S]*?)\s?```/) || rawText.match(/```\s?([\s\S]*?)\s?```/);
-      if (jsonMatch) {
-        jsonStr = jsonMatch[1]!.trim();
-      } else {
-        const firstBrace = rawText.indexOf('{');
-        const lastBrace = rawText.lastIndexOf('}');
-        if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
-          jsonStr = rawText.substring(firstBrace, lastBrace + 1).trim();
-        }
-      }
+      const jsonStr = extractJsonString(rawText);
 
       try {
         const parsed = JSON.parse(jsonStr);
@@ -363,12 +382,7 @@ export const askAiAboutTranscript = async (
       }
     }
 
-    const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
-      contents: prompt,
-    });
-
-    const text = response.text?.trim() || "";
+    const text = await aiProviderService.generateResponse(prompt);
     return type === "chat" ? stripTimestampMentions(text) : text;
   } catch (error: any) {
     console.error("AI Service Error:", error);
@@ -382,11 +396,6 @@ export async function* streamAiAboutTranscript(
   recentMessages: ConversationMessage[] = [],
   type: "chat" | "notes" | "summary" = "chat",
 ) {
-  if (!process.env.GEMINI_API_KEY) {
-    yield "AI service not configured.";
-    return;
-  }
-
   try {
     if (type === "notes" || type === "summary") {
       const result = await askAiAboutTranscript(
@@ -414,16 +423,11 @@ export async function* streamAiAboutTranscript(
       totalDurationSeconds
     );
 
-    const response = await ai.models.generateContentStream({
-      model: "gemini-3-flash-preview",
-      contents: prompt,
-    });
+    const stream = aiProviderService.generateStream(prompt);
 
-    for await (const chunk of response) {
-      const text = chunk.text;
-
-      if (text) {
-        yield text;
+    for await (const chunk of stream) {
+      if (chunk) {
+        yield chunk;
       }
     }
   } catch (error: any) {
@@ -473,9 +477,7 @@ export const generateVideoTitle = async (transcript: string | ITranscriptChunk[]
       ].join("\n\n").slice(0, 5000);
     }
 
-    const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
-      contents: `You are a video title generator. Analyze the transcript sample below and generate a single, meaningful, topic-focused title for this video.
+    const prompt = `You are a video title generator. Analyze the transcript sample below and generate a single, meaningful, topic-focused title for this video.
 
 IMPORTANT RULES:
 - First, identify the MAIN SUBJECT or TOPIC of the video (e.g. a programming concept, a framework, a tutorial subject, a course topic).
@@ -495,10 +497,10 @@ Examples of GOOD titles:
 
 Transcript Sample:
 ${transcriptSample}
-`,
-    });
+`;
 
-    return response.text?.trim().replace(/[\"'`*#]/g, "").replace(/\s+/g, " ").trim();
+    const text = await aiProviderService.generateResponse(prompt);
+    return text.trim().replace(/[\"'`*#]/g, "").replace(/\s+/g, " ").trim();
   } catch {
     return "New Conversation";
   }
@@ -546,30 +548,16 @@ export const askAiAboutPdf = async (
       const schema = type === "notes" ? GeminiNotesSchema : GeminiSummarySchema;
       const validator = type === "notes" ? NotesSchema : SummarySchema;
 
-      console.log(`GENERATING PDF ${type.toUpperCase()}...`);
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: prompt,
-        config: {
-          responseMimeType: "application/json",
-          responseSchema: schema as any,
-        },
-      });
 
-      const rawText = response.text?.trim();
+      const rawText = await aiProviderService.generateStructuredResponse(
+        prompt,
+        schema,
+        undefined,
+        (text) => extractAndValidateJson(text, validator)
+      );
       if (!rawText) throw new Error(`Empty ${type} response received`);
 
-      let jsonStr = rawText;
-      const jsonMatch = rawText.match(/```json\s?([\s\S]*?)\s?```/) || rawText.match(/```\s?([\s\S]*?)\s?```/);
-      if (jsonMatch) {
-        jsonStr = jsonMatch[1]!.trim();
-      } else {
-        const firstBrace = rawText.indexOf('{');
-        const lastBrace = rawText.lastIndexOf('}');
-        if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
-          jsonStr = rawText.substring(firstBrace, lastBrace + 1).trim();
-        }
-      }
+      const jsonStr = extractJsonString(rawText);
 
       try {
         const parsed = JSON.parse(jsonStr);
@@ -584,12 +572,8 @@ export const askAiAboutPdf = async (
       }
     }
 
-    const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
-      contents: prompt,
-    });
-
-    return response.text?.trim() || "";
+    const text = await aiProviderService.generateResponse(prompt);
+    return text || "";
   } catch (error: any) {
     console.error("AI Service Error:", error);
     throw new Error(`Failed to generate AI response: ${error?.message || "Unknown error"}`);
@@ -602,11 +586,6 @@ export async function* streamAiAboutPdf(
   recentMessages: ConversationMessage[] = [],
   type: "chat" | "notes" | "summary" = "chat",
 ) {
-  if (!process.env.GEMINI_API_KEY) {
-    yield "AI service not configured.";
-    return;
-  }
-
   try {
     if (type === "notes" || type === "summary") {
       const result = await askAiAboutPdf(
@@ -626,15 +605,11 @@ export async function* streamAiAboutPdf(
       type,
     );
 
-    const response = await ai.models.generateContentStream({
-      model: "gemini-3.5-flash",
-      contents: prompt,
-    });
+    const stream = aiProviderService.generateStream(prompt);
 
-    for await (const chunk of response) {
-      const text = chunk.text;
-      if (text) {
-        yield text;
+    for await (const chunk of stream) {
+      if (chunk) {
+        yield chunk;
       }
     }
   } catch (error: any) {
@@ -650,9 +625,7 @@ export async function* streamAiAboutPdf(
 
 export const generatePdfTitle = async (sampleText: string) => {
   try {
-    const response = await ai.models.generateContent({
-      model: "gemini-3.5-flash",
-      contents: `
+    const prompt = `
 Generate a concise searchable title based on this document text sample.
 
 RULES:
@@ -664,10 +637,10 @@ RULES:
 
 Sample Text:
 ${sampleText.slice(0, 3000)}
-`,
-    });
+`;
 
-    return response.text?.trim().replace(/["']/g, "").replace(/\*\*/g, "");
+    const text = await aiProviderService.generateResponse(prompt);
+    return text.trim().replace(/["']/g, "").replace(/\*\*/g, "");
   } catch {
     return "New Document";
   }

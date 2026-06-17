@@ -153,7 +153,7 @@ export function CodeBlock({ code, language = '' }: CodeBlockProps) {
           aria-label="Copy code to clipboard"
         >
           {copied ? (
-            <Check size={13} className="text-[var(--success)]" />
+            <Check size={13} className="text-(--success)" />
           ) : (
             <Copy size={13} />
           )}

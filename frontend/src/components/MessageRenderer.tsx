@@ -22,7 +22,15 @@ export function MessageRenderer({
   onSelectQuestion,
 }: MessageRendererProps) {
   if (message.type === 'notes') {
-    return <NotesMessage message={message} videoId={videoId} />;
+    return (
+      <NotesMessage
+        message={message}
+        videoId={videoId}
+        isLatestAssistant={isLatestAssistant}
+        userQuestion={userQuestion}
+        onSelectQuestion={onSelectQuestion}
+      />
+    );
   }
 
   if (message.type === 'summary') {

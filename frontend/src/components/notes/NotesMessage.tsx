@@ -8,10 +8,15 @@ import { useBookmarks } from "@/hooks/useBookmarks";
 import toast from "react-hot-toast";
 import { PDFDownloadButton } from "../pdf/PDFDownloadBtn";
 import { stripMarkdown } from "@/utils/stripMarkdown";
+import { useFollowUpQuestions } from "@/hooks/useFollowUpQuestions";
+import { FollowUpQuestions } from "@/components/chat/FollowUpQuestions";
 
 interface NotesMessageProps {
   message: ChatMessage;
   videoId?: string;
+  isLatestAssistant?: boolean;
+  userQuestion?: string;
+  onSelectQuestion?: (question: string) => void;
 }
 
 const MarkdownRenderer = ({ content }: { content: string }) => (
@@ -51,7 +56,18 @@ export function NotesSkeleton() {
   );
 }
 
-export function NotesMessage({ message, videoId: _videoId }: NotesMessageProps) {
+export function NotesMessage({
+  message,
+  videoId: _videoId,
+  isLatestAssistant,
+  userQuestion,
+  onSelectQuestion,
+}: NotesMessageProps) {
+  const { questions, isLoading: isLoadingSuggestions } = useFollowUpQuestions(
+    message,
+    isLatestAssistant || false,
+    userQuestion
+  );
   const { bookmarks, createBookmark, isCreating } = useBookmarks();
   const [copied, setCopied] = React.useState(false);
 
@@ -212,7 +228,9 @@ export function NotesMessage({ message, videoId: _videoId }: NotesMessageProps) 
                 {parsedNotes.actionableTakeaways?.map((takeaway, index) => (
                   <li key={index} className="flex items-start gap-3">
                     <Zap className="w-4 h-4 text-green-400 mt-1 shrink-0" />
-                    <span className="text-gray-300 text-sm leading-relaxed">{typeof takeaway === 'string' ? takeaway : (takeaway as any).text || String(takeaway)}</span>
+                    <div className="text-gray-300 text-sm leading-relaxed flex-1 min-w-0">
+                      <MarkdownRenderer content={typeof takeaway === 'string' ? takeaway : (takeaway as any).text || String(takeaway)} />
+                    </div>
                   </li>
                 ))}
               </ul>
@@ -226,7 +244,9 @@ export function NotesMessage({ message, videoId: _videoId }: NotesMessageProps) 
                 {parsedNotes.examples?.map((example, index) => (
                   <li key={index} className="flex items-start gap-3 bg-black/20 p-4 rounded-xl border border-white/5">
                     <div className="mt-1.5 h-1.5 w-1.5 rounded-full bg-purple-400 shrink-0" />
-                    <span className="text-gray-300 text-sm leading-relaxed">{example}</span>
+                    <div className="text-gray-300 text-sm leading-relaxed flex-1 min-w-0">
+                      <MarkdownRenderer content={example} />
+                    </div>
                   </li>
                 ))}
               </ul>
@@ -236,6 +256,16 @@ export function NotesMessage({ message, videoId: _videoId }: NotesMessageProps) 
 
         <div className="h-2 w-full bg-gradient-to-r from-purple-600 via-blue-500 to-purple-600" />
       </div>
+
+      {!message.isLoading && onSelectQuestion && (
+        <div className="mt-6">
+          <FollowUpQuestions
+            questions={questions}
+            isLoading={isLoadingSuggestions}
+            onSelectQuestion={onSelectQuestion}
+          />
+        </div>
+      )}
     </motion.div>
   );
 }
