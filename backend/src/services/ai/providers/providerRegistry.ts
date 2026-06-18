@@ -10,12 +10,10 @@ export class ProviderRegistry {
   register(provider: IAIProvider) {
     const key = provider.name.toLowerCase();
     this.providers.set(key, provider);
-    console.log(`[AI Registry] Registered provider: ${provider.name}`);
   }
 
   setOrder(order: string[]) {
     this.order = order.map(o => o.toLowerCase());
-    console.log(`[AI Registry] Provider precedence set to: ${this.order.join(" → ")}`);
   }
 
   getOrderedProviders(): IAIProvider[] {

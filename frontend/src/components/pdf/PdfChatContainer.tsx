@@ -12,6 +12,9 @@ import { PdfFailedState } from "./PdfFailedState";
 import { PdfDocument } from "@/types";
 import { WorkspaceAction } from "../workspace-actions/workspaceActionConfig";
 import { pdfService } from "@/services/pdf.service";
+import { cn } from "@/utils/cn";
+import { SourcePanel } from "../workspace/SourcePanel";
+import { useSourcePanelStore } from "@/stores/sourcePanel.store";
 
 interface PdfChatContainerProps {
   conversationId: string;
@@ -35,6 +38,17 @@ function resolveRagStatus(doc: PdfDocument): "processing" | "ready" | "failed" {
 export function PdfChatContainer({ conversationId, pdf, onActionReady }: PdfChatContainerProps) {
   const [livePdf, setLivePdf] = useState<PdfDocument>(pdf);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const isSourcePanelOpen = useSourcePanelStore((state) => state.isSourcePanelOpen);
+  const closeSourcePanel = useSourcePanelStore((state) => state.closeSourcePanel);
+
+  // Reset source panel when switching conversations or on unmount
+  useEffect(() => {
+    closeSourcePanel();
+    return () => {
+      closeSourcePanel();
+    };
+  }, [conversationId, closeSourcePanel]);
 
   // ---------- ragStatus derivation ----------
   const ragStatus = resolveRagStatus(livePdf);
@@ -218,69 +232,73 @@ export function PdfChatContainer({ conversationId, pdf, onActionReady }: PdfChat
   const hasMessages = messages.length > 0 || isStreaming;
 
   return (
-    <section className="relative flex h-full min-h-0 flex-col overflow-hidden">
-      <div
-        ref={scrollContainerRef}
-        className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain w-full"
-      >
-        {!hasMessages ? (
-          <div className="flex flex-col gap-10 pb-40 pt-10 sm:pb-44 sm:pt-12">
-            <PdfEmptyState
-              onActionClick={handlePromptSelect}
-              onGenerateNotes={generateNotes}
-              onGenerateSummary={generateSummary}
-            />
-          </div>
-        ) : (
-          <div className="pb-36 pt-5 sm:pb-40 sm:pt-8">
-            <div className="chat-container">
-              <div className="mb-8 max-w-130">
-                <PdfPreviewCard document={livePdf} />
-              </div>
-
-              <div className="mb-8">
-                <PdfEmptyState
-                  onActionClick={handlePromptSelect}
-                  onGenerateNotes={generateNotes}
-                  onGenerateSummary={generateSummary}
-                  showIntro={false}
-                />
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-1">
-              {displayMessages.map((message) => (
-                <MessageRenderer
-                  key={message._id}
-                  message={message}
-                  onEdit={editMessage}
-                  isLatestAssistant={message._id === lastAssistantMessageId}
-                  userQuestion={getUserQuestionForMessage(message._id)}
-                  onSelectQuestion={handleSelectSuggestedQuestion}
-                />
-              ))}
-              <div ref={bottomRef} className="h-2 w-full" />
-            </div>
-          </div>
-        )}
-      </div>
-
-      {showScrollButton && (
-        <button
-          onClick={scrollToBottom}
-          className="absolute bottom-35 left-1/2 z-50 flex h-11 w-11 -translate-x-1/2 items-center justify-center rounded-full border border-white/10 bg-[#1A1A1A] text-white shadow-[0_8px_30px_rgb(0,0,0,0.6)] backdrop-blur-md transition-all hover:scale-110 hover:bg-[#252525] active:scale-95 sm:bottom-40"
-          aria-label="Scroll to bottom"
+    <div className="relative flex h-full w-full min-h-0 flex-row overflow-hidden">
+      <section className="relative flex h-full min-h-0 flex-1 flex-col overflow-hidden">
+        <div
+          ref={scrollContainerRef}
+          className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain w-full"
         >
-          <ArrowDown className="h-6 w-6" />
-        </button>
-      )}
+          {!hasMessages ? (
+            <div className="flex flex-col gap-10 pb-40 pt-10 sm:pb-44 sm:pt-12">
+              <PdfEmptyState
+                onActionClick={handlePromptSelect}
+                onGenerateNotes={generateNotes}
+                onGenerateSummary={generateSummary}
+              />
+            </div>
+          ) : (
+            <div className="pb-36 pt-5 sm:pb-40 sm:pt-8">
+              <div className="chat-container">
+                <div className="mb-8 max-w-130">
+                  <PdfPreviewCard document={livePdf} />
+                </div>
 
-      <ChatInput
-        onSend={(message) => sendMessage(message)}
-        onStop={stopStreaming}
-        isPending={isStreaming}
-        placeholder="Ask about the document..."
-      />
-    </section>
+                <div className="mb-8">
+                  <PdfEmptyState
+                    onActionClick={handlePromptSelect}
+                    onGenerateNotes={generateNotes}
+                    onGenerateSummary={generateSummary}
+                    showIntro={false}
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-1">
+                {displayMessages.map((message) => (
+                  <MessageRenderer
+                    key={message._id}
+                    message={message}
+                    onEdit={editMessage}
+                    isLatestAssistant={message._id === lastAssistantMessageId}
+                    userQuestion={getUserQuestionForMessage(message._id)}
+                    onSelectQuestion={handleSelectSuggestedQuestion}
+                  />
+                ))}
+                <div ref={bottomRef} className="h-2 w-full" />
+              </div>
+            </div>
+          )}
+        </div>
+
+        {showScrollButton && (
+          <button
+            onClick={scrollToBottom}
+            className="absolute bottom-35 left-1/2 z-50 flex h-11 w-11 -translate-x-1/2 items-center justify-center rounded-full border border-white/10 bg-[#1A1A1A] text-white shadow-[0_8px_30px_rgb(0,0,0,0.6)] backdrop-blur-md transition-all hover:scale-110 hover:bg-[#252525] active:scale-95 sm:bottom-40"
+            aria-label="Scroll to bottom"
+          >
+            <ArrowDown className="h-6 w-6" />
+          </button>
+        )}
+
+        <ChatInput
+          onSend={(message) => sendMessage(message)}
+          onStop={stopStreaming}
+          isPending={isStreaming}
+          placeholder="Ask about the document..."
+        />
+      </section>
+
+      <SourcePanel pdf={livePdf} />
+    </div>
   );
 }

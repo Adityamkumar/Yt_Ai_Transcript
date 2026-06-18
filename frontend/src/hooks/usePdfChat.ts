@@ -21,9 +21,6 @@ export function usePdfChat(conversationId: string | undefined, documentId: strin
   const sanitizePdfChatResponse = useCallback((text: string, type: MessageType): string => {
     if (type !== "chat" || !text) return text;
     return text
-      .replace(/\[\s*Page\s+\d+\s*\]/gi, "")
-      .replace(/\(\s*Page\s+\d+\s*\)/gi, "")
-      .replace(/\bPage\s+\d+\b/gi, "")
       .replace(/[ \t]{2,}/g, " ")
       .replace(/[ \t]+([,.:;!?])/g, "$1")
       .trim();

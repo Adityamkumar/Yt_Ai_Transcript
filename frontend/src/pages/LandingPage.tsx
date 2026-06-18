@@ -30,8 +30,23 @@ function useOAuthReturn() {
   }, [loading, user, refreshUser, navigate]);
 }
 
+function useAutoRedirect() {
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!loading && user && localStorage.getItem('isAuthenticated') === 'true') {
+      const isOAuthReturn = sessionStorage.getItem('oauth_pending') === 'true';
+      if (!isOAuthReturn) {
+        navigate('/app', { replace: true });
+      }
+    }
+  }, [loading, user, navigate]);
+}
+
 export default function LandingPage() {
   useOAuthReturn();
+  useAutoRedirect();
 
   return (
     <div

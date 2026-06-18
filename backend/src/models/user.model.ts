@@ -10,7 +10,7 @@ export interface IUser extends Document{
    avatar?:string;
    googleId?:string;
    provider: 'local' | 'google'
-   refreshToken?: string;
+   refreshToken?: string[];
    resetPasswordToken?: string;
    resetPasswordExpiry?: Date;
    isPasswordCorrect(
@@ -43,7 +43,7 @@ const userSchema = new Schema<IUser>(
       enum:['local', 'google'],
       default: 'local'
     },
-    refreshToken: { type: String },
+    refreshToken: { type: [String], default: [] },
     resetPasswordToken:{
       type: String
     },

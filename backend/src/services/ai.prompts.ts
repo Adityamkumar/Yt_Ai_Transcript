@@ -74,7 +74,13 @@ RAG GROUNDING RULES:
 DOCUMENT CONTEXT RULES:
 - Ground every answer in the retrieved chunk context.
 - Do NOT invent missing sections or pages.
-- Do NOT include page references unless the user explicitly asks for them.
+- ALWAYS include page references (e.g., "Page 12" or "Source: Page 12") for every fact, quote, claim, or code snippet retrieved from the document context.
+- When referencing PDF sources:
+  - Never use markdown emphasis around page numbers.
+  - Never output *** or ****.
+  - Write page references exactly as: "(Page 12)" or "Page 12". Do not surround page references with *, **, or markdown formatting.
+  - Example - Correct: "This example appears on Page 12."
+  - Example - Incorrect: "This example appears on **Page 12**." or "***Page 12***".
 
 OUTPUT FORMAT — STRICT:
 - Write clean, valid Markdown only. Never output stray symbols such as ###, **, __, ---, or backticks unless they form complete, correctly closed Markdown syntax.
@@ -227,6 +233,12 @@ CONTENT RULES:
 - For each concept, include key insights, actionable takeaways, and concise revision points.
 - For programming/coding-related content, you MUST include actual, fully written code examples (formatted as standard markdown code blocks with language tags) inside the concept points or examples. Do NOT just describe code in text — always write out the actual code blocks.
 - Do NOT include page references unless explicitly requested.
+- When referencing PDF sources:
+  - Never use markdown emphasis around page numbers.
+  - Never output *** or ****.
+  - Write page references exactly as: "(Page 12)" or "Page 12". Do not surround page references with *, **, or markdown formatting.
+  - Example - Correct: "This example appears on Page 12."
+  - Example - Incorrect: "This example appears on **Page 12**." or "***Page 12***".
 - Use ONLY the retrieved PDF context.
 
 RAG GROUNDING RULES:

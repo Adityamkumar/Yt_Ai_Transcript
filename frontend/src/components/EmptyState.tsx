@@ -125,10 +125,10 @@ export function EmptyState({
           <BrainCircuit size={26} />
         </div>
 
-        <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-[var(--border-soft)] bg-[var(--surface-3)] px-3.5 py-1.5 text-xs font-medium text-[var(--text-secondary)]">
+        <div className="mx-auto mb-4 flex w-fit items-center gap-2 rounded-full border border-[var(--border-soft)] bg-[var(--surface-3)] px-3.5 py-1.5 text-xs font-medium text-[var(--text-secondary)]">
           <Sparkles size={12} className="text-[var(--accent)]" />
           AI learning workspace
-        </p>
+        </div>
 
         <h1 className="mx-auto max-w-2xl text-[clamp(2rem,5.5vw,3.75rem)] font-semibold leading-[1.06] tracking-tight text-[var(--text-primary)]">
           {APP_NAME}

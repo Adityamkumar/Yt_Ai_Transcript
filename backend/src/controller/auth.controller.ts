@@ -118,12 +118,16 @@ export const refreshAccessToken = asyncHandler(async (req, res) => {
     throw new ApiError(401, "Invalid refreshToken");
   }
 
-  if (incomingRefreshToken !== user?.refreshToken) {
+  const currentTokens = Array.isArray(user.refreshToken)
+    ? user.refreshToken
+    : (user.refreshToken ? [user.refreshToken as string] : []);
+
+  if (!currentTokens.includes(incomingRefreshToken)) {
     throw new ApiError(401, "Refresh token is used or expired");
   }
 
   const { accessToken, refreshToken } =
-    await generateAccessTokenAndRefreshToken(user._id);
+    await generateAccessTokenAndRefreshToken(user._id, incomingRefreshToken);
 
   res.cookie("accessToken", accessToken, accessCookieOptions);
   res.cookie("refreshToken", refreshToken, refreshCookieOptions);
@@ -136,17 +140,27 @@ export const refreshAccessToken = asyncHandler(async (req, res) => {
 });
 
 export const userLogout = asyncHandler(async (req, res) => {
-  await User.findByIdAndUpdate(
-    (req.user as any)?._id,
-    {
-      $unset: {
-        refreshToken: 1,
-      },
-    },
-    {
-      returnDocument: "after",
-    },
-  );
+  const incomingRefreshToken = req.cookies.refreshToken;
+
+  if (incomingRefreshToken) {
+    await User.findByIdAndUpdate(
+      (req.user as any)?._id,
+      {
+        $pull: {
+          refreshToken: incomingRefreshToken,
+        },
+      }
+    );
+  } else {
+    await User.findByIdAndUpdate(
+      (req.user as any)?._id,
+      {
+        $unset: {
+          refreshToken: 1,
+        },
+      }
+    );
+  }
 
   res
     .status(200)

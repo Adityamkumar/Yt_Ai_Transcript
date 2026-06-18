@@ -726,3 +726,21 @@ i[class^="devicon-"], i[class*=" devicon-"] {
     @apply font-sans;
   }
 }
+
+/* ──────────────────────────────────────────
+   PDF Viewport Scaling Helpers
+   ────────────────────────────────────────── */
+.pdf-viewport-container .react-pdf__Page {
+  width: 100% !important;
+  height: auto !important;
+  display: flex !important;
+  justify-content: center !important;
+  background-color: transparent !important;
+}
+.pdf-viewport-container .react-pdf__Page canvas {
+  width: 100% !important;
+  height: auto !important;
+  max-width: 100% !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-lg) !important;
+}

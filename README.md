@@ -11,7 +11,7 @@
 
 <br />
 
-This is a full-stack project designed to help you study and get information from video transcripts and PDF documents. You paste a YouTube link or upload a PDF file, and the app will index the content and let you chat with it, ask questions, or generate structured study notes and summaries.
+This is a full-stack project designed to help you study and extract information from video transcripts and PDF documents. You paste a YouTube link or upload a PDF file, and the app will index the content and let you chat with it, ask questions, or generate structured study notes and summaries.
 
 It has a responsive dark-mode interface, simple login/signup (including Google Login), and uses RAG (Retrieval-Augmented Generation) so the AI responses stay grounded in the video transcript or PDF text.
 
@@ -29,6 +29,7 @@ It has a responsive dark-mode interface, simple login/signup (including Google L
 - [✨ Features](#-features)
 - [🛠️ Tech Stack](#️-tech-stack)
 - [🏗️ How the RAG Database works](#️-how-the-rag-database-works)
+- [🤖 Multi-Model Fallback Architecture](#-multi-model-fallback-architecture)
 - [🔄 Retries & Cooldown System](#-retries--cooldown-system)
 - [🚀 Getting Started](#-getting-started)
 - [🛡️ Security & Account Settings](#️-security--account-settings)
@@ -39,12 +40,18 @@ It has a responsive dark-mode interface, simple login/signup (including Google L
 ## ✨ Features
 
 - **📺 YouTube Transcript Chat:** Paste any YouTube link, download its transcript, and ask questions. The AI replies and links back to the specific timestamp of the video.
-- **📄 PDF Chat:** Upload a PDF file, index it, and ask questions about its pages.
+- **📄 Interactive Three-Panel PDF Workspace:** Upload a PDF file, index it, and view it in a premium 3-panel workspace:
+  - **Left Panel:** Collapsible chat sidebar/navigation history.
+  - **Center Panel:** Chat interface with auto-parsed interactive page citations (`📄 Page X`).
+  - **Right Panel:** Sliding PDF context panel that opens directly to the cited page.
+  - **Animations & Easing:** Dynamic spring-loaded transitions (powered by Framer Motion) that slide left/right matching the navigation direction.
+  - **Responsive Layout:** Automatically scales the PDF canvas without blinking, and collapses into a bottom-sheet drawer on mobile viewports.
+- **🤖 Multi-Model Fallback Architecture:** Never worry about rate limits or outages. The backend automatically cascades through multiple AI model providers (Groq ➔ OpenRouter ➔ Gemini) to guarantee seamless responses.
 - **📝 Study Notes & Summaries:** Automatically turn transcripts or PDFs into bullet points, key takeaways, and neat revision sheets.
 - **🔐 Google & Local Login:** Log in using your email/password or use Google Sign-in. The app automatically links them if they share the same email.
 - **🔖 Saved Bookmarks:** Bookmark specific AI answers or notes to find them later easily.
 - **🔄 Auto-Retries & Cooldown:** If the AI embedding pipeline hits a rate limit, it automatically tries again in the background. If it fails 4 times, it locks for a 10-minute cooldown showing a countdown timer, then automatically unlocks so you can try again.
-- **🔒 Deduplication:** If you upload the same PDF twice, the app detects its hash, opens your existing chat, and avoids duplicate storage or processing.
+- **🔒 Deduplication:** If you upload the same PDF twice, the app detects its MD5 hash, opens your existing chat, and avoids duplicate storage or processing.
 - **💬 Friendly Error Messages:** User messages are simple and friendly (no scary tech jargon or API error codes).
 
 ---
@@ -53,15 +60,19 @@ It has a responsive dark-mode interface, simple login/signup (including Google L
 
 ### Frontend
 - **Framework:** React 19 + TypeScript (built with Vite)
-- **Styling:** Tailwind CSS v4 + Framer Motion for simple animations
+- **Styling:** Tailwind CSS v4 + Framer Motion for spring transitions
 - **State Management:** Zustand (global states) + React Context (Auth State)
 - **Routing & API:** React Router v7 + TanStack React Query (with Axios)
+- **PDF Viewer:** `react-pdf` with hardware-accelerated CSS scaling and custom rendering
 
 ### Backend
 - **Server:** Node.js + Express.js (TypeScript)
 - **Database:** MongoDB + Mongoose ORM
 - **Auth:** Passport.js (Google OAuth 2.0), JWT (JSON Web Tokens) in HttpOnly cookies, and bcrypt for passwords
-- **AI Service:** Google GenAI SDK (`@google/genai`) with the Gemini 3.5 Flash / Flash Preview models
+- **AI Services & Fallback:**
+  - **Groq SDK** (Llama 3 models)
+  - **OpenRouter SDK**
+  - **Google GenAI SDK** (`@google/genai`) with Gemini models
 - **Parsing Pipelines:** `youtube-transcript` for video captions, `pdf-parse-new` for reading PDFs
 - **Cloud Storage:** ImageKit to host uploaded PDFs
 
@@ -74,7 +85,17 @@ To keep database queries fast and avoid storing heavy arrays inside video or doc
 1. **Metadata collections (`videos` & `pdfdocuments`):** Only store basic details like title, URL, chunk count, and loading statuses.
 2. **Text Chunk collections (`transcriptchunks` & `pdfchunks`):** Store the actual text paragraphs, their order index, timestamps (start/end/duration), and 1536-dimension vectors for AI similarity search.
 
-When you ask a question, the server compares your question against the text chunk collection, extracts the top 8 most similar chunks, and sends only those chunks to the Gemini model to get an accurate answer.
+When you ask a question, the server compares your question against the text chunk collection, extracts the top 8 most similar chunks, and sends only those chunks to the active LLM model to get an accurate answer.
+
+---
+
+## 🤖 Multi-Model Fallback Architecture
+
+To ensure high availability, the backend employs a fallback model chain:
+1. **Fallback Chain Order:** `GroqProvider` ➔ `OpenRouterProvider` ➔ `GeminiProvider`.
+2. **Health Monitoring:** If a provider fails (due to rate limits, API timeout, or authorization errors), it is dynamically marked **unhealthy** and placed on a **5-minute cooldown**.
+3. **Seamless Handover:** The request is immediately passed to the next provider in the chain without failing the user's chat session.
+4. **Reasoning Sanitization:** Automatically parses and strips out thinking/reasoning tags (`<think>`, `<thinking>`, and `<reasoning>`) from both text outputs and streaming responses to keep the chat interface clean and distraction-free.
 
 ---
 
@@ -95,6 +116,8 @@ To handle API failures or rate limits without breaking the app:
 - MongoDB (Local instance or MongoDB Atlas)
 - Google Cloud Console credentials (for Google Login)
 - Gemini API Key (from Google AI Studio)
+- Groq API Key (from Groq Console)
+- OpenRouter API Key
 - ImageKit account (for PDF uploads)
 
 ### Setup Instructions
@@ -112,16 +135,19 @@ To handle API failures or rate limits without breaking the app:
    ```
    Create a `.env` file in the `backend/` folder:
    ```env
-   PORT=5000
+   PORT=8000
    MONGODB_URI=your_mongodb_connection_string
    ACCESS_TOKEN_SECRET=your_jwt_access_secret
    REFRESH_TOKEN_SECRET=your_jwt_refresh_secret
-   ACCESS_TOKEN_EXPIRY=1d
+   ACCESS_TOKEN_EXPIRY=1h
    REFRESH_TOKEN_EXPIRY=7d
    GOOGLE_CLIENT_ID=your_google_client_id
    GOOGLE_CLIENT_SECRET=your_google_client_secret
-   GOOGLE_CALLBACK_URL=http://localhost:5000/api/v1/auth/google/callback
+   EMAIL_USER=your_gmail_address
+   EMAIL_PASS=your_app_password
    GEMINI_API_KEY=your_gemini_api_key
+   GROQ_API_KEY=your_groq_api_key
+   OPENROUTER_API_KEY=your_openrouter_api_key
    IMAGEKIT_PUBLIC_KEY=your_imagekit_public_key
    IMAGEKIT_PRIVATE_KEY=your_imagekit_private_key
    IMAGEKIT_URL_ENDPOINT=your_imagekit_url_endpoint
@@ -138,7 +164,7 @@ To handle API failures or rate limits without breaking the app:
    ```
    Create a `.env.local` file in the `frontend/` folder:
    ```env
-   VITE_API_BASE_URL=http://localhost:5000
+   VITE_API_BASE_URL=http://localhost:8000
    ```
    Start the frontend:
    ```bash
@@ -158,6 +184,7 @@ To handle API failures or rate limits without breaking the app:
 ## 🛡️ Security & Account Settings
 
 - **Secure Login:** Session tokens are stored in secure HttpOnly cookies.
+- **Refresh Token Rotation Race-Condition Prevention:** The Axios interceptor uses a locking flag (`isRefreshing`) and request queueing (`failedQueue`) to prevent duplicate concurrent refresh requests. This ensures seamless token renewal without accidental logouts when reloading pages with active parallel queries.
 - **XSS Filter:** HTML tags in AI replies are sanitized using `dompurify` to prevent cross-site scripting.
 - **Provider Checks:** Safe password checks are run on account deletion to make sure OAuth users can delete their profiles safely without errors.
 

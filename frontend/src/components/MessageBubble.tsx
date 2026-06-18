@@ -22,6 +22,39 @@ import { fixInlineLists } from '@/utils/fixInlineLists';
 import { useFollowUpQuestions } from '@/hooks/useFollowUpQuestions';
 import { FollowUpQuestions } from '@/components/chat/FollowUpQuestions';
 import { CodeBlock } from './chat/CodeBlock';
+import { CitationChip } from './chat/CitationChip';
+
+export function renderCitations(content: string): string {
+  if (!content) return content;
+  return content.replace(
+    /(\[[^\]]+\]\([^)]+\))|((?:\bSource:\s*)?(?:\(\s*)?\bPage\s*(?::\s*|\s+)(\d+)\b\s*\)?)/gi,
+    (match, link, pagePattern, pageNum) => {
+      if (link) return link;
+      return `[📄 Page ${pageNum}](citation:${pageNum})`;
+    }
+  );
+}
+
+export function urlTransform(url: string): string {
+  if (url.startsWith('citation:')) return url;
+  try {
+    const parsed = new URL(url);
+    if (
+      parsed.protocol === 'http:' ||
+      parsed.protocol === 'https:' ||
+      parsed.protocol === 'mailto:' ||
+      parsed.protocol === 'tel:' ||
+      parsed.protocol === 'citation:'
+    ) {
+      return url;
+    }
+  } catch {
+    if (url.startsWith('/') || url.startsWith('citation:')) {
+      return url;
+    }
+  }
+  return '';
+}
 
 interface MessageBubbleProps {
   message: ChatMessage;
@@ -117,7 +150,12 @@ export function MessageBubble({
     if (isValidElement(node)) {
       const element = node as any;
       const typeName = typeof element.type === 'string' ? element.type : '';
-      if (typeName === 'code' || typeName === 'pre') {
+      if (
+        typeName === 'code' ||
+        typeName === 'pre' ||
+        typeName === 'a' ||
+        typeof element.type === 'function'
+      ) {
         return node;
       }
 
@@ -159,6 +197,20 @@ export function MessageBubble({
     },
     p: ({ children }: any) => <p>{Children.map(children, (child) => highlightInlineCodeNodes(child))}</p>,
     li: ({ children }: any) => <li>{Children.map(children, (child) => highlightInlineCodeNodes(child))}</li>,
+    a: ({ href, children, ...props }: any) => {
+      const url = href || '';
+      if (url.startsWith('citation:') || url.startsWith('unsafe:citation:')) {
+        const pageNum = parseInt(url.replace(/^(?:unsafe:)?citation:/i, ''), 10);
+        if (!isNaN(pageNum)) {
+          return <CitationChip page={pageNum} />;
+        }
+      }
+      return (
+        <a href={href} className="text-[var(--accent)] hover:underline" {...props}>
+          {children}
+        </a>
+      );
+    },
   };
 
   return (
@@ -243,7 +295,8 @@ export function MessageBubble({
                         <ReactMarkdown
                           remarkPlugins={[remarkGfm]}
                           components={markdownComponents}
-                          children={fixInlineLists(message.content)}
+                          urlTransform={urlTransform}
+                          children={renderCitations(fixInlineLists(message.content))}
                         />
                         <span className="streaming-cursor" />
                       </div>
@@ -259,7 +312,8 @@ export function MessageBubble({
                       <ReactMarkdown
                         remarkPlugins={[remarkGfm]}
                         components={markdownComponents}
-                        children={fixInlineLists(message.content)}
+                        urlTransform={urlTransform}
+                        children={renderCitations(fixInlineLists(message.content))}
                       />
                     </div>
                   )}
