@@ -8,7 +8,7 @@ import { ChatContainer } from '@/components/ChatContainer';
 import { PdfChatContainer } from '@/components/pdf/PdfChatContainer';
 import { PdfUploadCard } from '@/components/pdf/PdfUploadCard';
 import { PdfIndexingStatus } from '@/components/pdf/PdfIndexingStatus';
-import { EmptyState } from '@/components/EmptyState';
+import { GreetingHero } from '@/components/chat/GreetingHero';
 import { TranscriptLoader } from '@/components/TranscriptLoader';
 import { VideoCard } from '@/components/VideoCard';
 import { useConversations } from '@/hooks/useConversations';
@@ -109,14 +109,14 @@ export default function HomePage({ onActionReady }: HomePageProps) {
           initial="initial"
           animate="animate"
           exit="exit"
-          className="h-full overflow-y-auto w-full"
+          className="h-full overflow-y-auto overflow-x-hidden w-full max-w-full"
         >
-          <div className="content-container flex min-h-full flex-col justify-center py-8 sm:py-10 lg:py-12">
-            <div className="grid items-center gap-8 lg:gap-10">
+          <div className="content-container flex min-h-full flex-col justify-center py-3 sm:py-4 lg:py-5">
+            <div className="grid items-center gap-3 lg:gap-4 w-full max-w-full overflow-x-hidden">
               <AnimatePresence mode="wait">
                 {!(isExtracting || isCreatingConversation || isPdfProcessing) ? (
-                  <motion.div key="empty" variants={fadeIn}>
-                    <EmptyState hasTranscript={false} />
+                  <motion.div key="empty" variants={fadeIn} className="w-full max-w-full min-w-0 overflow-x-hidden">
+                    <GreetingHero />
                   </motion.div>
                 ) : isPdfProcessing ? (
                   <motion.div
@@ -151,7 +151,7 @@ export default function HomePage({ onActionReady }: HomePageProps) {
                   initial={{ y: 14, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ delay: 0.14, duration: 0.35, ease: [0.25, 0.1, 0.25, 1.0] }}
-                  className="flex flex-col gap-6"
+                  className="flex flex-col gap-4 w-full max-w-full min-w-0 overflow-x-hidden"
                 >
                   {/* Source Type Toggle */}
                   <div className="mx-auto flex w-full max-w-sm items-center gap-1 rounded-2xl border border-[var(--border-soft)] bg-[var(--canvas-subtle)]/90 p-1.5 backdrop-blur-md">
