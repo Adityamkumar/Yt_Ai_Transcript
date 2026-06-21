@@ -75,6 +75,10 @@ export function Footer() {
           style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}
         >
           <span>&copy; {new Date().getFullYear()} EchoMind AI. Crafted for learning.</span>
+          <div className="flex gap-4">
+            <Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
+            <Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
+          </div>
         </div>
 
       </div>
