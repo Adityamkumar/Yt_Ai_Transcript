@@ -13,7 +13,6 @@ import { sendEmail } from "../utils/sendEmail.js";
 import crypto from "node:crypto";
 import { generateResetPasswordEmail } from "../utils/emailTemplates.js";
 
-
 export const userRegister = asyncHandler(async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -120,7 +119,9 @@ export const refreshAccessToken = asyncHandler(async (req, res) => {
 
   const currentTokens = Array.isArray(user.refreshToken)
     ? user.refreshToken
-    : (user.refreshToken ? [user.refreshToken as string] : []);
+    : user.refreshToken
+      ? [user.refreshToken as string]
+      : [];
 
   if (!currentTokens.includes(incomingRefreshToken)) {
     throw new ApiError(401, "Refresh token is used or expired");
@@ -143,23 +144,17 @@ export const userLogout = asyncHandler(async (req, res) => {
   const incomingRefreshToken = req.cookies.refreshToken;
 
   if (incomingRefreshToken) {
-    await User.findByIdAndUpdate(
-      (req.user as any)?._id,
-      {
-        $pull: {
-          refreshToken: incomingRefreshToken,
-        },
-      }
-    );
+    await User.findByIdAndUpdate((req.user as any)?._id, {
+      $pull: {
+        refreshToken: incomingRefreshToken,
+      },
+    });
   } else {
-    await User.findByIdAndUpdate(
-      (req.user as any)?._id,
-      {
-        $unset: {
-          refreshToken: 1,
-        },
-      }
-    );
+    await User.findByIdAndUpdate((req.user as any)?._id, {
+      $unset: {
+        refreshToken: 1,
+      },
+    });
   }
 
   res
@@ -249,7 +244,7 @@ export const googleCallbackController = asyncHandler(async (req, res) => {
   res.cookie("accessToken", accessToken, accessCookieOptions);
   res.cookie("refreshToken", refreshToken, refreshCookieOptions);
 
-  return res.redirect("http://localhost:5173");
+  return res.redirect(process.env.FRONTEND_URL!);
 });
 
 export const avatarProxyController = asyncHandler(async (req, res) => {
@@ -313,10 +308,7 @@ export const forgetPassword = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, "Reset password link sent successfully."));
 });
 
-
-export const resetPasswordController =
-asyncHandler(async (req, res) => {
-
+export const resetPasswordController = asyncHandler(async (req, res) => {
   const rawToken = req.params.token;
   const token = typeof rawToken === "string" ? rawToken : "";
 
@@ -326,11 +318,7 @@ asyncHandler(async (req, res) => {
     throw new ApiError(400, "Reset token is required");
   }
 
-  const hashedToken =
-    crypto
-      .createHash("sha256")
-      .update(token)
-      .digest("hex");
+  const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
 
   const user = await User.findOne({
     resetPasswordToken: hashedToken,
@@ -341,10 +329,7 @@ asyncHandler(async (req, res) => {
   });
 
   if (!user) {
-    throw new ApiError(
-      400,
-      "Invalid or expired reset token"
-    );
+    throw new ApiError(400, "Invalid or expired reset token");
   }
 
   if (!password || typeof password !== "string") {
@@ -362,8 +347,7 @@ asyncHandler(async (req, res) => {
 
   return res.status(200).json({
     success: true,
-    message:
-      "Password reset successfully",
+    message: "Password reset successfully",
   });
 });
 
@@ -387,9 +371,6 @@ export const validateResetPasswordTokenController = asyncHandler(
       throw new ApiError(400, "Invalid or expired reset token");
     }
 
-    return res.status(200).json(
-      new ApiResponse(200, "Reset token is valid")
-    );
-  }
+    return res.status(200).json(new ApiResponse(200, "Reset token is valid"));
+  },
 );
-
