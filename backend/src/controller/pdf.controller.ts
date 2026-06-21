@@ -3,8 +3,13 @@ import { PdfDocument } from "../models/pdfDocument.model.js";
 import { Conversation } from "../models/conversation.model.js";
 import { hashPdfBuffer, processPdfUpload } from "../services/pdf.service.js";
 import { deletePdf } from "../services/imagekit.service.js";
-import { generatePdfTitle, askAiAboutPdf, streamAiAboutPdf } from "../services/ai.service.js";
+import {
+  generatePdfTitle,
+  askAiAboutPdf,
+  streamAiAboutPdf,
+} from "../services/ai.service.js";
 import { retrieveRelevantChunks } from "../utils/retrieveRelevantChunks.js";
+import { isSimpleGreeting } from "../utils/greeting.js";
 import { formatDocumentContext } from "../utils/formatDocumentContext.js";
 import { extractPdfText } from "../utils/extractPdfText.js";
 import { ApiError } from "../utils/ApiError.js";
@@ -16,10 +21,6 @@ import {
   MAX_TOTAL_RETRIES,
 } from "../rag/services/pdfRagIngestion.service.js";
 import { deletePdfRagArtifacts } from "../rag/services/pdfRagCleanup.service.js";
-
-
-
-
 
 const GENERIC_PDF_TITLES = new Set([
   "new document",
@@ -55,12 +56,11 @@ const resolvePdfTitle = (aiTitle: string | undefined, originalName: string) => {
   return filenameTitle || "Document";
 };
 
-
-
-
-
-const getOrCreateConversation = async (pdfDocId: mongoose.Types.ObjectId, userId: string, title: string) => {
-  
+const getOrCreateConversation = async (
+  pdfDocId: mongoose.Types.ObjectId,
+  userId: string,
+  title: string,
+) => {
   const existing = await Conversation.findOne({
     pdfDocumentId: pdfDocId,
     userId,
@@ -79,10 +79,6 @@ const getOrCreateConversation = async (pdfDocId: mongoose.Types.ObjectId, userId
   return Conversation.findById(created._id).populate("pdfDocumentId");
 };
 
-
-
-
-
 export const uploadPdf = asyncHandler(async (req: any, res) => {
   if (!req.file) {
     throw new ApiError(400, "No PDF file uploaded");
@@ -95,48 +91,51 @@ export const uploadPdf = asyncHandler(async (req: any, res) => {
   const originalName = req.file.originalname;
   const fileBuffer: Buffer = req.file.buffer;
 
-  
-  
-  
   const documentHash = hashPdfBuffer(fileBuffer);
 
-  
-  
-  
   const existing = await PdfDocument.findOne({ documentHash });
 
   if (existing) {
     const effectiveRagStatus = existing.ragStatus ?? existing.status;
 
     if (effectiveRagStatus === "ready") {
-      
       const conversation = await getOrCreateConversation(
         existing._id as mongoose.Types.ObjectId,
         req.user._id,
         existing.title,
       );
-      return res.status(200).json(
-        new ApiResponse(200, conversation, "PDF uploaded and workspace created successfully"),
-      );
+      return res
+        .status(200)
+        .json(
+          new ApiResponse(
+            200,
+            conversation,
+            "PDF uploaded and workspace created successfully",
+          ),
+        );
     }
 
     if (effectiveRagStatus === "processing") {
-      
       const conversation = await getOrCreateConversation(
         existing._id as mongoose.Types.ObjectId,
         req.user._id,
         existing.title,
       );
-      return res.status(200).json(
-        new ApiResponse(200, conversation, "PDF uploaded and workspace created successfully"),
-      );
+      return res
+        .status(200)
+        .json(
+          new ApiResponse(
+            200,
+            conversation,
+            "PDF uploaded and workspace created successfully",
+          ),
+        );
     }
 
     if (effectiveRagStatus === "failed") {
-      
-      
       const now = new Date();
-      const isInCooldown = existing.cooldownUntil && now < existing.cooldownUntil;
+      const isInCooldown =
+        existing.cooldownUntil && now < existing.cooldownUntil;
 
       if (existing.retryCount < MAX_AUTO_RETRIES && !isInCooldown) {
         await PdfDocument.findByIdAndUpdate(existing._id, {
@@ -152,25 +151,30 @@ export const uploadPdf = asyncHandler(async (req: any, res) => {
           fileId: existing.fileId,
           uploadedBy: req.user._id,
         }).catch((err: Error) => {
-          console.error("[RAG] Background re-ingestion (dedup case C) failed:", err.message);
+          console.error(
+            "[RAG] Background re-ingestion (dedup case C) failed:",
+            err.message,
+          );
         });
       }
-      
 
       const conversation = await getOrCreateConversation(
         existing._id as mongoose.Types.ObjectId,
         req.user._id,
         existing.title,
       );
-      return res.status(200).json(
-        new ApiResponse(200, conversation, "PDF uploaded and workspace created successfully"),
-      );
+      return res
+        .status(200)
+        .json(
+          new ApiResponse(
+            200,
+            conversation,
+            "PDF uploaded and workspace created successfully",
+          ),
+        );
     }
   }
 
-  
-  
-  
   let parsedText = "";
   try {
     const textRes = await extractPdfText(fileBuffer);
@@ -182,7 +186,13 @@ export const uploadPdf = asyncHandler(async (req: any, res) => {
   const aiTitle = await generatePdfTitle(parsedText);
   const title = resolvePdfTitle(aiTitle, originalName);
 
-  const pdfDoc = await processPdfUpload(fileBuffer, originalName, req.user._id, title, documentHash);
+  const pdfDoc = await processPdfUpload(
+    fileBuffer,
+    originalName,
+    req.user._id,
+    title,
+    documentHash,
+  );
 
   ingestPdfForRag({
     pdfDocumentId: pdfDoc._id,
@@ -202,16 +212,20 @@ export const uploadPdf = asyncHandler(async (req: any, res) => {
     title,
   });
 
-  const populatedConversation = await Conversation.findById(conversation._id).populate("pdfDocumentId");
+  const populatedConversation = await Conversation.findById(
+    conversation._id,
+  ).populate("pdfDocumentId");
 
-  return res.status(200).json(
-    new ApiResponse(200, populatedConversation, "PDF uploaded and workspace created successfully"),
-  );
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        populatedConversation,
+        "PDF uploaded and workspace created successfully",
+      ),
+    );
 });
-
-
-
-
 
 export const getPdfStatus = asyncHandler(async (req, res) => {
   const { documentId } = req.params;
@@ -236,27 +250,32 @@ export const getPdfStatus = asyncHandler(async (req, res) => {
   );
 });
 
-
-
-
-
 export const retryPdfIngestion = asyncHandler(async (req: any, res) => {
   const { documentId } = req.params;
 
-  const pdfDoc = await PdfDocument.findOne({ _id: documentId, uploadedBy: req.user._id });
+  const pdfDoc = await PdfDocument.findOne({
+    _id: documentId,
+    uploadedBy: req.user._id,
+  });
   if (!pdfDoc) {
     throw new ApiError(404, "PDF Document not found or unauthorized");
   }
 
   const effectiveRagStatus = pdfDoc.ragStatus ?? pdfDoc.status;
   if (effectiveRagStatus !== "failed") {
-    throw new ApiError(400, "Retry is only valid for documents in a failed state");
+    throw new ApiError(
+      400,
+      "Retry is only valid for documents in a failed state",
+    );
   }
 
   const now = new Date();
   const isInCooldown = pdfDoc.cooldownUntil && now < pdfDoc.cooldownUntil;
   if (isInCooldown) {
-    throw new ApiError(429, "AI indexing is temporarily paused. Please try again shortly.");
+    throw new ApiError(
+      429,
+      "AI indexing is temporarily paused. Please try again shortly.",
+    );
   }
 
   let nextRetryCount = pdfDoc.retryCount;
@@ -267,14 +286,16 @@ export const retryPdfIngestion = asyncHandler(async (req: any, res) => {
       $unset: { cooldownUntil: "" },
     });
   } else if (pdfDoc.retryCount >= MAX_TOTAL_RETRIES) {
-    const cooldownTime = new Date(Date.now() + 10 * 60 * 1000); 
+    const cooldownTime = new Date(Date.now() + 10 * 60 * 1000);
     await PdfDocument.findByIdAndUpdate(pdfDoc._id, {
       cooldownUntil: cooldownTime,
     });
-    throw new ApiError(429, "Retry limit reached. Entering 10-minute cooldown.");
+    throw new ApiError(
+      429,
+      "Retry limit reached. Entering 10-minute cooldown.",
+    );
   }
 
-  
   await PdfDocument.findByIdAndUpdate(pdfDoc._id, {
     status: "processing",
     ragStatus: "processing",
@@ -305,12 +326,14 @@ export const retryPdfIngestion = asyncHandler(async (req: any, res) => {
   );
 });
 
-
-
-
-
 export const askPdfQuestion = asyncHandler(async (req, res) => {
-  const { documentId, question, recentMessages = [], type = "chat", stream = false } = req.body;
+  const {
+    documentId,
+    question,
+    recentMessages = [],
+    type = "chat",
+    stream = false,
+  } = req.body;
 
   if (!documentId || (!question && type !== "notes")) {
     throw new ApiError(400, "documentId and question are required");
@@ -321,18 +344,29 @@ export const askPdfQuestion = asyncHandler(async (req, res) => {
     throw new ApiError(404, "PDF Document not found");
   }
 
-  const chunks = await retrieveRelevantChunks(pdfDoc._id, question || "", 8);
+  let chunks: any[] = [];
+  if (question && !isSimpleGreeting(question)) {
+    chunks = await retrieveRelevantChunks(pdfDoc._id, question, 8);
+  }
   const contextText = formatDocumentContext(chunks);
 
   const acceptHeader = req.headers.accept || "";
   const isStreaming =
     stream ||
     acceptHeader.includes("text/event-stream") ||
-    (acceptHeader.includes("text/plain") && !acceptHeader.includes("application/json"));
+    (acceptHeader.includes("text/plain") &&
+      !acceptHeader.includes("application/json"));
 
   if (type === "notes" || !isStreaming) {
-    const answer = await askAiAboutPdf(contextText, question || "", recentMessages, type);
-    return res.status(200).json(new ApiResponse(200, answer, "Answer generated successfully"));
+    const answer = await askAiAboutPdf(
+      contextText,
+      question || "",
+      recentMessages,
+      type,
+    );
+    return res
+      .status(200)
+      .json(new ApiResponse(200, answer, "Answer generated successfully"));
   }
 
   res.status(200);
@@ -348,7 +382,12 @@ export const askPdfQuestion = asyncHandler(async (req, res) => {
   });
 
   try {
-    for await (const chunk of streamAiAboutPdf(contextText, question || "", recentMessages, type)) {
+    for await (const chunk of streamAiAboutPdf(
+      contextText,
+      question || "",
+      recentMessages,
+      type,
+    )) {
       if (closed || res.destroyed) break;
       res.write(chunk);
     }
@@ -360,19 +399,20 @@ export const askPdfQuestion = asyncHandler(async (req, res) => {
       if (!res.headersSent) {
         res.status(500);
       }
-      res.write(`\n\nI'm sorry, I encountered a brief technical issue: ${error.message}`);
+      res.write(
+        `\n\nI'm sorry, I encountered a brief technical issue: ${error.message}`,
+      );
       res.end();
     }
   }
 });
 
-
-
-
-
 export const deletePdfDocument = asyncHandler(async (req: any, res) => {
   const { documentId } = req.params;
-  const pdfDoc = await PdfDocument.findOne({ _id: documentId, uploadedBy: req.user._id });
+  const pdfDoc = await PdfDocument.findOne({
+    _id: documentId,
+    uploadedBy: req.user._id,
+  });
   if (!pdfDoc) {
     throw new ApiError(404, "PDF Document not found or unauthorized");
   }
@@ -386,7 +426,12 @@ export const deletePdfDocument = asyncHandler(async (req: any, res) => {
   try {
     await deletePdfRagArtifacts(pdfDoc._id);
   } catch (err: any) {
-    console.error("[RAG Cleanup] Failed to delete RAG chunks for documentId=", pdfDoc._id, ":", err?.message);
+    console.error(
+      "[RAG Cleanup] Failed to delete RAG chunks for documentId=",
+      pdfDoc._id,
+      ":",
+      err?.message,
+    );
   }
 
   await PdfDocument.findByIdAndDelete(pdfDoc._id);
@@ -399,5 +444,11 @@ export const deletePdfDocument = asyncHandler(async (req: any, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, {}, "PDF Document and all associated workspaces deleted successfully"));
+    .json(
+      new ApiResponse(
+        200,
+        {},
+        "PDF Document and all associated workspaces deleted successfully",
+      ),
+    );
 });

@@ -1,3 +1,4 @@
+import axios from "axios";
 import { YoutubeTranscript } from "youtube-transcript";
 import {
   chunkTranscript,
@@ -13,8 +14,53 @@ const normalizeToSeconds = (value: number) => {
   return value >= 1000 ? value / 1000 : value;
 };
 
+const fetchTranscriptFromFallbackApi = async (videoId: string) => {
+  try {
+    const url = `https://youtube-transcript.ai/transcript/${videoId}.txt`;
+    const response = await axios.get(url, { responseType: "text" });
+    const text = response.data;
+    const transcriptSection = text.split(/## Transcript/i)[1] || text;
+    const matches = [...transcriptSection.matchAll(/\[(?:(\d{1,2}):)?(\d{1,2}):(\d{2})\]\s*([^]*?)(?=\s*\[(?:(?:\d{1,2}):)?(?:\d{1,2}):(?:\d{2})\]|$)/g)];
+    
+    if (matches.length === 0) {
+      throw new Error("No timestamped lines matched in fallback transcript");
+    }
+
+    const parsed = matches.map((m) => {
+      const hrs = m[1] ? parseInt(m[1], 10) : 0;
+      const mins = parseInt(m[2] || "0", 10);
+      const secs = parseInt(m[3] || "0", 10);
+      const offset = hrs * 3600 + mins * 60 + secs;
+      const rawText = (m[4] || "").trim().replace(/\s+/g, ' ');
+      return {
+        text: rawText,
+        duration: 10,
+        start: offset
+      };
+    });
+
+    for (let i = 0; i < parsed.length; i++) {
+      const current = parsed[i];
+      const next = parsed[i + 1];
+      if (current) {
+        if (next) {
+          current.duration = next.start - current.start;
+        } else {
+          current.duration = 15;
+        }
+      }
+    }
+
+    return parsed;
+  } catch (err: any) {
+    console.error(`[Transcript Fallback] Failed to fetch from youtube-transcript.ai:`, err.message);
+    throw err;
+  }
+};
+
 export const getTranscriptFromYoutube = async (videoId: string) => {
   try {
+    console.log(`[Transcript] Fetching transcript via primary library for video: ${videoId}`);
     const transcript = await YoutubeTranscript.fetchTranscript(videoId);
 
     const rawChunks = transcript.map(item => ({
@@ -24,8 +70,14 @@ export const getTranscriptFromYoutube = async (videoId: string) => {
     }));
 
     return chunkTranscript(rawChunks);
-  } catch (error) {
-    throw new Error("Failed to fetch transcript");
+  } catch (error: any) {
+    console.warn(`[Transcript] Primary library failed for video: ${videoId}. Trying fallback API...`, error.message);
+    try {
+      const rawChunks = await fetchTranscriptFromFallbackApi(videoId);
+      return chunkTranscript(rawChunks);
+    } catch (fallbackError) {
+      throw new Error("Failed to fetch transcript");
+    }
   }
 };
 
@@ -57,4 +109,3 @@ export const optimizeStoredTranscript = (
 
   return chunkTranscript(rawForChunking);
 };
-

@@ -1,6 +1,7 @@
 import { Video } from "../models/VideoUrl.model.js";
 import { TranscriptChunk } from "../models/transcriptChunk.model.js";
 import { retrieveRelevantTranscriptChunks } from "../utils/retrieveRelevantTranscriptChunks.js";
+import { isSimpleGreeting } from "../utils/greeting.js";
 import { ingestVideoForRag } from "../rag/services/transcriptRagIngestion.service.js";
 import {
   askAiAboutTranscript,
@@ -41,10 +42,8 @@ export const askQuestion = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Video not found");
   }
 
-  
   let chunks = await TranscriptChunk.find({ videoDocumentId: video._id }).sort({ chunkIndex: 1 });
 
-  
   if (chunks.length === 0) {
     console.log(`Transcript chunks empty for video ${videoId}, attempting dynamic re-ingestion...`);
     try {
@@ -59,10 +58,13 @@ export const askQuestion = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Transcript is currently being prepared. Please try again shortly.");
   }
 
-  
   let relevantChunks: any[] = chunks;
   if (type === "chat" && question) {
-    relevantChunks = await retrieveRelevantTranscriptChunks(video._id, question, 8);
+    if (isSimpleGreeting(question)) {
+      relevantChunks = [];
+    } else {
+      relevantChunks = await retrieveRelevantTranscriptChunks(video._id, question, 8);
+    }
   }
 
   const contextMessages = getRecentMessages(recentMessages, 10);
@@ -108,4 +110,3 @@ export const askQuestion = asyncHandler(async (req, res) => {
     }
   }
 });
-

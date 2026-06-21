@@ -220,24 +220,24 @@ export function MessageBubble({
       animate="animate"
       className="group py-3 sm:py-4"
     >
-      <div className={cn('chat-container flex gap-4 sm:gap-5', isUser && 'flex-row-reverse')}>
+      <div className={cn('chat-container flex gap-3 sm:gap-5', isUser && 'flex-row-reverse')}>
         {/* Avatar */}
         <div className="mt-1 shrink-0">
           <div
             className={cn(
-              'grid h-9 w-9 place-items-center rounded-xl border',
+              'grid h-8 w-8 sm:h-9 sm:w-9 place-items-center rounded-xl border',
               isUser
                 ? 'border-[var(--border-soft)] bg-[var(--surface-3)] text-[var(--text-primary)]'
                 : 'border-[rgba(139,156,247,0.20)] bg-[var(--accent-subtle)] text-[var(--accent)]'
             )}
           >
-            {isUser ? <User size={17} /> : <Bot size={18} />}
+            {isUser ? <User size={15} className="sm:w-[17px] sm:h-[17px]" /> : <Bot size={16} className="sm:w-[18px] sm:h-[18px]" />}
           </div>
         </div>
 
         {/* Content */}
         <div className={cn('min-w-0 flex-1', isUser && 'flex flex-col items-end')}>
-          <div className={cn(isUser ? 'w-fit max-w-[75%] sm:max-w-[65%]' : 'w-full')}>
+          <div className={cn(isUser ? 'w-fit max-w-[90%] sm:max-w-[75%] md:max-w-[65%]' : 'w-full')}>
             {/* Meta */}
             <div className={cn('mb-2.5 flex items-center gap-2 px-1', isUser && 'justify-end')}>
               <span className="text-[13px] font-semibold text-[var(--text-primary)]/85">{isUser ? 'You' : 'EchoMind AI'}</span>
@@ -253,8 +253,8 @@ export function MessageBubble({
                 isUser
                   ? isEditing
                     ? 'bg-[var(--surface-3)] border border-[var(--border-medium)] p-1.5 w-full sm:min-w-[450px] lg:min-w-[550px]'
-                    : 'bg-[var(--text-primary)] px-5 py-4 shadow-md w-full'
-                  : 'border border-[var(--border-soft)] bg-[var(--surface-3)] px-5 py-4 text-[var(--text-primary)]/95 backdrop-blur-md sm:px-6'
+                    : 'bg-[var(--text-primary)] px-4 py-3 sm:px-5 sm:py-4 shadow-md w-full'
+                  : 'border border-[var(--border-soft)] bg-[var(--surface-3)] px-4 py-3 sm:px-6 sm:py-4 text-[var(--text-primary)]/95 backdrop-blur-md'
               )}
             >
               {isEditing ? (

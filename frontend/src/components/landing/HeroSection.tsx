@@ -244,16 +244,16 @@ export function HeroSection() {
               {/* SIMULATION STATE: IDLE */}
               {simState === 'idle' && (
                 <div>
-                  <div className="flex items-center justify-between mb-4 border-b border-[var(--border-soft)] pb-3">
-                    <div className="text-xs font-mono text-[var(--text-muted)] flex items-center gap-2">
+                  <div className="flex flex-col gap-3.5 pb-3 border-b border-[var(--border-soft)] mb-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="text-xs font-mono text-[var(--text-muted)] flex items-center gap-2 w-full sm:w-auto">
                       <Terminal size={12} className="text-[var(--accent)]" />
                       <span>workspace_ingestion_sandbox</span>
                     </div>
                     {/* Sandbox source tabs */}
-                    <div className="flex gap-1.5 bg-[var(--surface-3)] p-0.5 rounded-lg border border-[var(--border-soft)]">
+                    <div className="flex gap-1.5 bg-[var(--surface-3)] p-0.5 rounded-lg border border-[var(--border-soft)] w-full sm:w-auto justify-center">
                       <button
                         onClick={() => { setSourceType('youtube'); setInputUrl(''); }}
-                        className={`px-2.5 py-1 rounded-md text-[10px] font-semibold transition-all flex items-center gap-1.5 ${
+                        className={`px-2.5 py-1 rounded-md text-[10px] font-semibold transition-all flex items-center justify-center flex-1 sm:flex-none gap-1.5 ${
                           sourceType === 'youtube'
                             ? 'bg-[var(--accent)] text-white shadow-sm'
                             : 'text-[var(--text-secondary)] hover:text-white'
@@ -264,7 +264,7 @@ export function HeroSection() {
                       </button>
                       <button
                         onClick={() => { setSourceType('pdf'); setInputUrl(''); }}
-                        className={`px-2.5 py-1 rounded-md text-[10px] font-semibold transition-all flex items-center gap-1.5 ${
+                        className={`px-2.5 py-1 rounded-md text-[10px] font-semibold transition-all flex items-center justify-center flex-1 sm:flex-none gap-1.5 ${
                           sourceType === 'pdf'
                             ? 'bg-[var(--accent)] text-white shadow-sm'
                             : 'text-[var(--text-secondary)] hover:text-white'
@@ -279,8 +279,8 @@ export function HeroSection() {
                   {/* Dynamic Inputs */}
                   {sourceType === 'youtube' ? (
                     <div className="space-y-3.5">
-                      <div className="flex gap-2">
-                        <div className="relative flex-1">
+                      <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center">
+                        <div className="relative w-full sm:flex-1">
                           <Youtube className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" size={15} />
                           <input
                             type="text"
@@ -292,7 +292,7 @@ export function HeroSection() {
                         </div>
                         <button
                           onClick={startSimulation}
-                          className="px-5 py-3 rounded-xl bg-[var(--accent)] hover:bg-[var(--accent-strong)] text-white text-xs font-semibold flex items-center gap-2 shadow-md hover:shadow-[0_0_16px_rgba(139,156,247,0.3)] transition-all active:scale-[0.98]"
+                          className="w-full sm:w-auto px-5 py-3 rounded-xl bg-[var(--accent)] hover:bg-[var(--accent-strong)] text-white text-xs font-semibold flex items-center justify-center gap-2 shadow-md hover:shadow-[0_0_16px_rgba(139,156,247,0.3)] transition-all active:scale-[0.98]"
                         >
                           <Sparkles size={13} />
                           <span>Index</span>
@@ -300,14 +300,14 @@ export function HeroSection() {
                       </div>
 
                       {/* Demo Quick Start Option */}
-                      <div className="flex items-center justify-between pt-1">
-                        <span className="text-[10px] text-[var(--text-muted)]">No video link at hand?</span>
+                      <div className="flex flex-col gap-1.5 pt-1.5 sm:flex-row sm:items-center sm:justify-between">
+                        <span className="text-[10px] text-[var(--text-muted)] text-left">No video link at hand?</span>
                         <button
                           onClick={() => {
                             setInputUrl(demoData.youtube.url);
                             startSimulation();
                           }}
-                          className="text-[11px] font-medium text-[var(--accent)] hover:underline flex items-center gap-1"
+                          className="text-[11px] font-medium text-[var(--accent)] hover:underline flex items-center gap-1 w-fit"
                         >
                           <span>Try demo video: "Decoupled RAG"</span>
                           <ArrowRight size={10} />
@@ -334,14 +334,14 @@ export function HeroSection() {
                       </div>
 
                       {/* Demo Quick Start Option */}
-                      <div className="flex items-center justify-between pt-1">
-                        <span className="text-[10px] text-[var(--text-muted)]">Want a sample document?</span>
+                      <div className="flex flex-col gap-1.5 pt-1.5 sm:flex-row sm:items-center sm:justify-between">
+                        <span className="text-[10px] text-[var(--text-muted)] text-left">Want a sample document?</span>
                         <button
                           onClick={() => {
                             setInputUrl(demoData.pdf.url);
                             startSimulation();
                           }}
-                          className="text-[11px] font-medium text-[var(--accent)] hover:underline flex items-center gap-1"
+                          className="text-[11px] font-medium text-[var(--accent)] hover:underline flex items-center gap-1 w-fit"
                         >
                           <span>Load sample benchmark PDF</span>
                           <ArrowRight size={10} />

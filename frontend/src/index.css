@@ -549,9 +549,12 @@ i[class^="devicon-"], i[class*=" devicon-"] {
     font-size: 14px;
   }
 
-  .content-container,
+  .content-container {
+    width: min(100% - 24px, var(--content-max));
+  }
+
   .chat-container {
-    width: min(100% - 28px, var(--content-max));
+    width: min(100% - 16px, var(--chat-max));
   }
 }
 

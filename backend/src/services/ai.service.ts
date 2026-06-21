@@ -118,7 +118,7 @@ export const buildContextPrompt = (
 
   if (Array.isArray(transcript)) {
     if (transcript.length === 0) {
-      formattedTranscript = "No transcript available for this video.";
+      formattedTranscript = "";
     } else {
       if (type === "summary") {
         formattedTranscript = formatTranscriptWithTimestamps(transcript);
@@ -127,7 +127,7 @@ export const buildContextPrompt = (
       }
     }
   } else {
-    formattedTranscript = transcript || "No transcript available for this video.";
+    formattedTranscript = transcript || "";
   }
 
   const systemPrompt = type === "notes" ? NOTES_SYSTEM_PROMPT : type === "summary" ? SUMMARY_SYSTEM_PROMPT : CHAT_SYSTEM_PROMPT;

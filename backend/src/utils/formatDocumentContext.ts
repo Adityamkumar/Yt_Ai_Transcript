@@ -2,7 +2,7 @@ import type { IPdfChunk } from "../models/pdfChunk.model.js";
 
 export const formatDocumentContext = (chunks: IPdfChunk[]): string => {
   if (chunks.length === 0) {
-    return "No document context available.";
+    return "";
   }
 
   return chunks
