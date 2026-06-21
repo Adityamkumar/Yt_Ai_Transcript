@@ -20,18 +20,18 @@ export function PdfProcessingState({ document }: PdfProcessingStateProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [pollDot, setPollDot] = useState(0);
 
-  // Animate through steps visually (cosmetic — actual readiness comes from polling)
+  
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentStep((prev) => {
-        if (prev < STEPS.length - 2) return prev + 1; // stop at second-to-last; last = "ready"
+        if (prev < STEPS.length - 2) return prev + 1; 
         return prev;
       });
     }, 2800);
     return () => clearInterval(interval);
   }, []);
 
-  // Animated poll dots
+  
   useEffect(() => {
     const id = setInterval(() => setPollDot((d) => (d + 1) % 4), 500);
     return () => clearInterval(id);

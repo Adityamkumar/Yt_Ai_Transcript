@@ -38,7 +38,7 @@ export interface BentoProps {
 
 const DEFAULT_PARTICLE_COUNT = 12;
 const DEFAULT_SPOTLIGHT_RADIUS = 300;
-const DEFAULT_GLOW_COLOR = '139, 156, 247'; // Harmonic Indigo-Purple: rgb(139, 156, 247)
+const DEFAULT_GLOW_COLOR = '139, 156, 247'; 
 const MOBILE_BREAKPOINT = 768;
 
 const cardData: BentoCardProps[] = [
@@ -526,10 +526,10 @@ const useMobileDetection = () => {
   return isMobile;
 };
 
-// Sub-render function for Card interactive graphics
+
 const renderCardGraphics = (index: number) => {
   switch (index) {
-    case 0: // YouTube Ingest
+    case 0: 
       return (
         <div className="mt-4 space-y-3 font-mono text-[10.5px] w-full text-left">
           <div className="flex items-center gap-2 bg-white/[0.02] border border-white/[0.06] rounded-lg p-2.5">
@@ -552,7 +552,7 @@ const renderCardGraphics = (index: number) => {
         </div>
       );
 
-    case 1: // Semantic Retrieval / Navigation
+    case 1: 
       return (
         <div className="mt-4 space-y-2.5 text-left font-sans text-xs w-full flex-1 flex flex-col justify-end">
           <div className="p-2 rounded-lg bg-white/[0.02] border border-white/[0.06] flex items-center gap-2 mb-1">
@@ -578,7 +578,7 @@ const renderCardGraphics = (index: number) => {
         </div>
       );
 
-    case 2: // Immersive 3-Panel Workspace [Spans 2x2]
+    case 2: 
       return (
         <div className="mt-5 border border-white/[0.07] bg-black/40 rounded-xl overflow-hidden shadow-2xl flex-1 flex flex-col min-h-[160px] lg:min-h-[220px] w-full text-left font-sans relative">
           {/* Mock window header */}
@@ -644,7 +644,7 @@ const renderCardGraphics = (index: number) => {
         </div>
       );
 
-    case 3: // Knowledge Mapping [Spans 2x2]
+    case 3: 
       return (
         <div className="mt-5 flex flex-col sm:flex-row gap-4 flex-1 w-full text-left font-sans min-h-[160px] lg:min-h-[220px]">
           {/* Upload preview */}
@@ -690,7 +690,7 @@ const renderCardGraphics = (index: number) => {
         </div>
       );
 
-    case 4: // Instant Answers — Speed
+    case 4: 
       return (
         <div className="mt-4 flex flex-col justify-end flex-1 w-full text-left font-sans">
           <div className="flex items-baseline gap-2">
@@ -727,7 +727,7 @@ const renderCardGraphics = (index: number) => {
         </div>
       );
 
-    case 5: // Source-Grounded Citations
+    case 5: 
       return (
         <div className="mt-4 space-y-2.5 flex-1 w-full text-left font-sans flex flex-col justify-end">
           <p className="text-[9px] text-[var(--text-muted)] leading-relaxed">

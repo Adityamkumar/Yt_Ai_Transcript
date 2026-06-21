@@ -11,7 +11,7 @@ export const conversationService = {
   },
 
   getConversations: async () => {
-    const response = await axiosInstance.get<ApiResponse<IConversation[]>>('/api/v1/conversations/all'); // backend had /:conversationId but I'll use /all if I fix it or just /
+    const response = await axiosInstance.get<ApiResponse<IConversation[]>>('/api/v1/conversations/all'); 
     const res = await axiosInstance.get<ApiResponse<IConversation[]>>('/api/v1/conversations/list');
     return res.data.data;
   },

@@ -80,12 +80,83 @@ It has a responsive dark-mode interface, simple login/signup (including Google L
 
 ## 🏗️ How the RAG Database works
 
-To keep database queries fast and avoid storing heavy arrays inside video or document metadata, the database is split into two layers:
+To keep database queries lightning-fast and avoid storing heavy arrays inside video or document metadata, the database is split into two layers:
 
 1. **Metadata collections (`videos` & `pdfdocuments`):** Only store basic details like title, URL, chunk count, and loading statuses.
 2. **Text Chunk collections (`transcriptchunks` & `pdfchunks`):** Store the actual text paragraphs, their order index, timestamps (start/end/duration), and 1536-dimension vectors for AI similarity search.
 
-When you ask a question, the server compares your question against the text chunk collection, extracts the top 8 most similar chunks, and sends only those chunks to the active LLM model to get an accurate answer.
+### 📊 RAG Flow & Architecture Diagram
+
+```mermaid
+flowchart TD
+    %% Custom Styling
+    classDef input fill:#2d3748,stroke:#4a5568,stroke-width:2px,color:#fff;
+    classDef server fill:#1a365d,stroke:#2b6cb0,stroke-width:2px,color:#fff;
+    classDef model fill:#4c1d95,stroke:#7c3aed,stroke-width:2px,color:#fff;
+    classDef database fill:#064e3b,stroke:#059669,stroke-width:2px,color:#fff;
+    classDef llm fill:#7f1d1d,stroke:#dc2626,stroke-width:2px,color:#fff;
+    classDef process fill:#1f2937,stroke:#4b5563,stroke-width:2px,color:#fff;
+
+    %% Subgraphs
+    subgraph Users ["User Actions"]
+        Upload["📄 Upload Document<br>(PDF File)"]:::input
+        Ask["💬 Ask Question<br>('What is the javascript?')"]:::input
+    end
+
+    subgraph Backend ["Server Processing (Express)"]
+        Srv["⚙️ Server"]:::server
+        Extract["📝 Extract Text<br>(pdf-parse / Captions)"]:::process
+        Chunk["🧩 Create Chunks<br>(~500 tokens)"]:::process
+    end
+
+    subgraph AI ["AI Services"]
+        Model["🧠 Embedding Model<br>(Gemini Embedding)"]:::model
+        LLMFallback["🤖 Fallback LLM Chain<br>(Groq ➔ OpenRouter ➔ Gemini)"]:::llm
+        Output["✨ Generate Output"]:::llm
+    end
+
+    subgraph Storage ["Database Layer"]
+        DB[("🗄️ MongoDB Vector Store")]:::database
+        TopK["📚 Top K Chunks<br>(Relevant Context)"]:::database
+    end
+
+    %% Document Ingestion (Indexing) Pipeline
+    Upload --> Srv
+    Srv --> Extract
+    Extract --> Chunk
+    Chunk -->|"Send chunk text"| Model
+    Model -->|"Generate vector embeddings"| DB
+
+    %% Query & Retrieval (RAG) Pipeline
+    Ask --> Srv
+    Srv -->|"Generate vector embeddings for question"| Model
+    Model -->|"Search similarity vector in DB"| DB
+    DB -->|"Retrieve Top K chunks"| TopK
+    TopK -->|"Inject relevant chunk context"| LLMFallback
+    LLMFallback --> Output
+```
+
+---
+
+### 🔄 Detailed RAG Pipelines
+
+The Retrieval-Augmented Generation (RAG) system is divided into two decoupled pipelines:
+
+#### 1. Ingestion & Indexing Pipeline (Document Upload or Transcript Download)
+When you upload a PDF or import a YouTube video, the following background steps occur:
+- **Text Extraction:** The backend extracts raw text content from the file (`pdf-parse-new` for documents) or downloads subtitles (`youtube-transcript` for videos).
+- **Intelligent Chunking:** The extracted text is parsed and divided into overlapping chunks of approximately `500 tokens` with `100 tokens` of overlap (preventing loss of semantic context at boundary splits).
+- **Embedding Generation:** For each text chunk, the server makes batched API requests to the Gemini Embedding model (`gemini-embedding-2`) to generate a **1536-dimensional vector embedding**.
+- **Vector Storage:** The chunks, their page numbers or video timestamp indices, and their vector embeddings are stored as individual documents in `pdfchunks` or `transcriptchunks` collections in MongoDB.
+- **Idempotency & Cleanup:** Before writing new chunks, any existing chunks matching the document ID are wiped (`deleteMany`) to prevent duplicate indexing upon manual retry.
+
+#### 2. Query & Retrieval Pipeline (Chat Interaction)
+When you ask a question about an indexed document or video transcript:
+- **Vector Generation for Query:** The server sends your query text to the Gemini embedding service to generate its query vector.
+- **Similarity Search:** The query vector is matched against the target document's chunks in MongoDB via Atlas Vector Search (using Cosine Similarity on the `embedding` fields).
+- **Context Extraction:** The database returns the **Top K chunks** (default: 8) that have the highest similarity score matching the context of the user's question.
+- **LLM Context Injection:** These relevant text chunks are formatted, combined with the recent chat history, and injected directly into the system prompt.
+- **Cascading Generation:** The structured prompt is sent to the active LLM. If the primary provider fails, it seamlessly cascades through the fallback chain (**Groq ➔ OpenRouter ➔ Gemini**) to guarantee a response.
 
 ---
 

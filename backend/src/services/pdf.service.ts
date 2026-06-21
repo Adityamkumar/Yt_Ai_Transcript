@@ -4,18 +4,18 @@ import { extractPdfText } from "../utils/extractPdfText.js";
 import { uploadPdf } from "./imagekit.service.js";
 import { Types } from "mongoose";
 
-/**
- * Generates a SHA-256 hex hash from raw PDF file bytes.
- * This is the canonical identity of a physical document for deduplication.
- */
+
+
+
+
 export const hashPdfBuffer = (buffer: Buffer): string => {
   return crypto.createHash("sha256").update(buffer).digest("hex");
 };
 
-/**
- * Uploads the PDF file to storage and creates the metadata document.
- * Callers must have already checked for deduplication before calling this.
- */
+
+
+
+
 export const processPdfUpload = async (
   fileBuffer: Buffer,
   fileName: string,

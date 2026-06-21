@@ -25,7 +25,7 @@ export function PdfPreviewCard({ document, isLoading = false }: PdfPreviewCardPr
   }
 
 
-  // Use ragStatus as the authoritative AI-readiness signal; fall back to status for legacy docs
+  
   const effectiveStatus = document.ragStatus ?? document.status;
   const isReady = effectiveStatus === "ready";
   const isAiFailed = effectiveStatus === "failed";

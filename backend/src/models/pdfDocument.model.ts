@@ -12,11 +12,11 @@ export interface IPdfDocument extends Document {
   uploadedBy: Types.ObjectId;
   status: "processing" | "ready" | "failed";
   ragStatus?: "processing" | "ready" | "failed";
-  /**
-   * Tracks how many automatic ingestion attempts have been made.
-   * Auto-retries are capped at MAX_AUTO_RETRIES (2).
-   * Manual retries are tracked separately via retryCount as well (total cap = 4).
-   */
+  
+
+
+
+
   retryCount: number;
   cooldownUntil?: Date;
   createdAt: Date;

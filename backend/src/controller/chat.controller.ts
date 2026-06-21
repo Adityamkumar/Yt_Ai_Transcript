@@ -41,10 +41,10 @@ export const askQuestion = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Video not found");
   }
 
-  // Fetch all chunks for the video first
+  
   let chunks = await TranscriptChunk.find({ videoDocumentId: video._id }).sort({ chunkIndex: 1 });
 
-  // Fallback: If chunks are empty, trigger RAG ingestion dynamically
+  
   if (chunks.length === 0) {
     console.log(`Transcript chunks empty for video ${videoId}, attempting dynamic re-ingestion...`);
     try {
@@ -59,7 +59,7 @@ export const askQuestion = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Transcript is currently being prepared. Please try again shortly.");
   }
 
-  // Determine RAG context context: top-N relevant chunks for chat, or all chunks for summaries/notes
+  
   let relevantChunks: any[] = chunks;
   if (type === "chat" && question) {
     relevantChunks = await retrieveRelevantTranscriptChunks(video._id, question, 8);

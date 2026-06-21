@@ -50,7 +50,7 @@ export const ingestVideoForRag = async ({
 }: IngestVideoForRagInput): Promise<void> => {
   const videoObjectId = toObjectId(videoDocumentId);
 
-  // Update RAG status to processing
+  
   await Video.findByIdAndUpdate(videoObjectId, {
     ragStatus: "processing",
   });
@@ -61,13 +61,13 @@ export const ingestVideoForRag = async ({
       throw new Error(`Video not found for id ${videoObjectId}`);
     }
 
-    // Fetch transcript from YouTube
+    
     const transcript = await getTranscriptFromYoutube(video.youtubeVideoId);
     if (!transcript || transcript.length === 0) {
       throw new Error(`Failed to fetch transcript from YouTube for video id ${video.youtubeVideoId}`);
     }
 
-    // Chunk the transcript
+    
     const chunks = chunkTranscriptForRag(transcript);
 
     if (chunks.length === 0) {
@@ -76,13 +76,13 @@ export const ingestVideoForRag = async ({
       );
     }
 
-    // Generate embeddings for chunks
+    
     const embeddedChunks = await generateEmbeddingsForChunks(chunks, video.title);
 
-    // Clean up any existing chunks for this video (idempotency)
+    
     await TranscriptChunk.deleteMany({ videoDocumentId: videoObjectId });
 
-    // Store chunks in transcriptchunks collection
+    
     await TranscriptChunk.insertMany(
       embeddedChunks.map((chunk) => ({
         videoDocumentId: videoObjectId,
@@ -95,7 +95,7 @@ export const ingestVideoForRag = async ({
       })),
     );
 
-    // Update video RAG status to ready
+    
     await Video.findByIdAndUpdate(videoObjectId, {
       ragStatus: "ready",
       totalChunks: embeddedChunks.length,
@@ -105,12 +105,12 @@ export const ingestVideoForRag = async ({
       `[RAG] Video ingestion complete. videoDocumentId=${videoObjectId}, chunks=${embeddedChunks.length}`,
     );
   } catch (error: any) {
-    // Set RAG status to failed
+    
     await Video.findByIdAndUpdate(videoObjectId, {
       ragStatus: "failed",
     });
 
-    // Clean up any partially ingested chunks
+    
     await TranscriptChunk.deleteMany({ videoDocumentId: videoObjectId });
 
     throw new Error(

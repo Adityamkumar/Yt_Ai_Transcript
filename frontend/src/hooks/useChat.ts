@@ -28,7 +28,25 @@ export function useChat(conversationId: string | undefined, videoId: string | un
       
       const messageType: MessageType = isNotesIntent ? 'notes' : isSummaryIntent ? 'summary' : 'chat';
 
+      const tempId = `temp-${Date.now()}`;
+      const tempUserMsg: IMessage = {
+        _id: tempId,
+        clientId: tempId,
+        conversationId,
+        role: 'user',
+        type: messageType,
+        content,
+        source,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
       try {
+        queryClient.setQueryData(['messages', conversationId], (old: IMessage[] = []) => [
+          ...old,
+          tempUserMsg,
+        ]);
+
         setIsStreaming(true);
         setIsNotesRequest(messageType === 'notes');
         setStreamingMessage('');
@@ -41,10 +59,9 @@ export function useChat(conversationId: string | undefined, videoId: string | un
           source
         );
 
-        queryClient.setQueryData(['messages', conversationId], (old: IMessage[] = []) => [
-          ...old,
-          userMsg,
-        ]);
+        queryClient.setQueryData(['messages', conversationId], (old: IMessage[] = []) =>
+          old.map(m => (m._id === tempId ? { ...userMsg, clientId: tempId } : m))
+        );
 
         const history: IMessage[] = queryClient.getQueryData(['messages', conversationId]) || [];
         const recentMessages = history.slice(-10).map(m => ({
@@ -215,16 +232,32 @@ export function useChat(conversationId: string | undefined, videoId: string | un
         return;
       }
 
+      const tempId = `temp-${Date.now()}`;
+      const tempUserMsg: IMessage = {
+        _id: tempId,
+        clientId: tempId,
+        conversationId,
+        role: 'user',
+        type: action.type,
+        content: action.prompt,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
       try {
+        queryClient.setQueryData(['messages', conversationId], (old: IMessage[] = []) => [
+          ...old,
+          tempUserMsg,
+        ]);
+
         setIsStreaming(true);
         setIsNotesRequest(action.type === 'notes');
         setStreamingMessage('');
 
         const userMsg = await messageService.createMessage(conversationId, 'user', action.prompt);
-        queryClient.setQueryData(['messages', conversationId], (old: IMessage[] = []) => [
-          ...old,
-          userMsg,
-        ]);
+        queryClient.setQueryData(['messages', conversationId], (old: IMessage[] = []) =>
+          old.map(m => (m._id === tempId ? { ...userMsg, clientId: tempId } : m))
+        );
 
         const response = await chatService.askQuestion({
           videoId,

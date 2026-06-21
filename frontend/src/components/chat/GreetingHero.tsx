@@ -9,19 +9,19 @@ export function GreetingHero() {
   const { user } = useAuth();
   const shouldReduceMotion = useReducedMotion();
 
-  // Parse user's name and fallback to Learner
+  
   const userName = useMemo(() => {
     const rawName = user?.name || 'Learner';
     return rawName.trim().split(/\s+/)[0];
   }, [user?.name]);
 
-  // Select a random greeting template once on mount/page refresh (stable on re-renders)
+  
   const greetingTemplate = useMemo(() => {
     const randomIndex = Math.floor(Math.random() * DYNAMIC_GREETINGS.length);
     return DYNAMIC_GREETINGS[randomIndex];
   }, []);
 
-  // Split greeting template around the {name} placeholder
+  
   const parsedGreeting = useMemo(() => {
     const parts = greetingTemplate.split('{name}');
     return {

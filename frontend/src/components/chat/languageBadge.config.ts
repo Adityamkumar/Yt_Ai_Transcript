@@ -1,6 +1,6 @@
 import React from 'react';
 
-// Lightweight, inline SVG components using React.createElement (pure TS, no JSX required)
+
 export const CodeIcon = (props: React.SVGProps<SVGSVGElement>) =>
   React.createElement(
     'svg',
@@ -65,7 +65,7 @@ export const LANGUAGE_MAP: Record<string, LanguageConfig> = {
   ruby: { iconType: 'devicon', icon: 'devicon-ruby-plain', displayName: 'Ruby', color: '#701516' },
   swift: { iconType: 'devicon', icon: 'devicon-swift-plain', displayName: 'Swift', color: '#F05138' },
   kotlin: { iconType: 'devicon', icon: 'devicon-kotlin-plain', displayName: 'Kotlin', color: '#7F52FF' },
-  sql: { iconType: 'svg', icon: DatabaseIcon, displayName: 'SQL', color: '#34D399' }, // Subtle green accent for SQL
+  sql: { iconType: 'svg', icon: DatabaseIcon, displayName: 'SQL', color: '#34D399' }, 
   bash: { iconType: 'devicon', icon: 'devicon-bash-plain', displayName: 'Bash', color: '#4EAA25' },
   sh: { iconType: 'devicon', icon: 'devicon-bash-plain', displayName: 'Bash', color: '#4EAA25' },
   shell: { iconType: 'devicon', icon: 'devicon-bash-plain', displayName: 'Shell', color: '#4EAA25' },
@@ -108,7 +108,7 @@ export function getLanguageConfig(langName: string): LanguageConfig {
     LANGUAGE_MAP[normalized] || {
       iconType: DEFAULT_LANGUAGE_CONFIG.iconType,
       icon: DEFAULT_LANGUAGE_CONFIG.icon,
-      displayName: langName, // Use original casing if it is unknown but provided
+      displayName: langName, 
       color: DEFAULT_LANGUAGE_CONFIG.color,
     }
   );

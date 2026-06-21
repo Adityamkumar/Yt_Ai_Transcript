@@ -35,7 +35,7 @@ export function FollowUpQuestions({
       >
         <AnimatePresence mode="popLayout">
           {isLoading ? (
-            // Shimmer/Skeleton loading chips
+            
             [1, 2].map((i) => (
               <motion.div
                 key={`skeleton-${i}`}

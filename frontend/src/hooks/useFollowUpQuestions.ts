@@ -20,7 +20,7 @@ export function useFollowUpQuestions(
     const conversationId = message?.conversationId;
     const messageContent = message?.content;
 
-    // Conditions to skip fetching suggested questions:
+    
     if (
       !message ||
       !messageId ||
@@ -34,7 +34,7 @@ export function useFollowUpQuestions(
       return;
     }
 
-    // Skip if we have already fetched or started fetching for this message
+    
     if (currentFetchedIdRef.current === messageId) {
       return;
     }
@@ -59,10 +59,10 @@ export function useFollowUpQuestions(
         }
 
         if (questions && questions.length > 0) {
-          // Save to DB so they persist
+          
           await messageService.patchSuggestedQuestions(messageId, questions);
 
-          // Update React Query cache
+          
           queryClient.setQueryData(
             ['messages', conversationId],
             (old: ChatMessage[] = []) => {

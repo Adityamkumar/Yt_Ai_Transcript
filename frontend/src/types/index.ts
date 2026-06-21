@@ -36,6 +36,7 @@ export type MessageType = 'chat' | 'notes' | 'summary';
 
 export interface IMessage {
   _id: string;
+  clientId?: string;
   conversationId: string;
   role: MessageRole;
   type: MessageType;

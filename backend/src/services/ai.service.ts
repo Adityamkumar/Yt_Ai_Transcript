@@ -452,12 +452,12 @@ export const generateVideoTitle = async (transcript: string | ITranscriptChunk[]
     let transcriptSample = "";
 
     if (typeof transcript === "string") {
-      // For string transcripts, skip the first 500 chars (intro noise) and take a middle+end sample
+      
       const stripped = transcript.slice(500);
       transcriptSample = stripped.slice(0, 4000);
     } else if (transcript.length > 0) {
-      // Sample intelligently: skip first ~10 chunks (instructor intro / music), then take
-      // chunks from the beginning of actual content, middle, and end to understand the full topic
+      
+      
       const skip = Math.min(10, Math.floor(transcript.length * 0.08));
       const total = transcript.length;
 

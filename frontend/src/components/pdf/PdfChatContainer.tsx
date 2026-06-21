@@ -266,7 +266,7 @@ export function PdfChatContainer({ conversationId, pdf, onActionReady }: PdfChat
               <div className="flex flex-col gap-1">
                 {displayMessages.map((message) => (
                   <MessageRenderer
-                    key={message._id}
+                    key={message.clientId || message._id}
                     message={message}
                     onEdit={editMessage}
                     isLatestAssistant={message._id === lastAssistantMessageId}

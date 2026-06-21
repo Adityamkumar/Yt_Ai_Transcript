@@ -1,8 +1,8 @@
 import { Variants } from 'framer-motion';
 
-/* ──────────────────────────────────────────
-   Core Motion Variants
-   ────────────────────────────────────────── */
+
+
+
 
 const EASE_PREMIUM = [0.25, 0.1, 0.25, 1.0] as const;
 const EASE_OUT_EXPO = [0.16, 1, 0.3, 1] as const;
@@ -42,9 +42,9 @@ export const fadeIn: Variants = {
   },
 };
 
-/* ──────────────────────────────────────────
-   Scale & Blur Variants
-   ────────────────────────────────────────── */
+
+
+
 
 export const scaleIn: Variants = {
   initial: { opacity: 0, scale: 0.95 },
@@ -88,9 +88,9 @@ export const slideDown: Variants = {
   },
 };
 
-/* ──────────────────────────────────────────
-   Layout Components
-   ────────────────────────────────────────── */
+
+
+
 
 export const sidebarVariants: Variants = {
   open: {
@@ -133,9 +133,9 @@ export const listItemVariants: Variants = {
   },
 };
 
-/* ──────────────────────────────────────────
-   Chat & Messages
-   ────────────────────────────────────────── */
+
+
+
 
 export const chatBubbleVariants: Variants = {
   initial: { opacity: 0, y: 8 },
@@ -149,9 +149,9 @@ export const chatBubbleVariants: Variants = {
   },
 };
 
-/* ──────────────────────────────────────────
-   Prompt Cards
-   ────────────────────────────────────────── */
+
+
+
 
 export const promptStagger: Variants = {
   initial: {},
@@ -177,9 +177,9 @@ export const promptCardVariants: Variants = {
   tap: { scale: 0.985 },
 };
 
-/* ──────────────────────────────────────────
-   Page Transitions
-   ────────────────────────────────────────── */
+
+
+
 
 export const pageVariants: Variants = {
   initial: { opacity: 0, scale: 0.995 },
@@ -195,9 +195,9 @@ export const pageVariants: Variants = {
   },
 };
 
-/* ──────────────────────────────────────────
-   Workspace Panel Reveal
-   ────────────────────────────────────────── */
+
+
+
 
 export const panelRevealStagger: Variants = {
   initial: {},
@@ -218,9 +218,9 @@ export const panelRevealItem: Variants = {
   },
 };
 
-/* ──────────────────────────────────────────
-   Follow-Up Question Chips
-   ────────────────────────────────────────── */
+
+
+
 
 export const followUpStagger: Variants = {
   initial: {},

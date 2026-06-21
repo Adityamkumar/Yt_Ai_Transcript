@@ -4,10 +4,10 @@ import toast from 'react-hot-toast';
 import { createHighlighter, type Highlighter } from 'shiki';
 import { getLanguageConfig } from './languageBadge.config';
 
-// Import Devicon stylesheet for web font classes
+
 import 'devicon/devicon.min.css';
 
-// Singleton highlighter promise to prevent multiple highlighter instantiations
+
 let highlighterPromise: Promise<Highlighter> | null = null;
 
 function getHighlighterInstance(): Promise<Highlighter> {
@@ -97,7 +97,7 @@ export function CodeBlock({ code, language = '' }: CodeBlockProps) {
           if (loadedLangs.includes(lang)) {
             targetLang = lang;
           } else {
-            // Attempt to load the language dynamically if it isn't pre-loaded
+            
             try {
               await highlighter.loadLanguage(lang as any);
               targetLang = lang;

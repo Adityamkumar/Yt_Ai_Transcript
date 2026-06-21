@@ -16,7 +16,7 @@ export function PdfFailedState({ document, maxRetries: _maxRetries, onRetryStart
   const [isRetrying, setIsRetrying] = useState(false);
   const [timeLeft, setTimeLeft] = useState<number>(0);
 
-  // Set up timer for cooldown calculation
+  
   useEffect(() => {
     if (!document.cooldownUntil) {
       setTimeLeft(0);

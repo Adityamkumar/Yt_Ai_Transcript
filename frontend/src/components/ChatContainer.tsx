@@ -171,7 +171,7 @@ export function ChatContainer({ conversationId, video, onActionReady }: ChatCont
             <div className="flex flex-col gap-0.5">
               {displayMessages.map((message) => (
                 <MessageRenderer
-                  key={message._id}
+                  key={message.clientId || message._id}
                   message={message}
                   onEdit={editMessage}
                   videoId={video?.youtubeVideoId}

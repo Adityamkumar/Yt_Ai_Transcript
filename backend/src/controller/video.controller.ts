@@ -16,7 +16,7 @@ const GENERIC_VIDEO_TITLES = new Set([
   "youtube video",
 ]);
 
-// Patterns that indicate the title was generated from intro noise
+
 const BAD_TITLE_PATTERNS = [
   /\[music\]/i,
   /\bhi\b.*\bmy name\b/i,
@@ -40,7 +40,7 @@ const buildTitleFromTranscript = (
   transcript: Array<{ text: string }> = [],
   videoId: string,
 ) => {
-  // Skip first 10 chunks to avoid intro noise
+  
   const skip = Math.min(10, Math.floor(transcript.length * 0.08));
   const combined = transcript
     .slice(skip, skip + 8)
@@ -94,7 +94,7 @@ export const getTranscript = asyncHandler(async (req, res) => {
   if (videoExists) {
     let triggerIngestion = false;
 
-    // Check if transcript chunks exist in the Decoupled RAG database
+    
     const chunkCount = await TranscriptChunk.countDocuments({ videoDocumentId: videoExists._id });
     if (chunkCount === 0 || !videoExists.ragStatus || videoExists.ragStatus === "failed") {
       triggerIngestion = true;

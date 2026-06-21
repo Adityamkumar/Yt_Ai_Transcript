@@ -9,7 +9,7 @@ const axiosInstance = axios.create({
     }
 });
 
-// Variables to hold the refresh state and the queue of requests waiting for the new token
+
 let isRefreshing = false;
 let failedQueue: any[] = [];
 
@@ -37,7 +37,7 @@ axiosInstance.interceptors.response.use(
             originalRequest.url?.includes('refresh-token');
 
         if (error.response?.status === 401 && !originalRequest._retry && !isAuthRequest) {
-            // If we are already refreshing, queue this request
+            
             if (isRefreshing) {
                 return new Promise((resolve, reject) => {
                     failedQueue.push({ resolve, reject });
@@ -54,22 +54,22 @@ axiosInstance.interceptors.response.use(
             isRefreshing = true;
 
             try {
-                // Perform only ONE refresh token request
+                
                 await axios.post(
                     `${axiosInstance.defaults.baseURL}/api/v1/user/refresh-token`,
                     {},
                     { withCredentials: true }
                 );
                 
-                processQueue(null); // Resolve all queued requests
+                processQueue(null); 
                 isRefreshing = false;
                 
                 return axiosInstance(originalRequest);
             } catch (refreshError) {
-                processQueue(refreshError, null); // Reject all queued requests
+                processQueue(refreshError, null); 
                 isRefreshing = false;
                 
-                // Clear authentication and redirect
+                
                 localStorage.removeItem('isAuthenticated');
                 window.location.href = '/';
                 return Promise.reject(refreshError);

@@ -5,7 +5,7 @@ import { X, ChevronLeft, ChevronRight, Loader2, ExternalLink } from 'lucide-reac
 import { useSourcePanelStore } from '@/stores/sourcePanel.store';
 import { PdfDocument } from '@/types';
 
-// Set up the worker for react-pdf using unpkg CDN matching the installed version
+
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 interface SourcePanelProps {
@@ -16,12 +16,12 @@ export function SourcePanel({ pdf }: SourcePanelProps) {
   const { selectedPage, isSourcePanelOpen, closeSourcePanel, setSelectedPage } = useSourcePanelStore();
   const [numPages, setNumPages] = useState<number | null>(pdf.pageCount || null);
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1024);
-  const [direction, setDirection] = useState(1); // 1 for Next page, -1 for Prev page
+  const [direction, setDirection] = useState(1); 
   const prevPageRef = useRef(selectedPage || 1);
 
   const currentPage = selectedPage || 1;
 
-  // Track page turn direction for slide animation
+  
   useEffect(() => {
     if (selectedPage) {
       if (selectedPage > prevPageRef.current) {
@@ -33,7 +33,7 @@ export function SourcePanel({ pdf }: SourcePanelProps) {
     }
   }, [selectedPage]);
 
-  // Monitor screen width to switch between desktop sidebar and mobile drawer
+  
   useEffect(() => {
     const handleResize = () => {
       setIsDesktop(window.innerWidth >= 1024);
@@ -58,14 +58,14 @@ export function SourcePanel({ pdf }: SourcePanelProps) {
     }
   };
 
-  // Transition: clean tween easeInOut over 300ms for smooth sliding opening
+  
   const panelTransition = {
     type: 'tween',
     ease: 'easeInOut',
     duration: 0.3,
   } as const;
 
-  // Variants for sliding/fading page transition animation
+  
   const pageVariants = {
     enter: (dir: number) => ({
       x: dir > 0 ? 40 : -40,
@@ -110,7 +110,7 @@ export function SourcePanel({ pdf }: SourcePanelProps) {
               minWidth: isDesktop ? '380px' : undefined,
               maxWidth: isDesktop ? '650px' : undefined,
             }}
-            // Responsive styling: bottom sheet on mobile (fixed), sidebar on desktop (relative in flexbox)
+            
             className="flex flex-col border-[var(--border-soft)] bg-[var(--surface-2)] shadow-2xl backdrop-blur-md overflow-hidden shrink-0
                        fixed bottom-0 left-0 w-full h-[80vh] rounded-t-3xl border-t z-50
                        lg:relative lg:bottom-auto lg:left-auto lg:top-0 lg:h-full lg:rounded-t-none lg:border-l lg:border-t-0 lg:z-10"

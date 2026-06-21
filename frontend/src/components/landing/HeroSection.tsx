@@ -18,7 +18,7 @@ export function HeroSection() {
   const [aiResponse, setAiResponse] = useState('');
   const [isTyping, setIsTyping] = useState(false);
 
-  // Mouse tracking for 3D parallax depth
+  
   const heroRef = useRef<HTMLDivElement>(null);
   const [mouseOffset, setMouseOffset] = useState({ x: 0, y: 0 });
 
@@ -35,7 +35,7 @@ export function HeroSection() {
     setMouseOffset({ x: 0, y: 0 });
   };
 
-  // Ingestion simulation runner
+  
   const startSimulation = () => {
     if (simState !== 'idle') return;
     setSimState('analyzing');
@@ -61,7 +61,7 @@ export function HeroSection() {
     return () => clearInterval(interval);
   }, [simState]);
 
-  // Typing simulator
+  
   const handleAskQuestion = (question: string, answer: string) => {
     if (isTyping) return;
     setSelectedQuestion(question);
@@ -88,7 +88,7 @@ export function HeroSection() {
     setInputUrl('');
   };
 
-  // Demo Scenarios
+  
   const demoData = {
     youtube: {
       url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',

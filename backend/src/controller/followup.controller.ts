@@ -52,7 +52,7 @@ Generate follow-up questions:
     try {
       parsed = JSON.parse(rawText);
     } catch {
-      // Try to extract JSON from markdown code blocks
+      
       const jsonMatch = rawText.match(/```json\s?([\s\S]*?)\s?```/) || rawText.match(/```\s?([\s\S]*?)\s?```/);
       if (jsonMatch) {
         parsed = JSON.parse(jsonMatch[1]!.trim());
@@ -69,11 +69,11 @@ Generate follow-up questions:
       const trimmed = q.trim();
       if (trimmed.length === 0) continue;
 
-      // Normalize string for duplicate checks (remove symbols and multiple spaces)
+      
       const normalized = trimmed.toLowerCase().replace(/[?.,!]/g, "").replace(/\s+/g, " ");
       if (seen.has(normalized)) continue;
 
-      // Filter out if it's the same as original user question
+      
       const normalizedUserQ = question.trim().toLowerCase().replace(/[?.,!]/g, "").replace(/\s+/g, " ");
       if (normalized === normalizedUserQ) continue;
 
@@ -87,7 +87,7 @@ Generate follow-up questions:
       .status(200)
       .json(new ApiResponse(200, { followUpQuestions: questions }, "Follow-up questions generated"));
   } catch (error: any) {
-    // Silent degradation — never fail the request, just return empty
+    
     return res
       .status(200)
       .json(new ApiResponse(200, { followUpQuestions: [] }, "Follow-up generation skipped"));

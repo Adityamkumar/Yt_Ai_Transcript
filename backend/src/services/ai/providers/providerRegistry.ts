@@ -25,10 +25,10 @@ export class ProviderRegistry {
 
 export const providerRegistry = new ProviderRegistry();
 
-// Register the default providers
+
 providerRegistry.register(new GroqProvider());
 providerRegistry.register(new OpenRouterProvider());
 providerRegistry.register(new GeminiProvider());
 
-// Set default ordering (Groq -> OpenRouter -> Gemini)
+
 providerRegistry.setOrder(["groq", "openrouter", "gemini"]);

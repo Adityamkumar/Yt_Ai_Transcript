@@ -17,9 +17,9 @@ import {
 } from "../rag/services/pdfRagIngestion.service.js";
 import { deletePdfRagArtifacts } from "../rag/services/pdfRagCleanup.service.js";
 
-// ---------------------------------------------------------------------------
-// Title helpers
-// ---------------------------------------------------------------------------
+
+
+
 
 const GENERIC_PDF_TITLES = new Set([
   "new document",
@@ -55,12 +55,12 @@ const resolvePdfTitle = (aiTitle: string | undefined, originalName: string) => {
   return filenameTitle || "Document";
 };
 
-// ---------------------------------------------------------------------------
-// Helper: get-or-create a conversation for a pdf document
-// ---------------------------------------------------------------------------
+
+
+
 
 const getOrCreateConversation = async (pdfDocId: mongoose.Types.ObjectId, userId: string, title: string) => {
-  // Reuse existing conversation if one exists for this document + user
+  
   const existing = await Conversation.findOne({
     pdfDocumentId: pdfDocId,
     userId,
@@ -79,9 +79,9 @@ const getOrCreateConversation = async (pdfDocId: mongoose.Types.ObjectId, userId
   return Conversation.findById(created._id).populate("pdfDocumentId");
 };
 
-// ---------------------------------------------------------------------------
-// uploadPdf — with full deduplication by documentHash
-// ---------------------------------------------------------------------------
+
+
+
 
 export const uploadPdf = asyncHandler(async (req: any, res) => {
   if (!req.file) {
@@ -95,21 +95,21 @@ export const uploadPdf = asyncHandler(async (req: any, res) => {
   const originalName = req.file.originalname;
   const fileBuffer: Buffer = req.file.buffer;
 
-  // ------------------------------------------------------------------
-  // STEP 1 — Hash the bytes for deduplication (not filename, not URL)
-  // ------------------------------------------------------------------
+  
+  
+  
   const documentHash = hashPdfBuffer(fileBuffer);
 
-  // ------------------------------------------------------------------
-  // STEP 2 — Deduplication check
-  // ------------------------------------------------------------------
+  
+  
+  
   const existing = await PdfDocument.findOne({ documentHash });
 
   if (existing) {
     const effectiveRagStatus = existing.ragStatus ?? existing.status;
 
     if (effectiveRagStatus === "ready") {
-      // CASE A — Document already fully indexed. Reuse silently.
+      
       const conversation = await getOrCreateConversation(
         existing._id as mongoose.Types.ObjectId,
         req.user._id,
@@ -121,7 +121,7 @@ export const uploadPdf = asyncHandler(async (req: any, res) => {
     }
 
     if (effectiveRagStatus === "processing") {
-      // CASE B — Already ingesting. Return existing workspace, UI will poll.
+      
       const conversation = await getOrCreateConversation(
         existing._id as mongoose.Types.ObjectId,
         req.user._id,
@@ -133,8 +133,8 @@ export const uploadPdf = asyncHandler(async (req: any, res) => {
     }
 
     if (effectiveRagStatus === "failed") {
-      // CASE C — Previously failed. Re-trigger ingestion on the SAME document.
-      // Only re-trigger if still within auto-retry budget AND not currently cooling down.
+      
+      
       const now = new Date();
       const isInCooldown = existing.cooldownUntil && now < existing.cooldownUntil;
 
@@ -155,7 +155,7 @@ export const uploadPdf = asyncHandler(async (req: any, res) => {
           console.error("[RAG] Background re-ingestion (dedup case C) failed:", err.message);
         });
       }
-      // If retryCount >= MAX_AUTO_RETRIES or in cooldown, leave as failed.
+      
 
       const conversation = await getOrCreateConversation(
         existing._id as mongoose.Types.ObjectId,
@@ -168,9 +168,9 @@ export const uploadPdf = asyncHandler(async (req: any, res) => {
     }
   }
 
-  // ------------------------------------------------------------------
-  // STEP 3 — New document: extract text, generate title, upload, ingest
-  // ------------------------------------------------------------------
+  
+  
+  
   let parsedText = "";
   try {
     const textRes = await extractPdfText(fileBuffer);
@@ -209,9 +209,9 @@ export const uploadPdf = asyncHandler(async (req: any, res) => {
   );
 });
 
-// ---------------------------------------------------------------------------
-// getPdfStatus — includes ragStatus + retryCount for frontend decisions
-// ---------------------------------------------------------------------------
+
+
+
 
 export const getPdfStatus = asyncHandler(async (req, res) => {
   const { documentId } = req.params;
@@ -236,9 +236,9 @@ export const getPdfStatus = asyncHandler(async (req, res) => {
   );
 });
 
-// ---------------------------------------------------------------------------
-// retryPdfIngestion — manual retry with hard limit
-// ---------------------------------------------------------------------------
+
+
+
 
 export const retryPdfIngestion = asyncHandler(async (req: any, res) => {
   const { documentId } = req.params;
@@ -267,14 +267,14 @@ export const retryPdfIngestion = asyncHandler(async (req: any, res) => {
       $unset: { cooldownUntil: "" },
     });
   } else if (pdfDoc.retryCount >= MAX_TOTAL_RETRIES) {
-    const cooldownTime = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+    const cooldownTime = new Date(Date.now() + 10 * 60 * 1000); 
     await PdfDocument.findByIdAndUpdate(pdfDoc._id, {
       cooldownUntil: cooldownTime,
     });
     throw new ApiError(429, "Retry limit reached. Entering 10-minute cooldown.");
   }
 
-  // Reset status immediately so frontend can start polling
+  
   await PdfDocument.findByIdAndUpdate(pdfDoc._id, {
     status: "processing",
     ragStatus: "processing",
@@ -305,9 +305,9 @@ export const retryPdfIngestion = asyncHandler(async (req: any, res) => {
   );
 });
 
-// ---------------------------------------------------------------------------
-// askPdfQuestion — unchanged
-// ---------------------------------------------------------------------------
+
+
+
 
 export const askPdfQuestion = asyncHandler(async (req, res) => {
   const { documentId, question, recentMessages = [], type = "chat", stream = false } = req.body;
@@ -366,9 +366,9 @@ export const askPdfQuestion = asyncHandler(async (req, res) => {
   }
 });
 
-// ---------------------------------------------------------------------------
-// deletePdfDocument — unchanged
-// ---------------------------------------------------------------------------
+
+
+
 
 export const deletePdfDocument = asyncHandler(async (req: any, res) => {
   const { documentId } = req.params;

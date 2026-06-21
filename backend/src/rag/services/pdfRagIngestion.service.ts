@@ -66,14 +66,14 @@ const generateEmbeddingsForChunks = async (
   return result;
 };
 
-/**
- * Idempotent RAG ingestion pipeline for a PDF document.
- *
- * Reliability rules:
- * - Always deletes existing PdfChunks before inserting new ones (idempotent).
- * - On failure, increments retryCount on the document.
- * - Callers are responsible for checking retry limits BEFORE calling this function.
- */
+
+
+
+
+
+
+
+
 export const ingestPdfForRag = async ({
   pdfDocumentId,
   title,
@@ -89,7 +89,7 @@ export const ingestPdfForRag = async ({
     ragStatus: "processing",
   });
 
-  // Clean up any stale chunks/vector data before starting ingestion attempt (idempotency rule)
+  
   await PdfChunk.deleteMany({ documentId: documentObjectId });
 
   try {
@@ -105,7 +105,7 @@ export const ingestPdfForRag = async ({
 
     const embeddedChunks = await generateEmbeddingsForChunks(chunks, title);
 
-    // Idempotent: always wipe stale chunks before inserting fresh ones
+    
     await PdfChunk.deleteMany({ documentId: documentObjectId });
 
     await PdfChunk.insertMany(
@@ -119,7 +119,7 @@ export const ingestPdfForRag = async ({
       })),
     );
 
-    // On success: reset retryCount and clear cooldownUntil
+    
     await PdfDocument.findByIdAndUpdate(documentObjectId, {
       status: "ready",
       ragStatus: "ready",
@@ -132,7 +132,7 @@ export const ingestPdfForRag = async ({
       `[RAG] PDF ingestion complete. documentId=${documentObjectId}, chunks=${embeddedChunks.length}`,
     );
   } catch (error: any) {
-    // Increment retryCount and mark as failed
+    
     const updatedDoc = await PdfDocument.findByIdAndUpdate(
       documentObjectId,
       {
@@ -143,13 +143,13 @@ export const ingestPdfForRag = async ({
       { new: true }
     );
 
-    // Clean up any partially ingested chunks
+    
     await PdfChunk.deleteMany({ documentId: documentObjectId });
 
     if (updatedDoc) {
       if (updatedDoc.retryCount < MAX_AUTO_RETRIES) {
         console.info(`[RAG] Auto-retry ingestion (attempt ${updatedDoc.retryCount + 1}) for documentId=${documentObjectId}`);
-        // Trigger ingestPdfForRag in the background again
+        
         ingestPdfForRag({
           pdfDocumentId,
           title,
@@ -161,7 +161,7 @@ export const ingestPdfForRag = async ({
           console.error(`[RAG] Background auto-retry ingestion failed:`, err.message);
         });
       } else if (updatedDoc.retryCount >= MAX_TOTAL_RETRIES) {
-        // If we reached or exceeded 4 attempts, set 10-minute cooldown
+        
         const cooldownTime = new Date(Date.now() + 10 * 60 * 1000);
         await PdfDocument.findByIdAndUpdate(documentObjectId, {
           cooldownUntil: cooldownTime,
