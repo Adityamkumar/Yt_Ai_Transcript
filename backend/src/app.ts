@@ -54,9 +54,10 @@ app.use((err: any, req: any, res: any, next: any) => {
   });
 });
 
-app.get("/", (req, res) => {
-  res.json({
-    message: "Server is Running✅",
+app.get("/health", (_, res) => {
+  res.status(200).json({
+    status: "ok",
+    message: "EchoMind backend running"
   });
 });
 
