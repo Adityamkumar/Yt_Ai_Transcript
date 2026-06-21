@@ -50,6 +50,7 @@ export function useFollowUpQuestions(
           {
             question: userQuestion || 'What are the key highlights?',
             answer: messageContent,
+            conversationId,
           },
           controller.signal
         );

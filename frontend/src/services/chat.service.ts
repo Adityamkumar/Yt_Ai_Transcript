@@ -48,7 +48,7 @@ export const chatService = {
   },
 
   getFollowUpQuestions: async (
-    payload: { question: string; answer: string; context?: string },
+    payload: { question: string; answer: string; context?: string; conversationId?: string },
     signal?: AbortSignal,
   ): Promise<string[]> => {
     try {

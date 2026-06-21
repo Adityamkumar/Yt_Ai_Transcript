@@ -3,6 +3,11 @@ import { aiProviderService } from "../services/ai/providers/aiProvider.service.j
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import { Conversation } from "../models/conversation.model.js";
+import { TranscriptChunk } from "../models/transcriptChunk.model.js";
+import { PdfChunk } from "../models/pdfChunk.model.js";
+import { retrieveRelevantTranscriptChunks } from "../utils/retrieveRelevantTranscriptChunks.js";
+import { retrieveRelevantChunks } from "../utils/retrieveRelevantChunks.js";
 
 const GeminiFollowUpSchema = {
   type: "object",
@@ -16,14 +21,91 @@ const GeminiFollowUpSchema = {
 };
 
 export const generateFollowUp = asyncHandler(async (req, res) => {
-  const { question, answer, context } = req.body;
+  const { question, answer, context, conversationId } = req.body;
 
   if (!question || !answer) {
     throw new ApiError(400, "question and answer are required");
   }
 
+  let retrievedContext = "";
+  if (conversationId) {
+    try {
+      const conversation = await Conversation.findById(conversationId);
+      if (conversation) {
+        if (conversation.type === "video" && conversation.videoId) {
+          // 1. Fetch up to 4 semantically relevant chunks
+          const relevantChunks = await retrieveRelevantTranscriptChunks(conversation.videoId, question, 4);
+          
+          // 2. Fetch up to 4 chunks spread out evenly across the video transcript index
+          const totalChunks = await TranscriptChunk.countDocuments({ videoDocumentId: conversation.videoId });
+          let spreadChunks: any[] = [];
+          if (totalChunks > 0) {
+            const indices: number[] = [];
+            const step = Math.max(1, Math.floor(totalChunks / 4));
+            for (let i = 0; i < 4; i++) {
+              const idx = Math.min(totalChunks - 1, i * step);
+              if (!indices.includes(idx)) {
+                indices.push(idx);
+              }
+            }
+            spreadChunks = await TranscriptChunk.find({
+              videoDocumentId: conversation.videoId,
+              chunkIndex: { $in: indices }
+            }).sort({ chunkIndex: 1 });
+          }
+
+          // Combine and deduplicate
+          const combined = [...relevantChunks];
+          const seenIds = new Set(combined.map(c => c._id.toString()));
+          for (const sc of spreadChunks) {
+            if (!seenIds.has(sc._id.toString())) {
+              combined.push(sc);
+            }
+          }
+          combined.sort((a, b) => a.chunkIndex - b.chunkIndex);
+          retrievedContext = combined.map(c => c.text).join(" ");
+        } else if (conversation.type === "pdf" && conversation.pdfDocumentId) {
+          // 1. Fetch up to 4 semantically relevant chunks
+          const relevantChunks = await retrieveRelevantChunks(conversation.pdfDocumentId, question, 4);
+
+          // 2. Fetch up to 4 chunks spread out evenly across the PDF pages/index
+          const totalChunks = await PdfChunk.countDocuments({ documentId: conversation.pdfDocumentId });
+          let spreadChunks: any[] = [];
+          if (totalChunks > 0) {
+            const indices: number[] = [];
+            const step = Math.max(1, Math.floor(totalChunks / 4));
+            for (let i = 0; i < 4; i++) {
+              const idx = Math.min(totalChunks - 1, i * step);
+              if (!indices.includes(idx)) {
+                indices.push(idx);
+              }
+            }
+            spreadChunks = await PdfChunk.find({
+              documentId: conversation.pdfDocumentId,
+              chunkIndex: { $in: indices }
+            }).sort({ chunkIndex: 1 });
+          }
+
+          // Combine and deduplicate
+          const combined = [...relevantChunks];
+          const seenIds = new Set(combined.map(c => c._id.toString()));
+          for (const sc of spreadChunks) {
+            if (!seenIds.has(sc._id.toString())) {
+              combined.push(sc);
+            }
+          }
+          combined.sort((a, b) => a.chunkIndex - b.chunkIndex);
+          retrievedContext = combined.map(c => c.text).join(" ");
+        }
+      }
+    } catch (err) {
+      console.error("[FollowUp] Failed to fetch context chunks for grounding:", err);
+    }
+  }
+
+  const finalContext = retrievedContext || context || "";
   const truncatedAnswer = answer.slice(0, 1500);
-  const truncatedContext = context ? context.slice(0, 1000) : "";
+  const truncatedContext = finalContext.slice(0, 3000);
 
   const prompt = `
 ${FOLLOWUP_SYSTEM_PROMPT}
@@ -52,7 +134,6 @@ Generate follow-up questions:
     try {
       parsed = JSON.parse(rawText);
     } catch {
-      
       const jsonMatch = rawText.match(/```json\s?([\s\S]*?)\s?```/) || rawText.match(/```\s?([\s\S]*?)\s?```/);
       if (jsonMatch) {
         parsed = JSON.parse(jsonMatch[1]!.trim());
@@ -69,11 +150,9 @@ Generate follow-up questions:
       const trimmed = q.trim();
       if (trimmed.length === 0) continue;
 
-      
       const normalized = trimmed.toLowerCase().replace(/[?.,!]/g, "").replace(/\s+/g, " ");
       if (seen.has(normalized)) continue;
 
-      
       const normalizedUserQ = question.trim().toLowerCase().replace(/[?.,!]/g, "").replace(/\s+/g, " ");
       if (normalized === normalizedUserQ) continue;
 
@@ -87,7 +166,6 @@ Generate follow-up questions:
       .status(200)
       .json(new ApiResponse(200, { followUpQuestions: questions }, "Follow-up questions generated"));
   } catch (error: any) {
-    
     return res
       .status(200)
       .json(new ApiResponse(200, { followUpQuestions: [] }, "Follow-up generation skipped"));
