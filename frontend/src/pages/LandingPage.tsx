@@ -1,52 +1,13 @@
-import { useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Navbar } from '@/components/landing/Navbar';
 import { HeroSection } from '@/components/landing/HeroSection';
 import { FeaturesSection } from '@/components/landing/FeaturesSection';
 import { ShowcaseSection } from '@/components/landing/ShowcaseSection';
 import { Footer } from '@/components/landing/Footer';
-import { useAuth } from '@/store/AuthContext';
 import { TracingBeam } from '@/components/ui/tracing-beam';
-
-function useOAuthReturn() {
-  const { user, loading, refreshUser } = useAuth();
-  const navigate = useNavigate();
-  const hasAttempted = useRef(false);
-
-  useEffect(() => {
-    const isOAuthReturn = sessionStorage.getItem('oauth_pending') === 'true';
-
-    if (!isOAuthReturn) return;
-    if (loading || user || hasAttempted.current) return;
-
-    hasAttempted.current = true;
-    sessionStorage.removeItem('oauth_pending');
-
-    refreshUser().then(() => {
-      if (localStorage.getItem('isAuthenticated') === 'true') {
-        navigate('/app', { replace: true });
-      }
-    });
-  }, [loading, user, refreshUser, navigate]);
-}
-
-function useAutoRedirect() {
-  const { user, loading } = useAuth();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!loading && user && localStorage.getItem('isAuthenticated') === 'true') {
-      const isOAuthReturn = sessionStorage.getItem('oauth_pending') === 'true';
-      if (!isOAuthReturn) {
-        navigate('/app', { replace: true });
-      }
-    }
-  }, [loading, user, navigate]);
-}
+import { useAuthRedirect } from '@/hooks/useAuthRedirect';
 
 export default function LandingPage() {
-  useOAuthReturn();
-  useAutoRedirect();
+  useAuthRedirect();
 
   return (
     <div

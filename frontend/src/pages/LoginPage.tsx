@@ -7,6 +7,7 @@ import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton";
 import { AuthShell } from "@/components/auth/AuthShell";
 import { AuthInput, AuthPasswordInput } from "@/components/auth/AuthInput";
 import { AuthPrimaryButton } from "@/components/auth/AuthPrimaryButton";
+import { useAuthRedirect } from "@/hooks/useAuthRedirect";
 
 const getErrorMessage = (error: unknown, fallback: string) => {
   if (error instanceof Error && error.message) return error.message;
@@ -14,11 +15,22 @@ const getErrorMessage = (error: unknown, fallback: string) => {
 };
 
 export default function LoginPage() {
-  const { login } = useAuth();
+  useAuthRedirect();
+  const { login, user, loading } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({ email: "", password: "" });
+
+  const isOAuthReturn = sessionStorage.getItem("oauth_pending") === "true";
+
+  if (user || isOAuthReturn || (loading && localStorage.getItem("isAuthenticated") === "true")) {
+    return (
+      <div className="min-h-screen bg-[var(--canvas)] flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-[#7C5CFF] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

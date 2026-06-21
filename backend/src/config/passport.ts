@@ -15,7 +15,9 @@ passport.use(
         process.env.GOOGLE_CLIENT_SECRET!,
 
       callbackURL:
-        "http://localhost:8000/api/v1/user/google/callback",
+        process.env.NODE_ENV === "production"
+          ? "https://echomindai-6ml3.onrender.com/api/v1/user/google/callback"
+          : "http://localhost:8000/api/v1/user/google/callback",
     },
 
     async (

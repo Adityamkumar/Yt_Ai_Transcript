@@ -244,7 +244,11 @@ export const googleCallbackController = asyncHandler(async (req, res) => {
   res.cookie("accessToken", accessToken, accessCookieOptions);
   res.cookie("refreshToken", refreshToken, refreshCookieOptions);
 
-  return res.redirect(process.env.FRONTEND_URL!);
+  const frontendUrl = process.env.NODE_ENV === "production"
+    ? (process.env.FRONTEND_PROD_URL || "https://echomindai63.vercel.app")
+    : "http://localhost:5173";
+
+  return res.redirect(`${frontendUrl}/app`);
 });
 
 export const avatarProxyController = asyncHandler(async (req, res) => {

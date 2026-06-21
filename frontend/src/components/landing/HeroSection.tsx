@@ -145,14 +145,14 @@ export function HeroSection() {
 
       {/* Decorative Blur Orbs */}
       <div
-        className="absolute inset-0 pointer-events-none"
+        className="absolute inset-y-0 w-screen left-1/2 -translate-x-1/2 pointer-events-none overflow-hidden"
         style={{
           background:
             'radial-gradient(ellipse 60% 40% at 50% -10%, rgba(139,156,247,0.12) 0%, transparent 60%)',
         }}
       />
       <div
-        className="absolute inset-0 pointer-events-none"
+        className="absolute inset-y-0 w-screen left-1/2 -translate-x-1/2 pointer-events-none overflow-hidden"
         style={{
           background:
             'radial-gradient(ellipse 40% 40% at 85% 75%, rgba(77,162,255,0.06) 0%, transparent 60%)',

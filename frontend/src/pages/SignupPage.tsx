@@ -7,6 +7,7 @@ import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton";
 import { AuthShell } from "@/components/auth/AuthShell";
 import { AuthInput, AuthPasswordInput } from "@/components/auth/AuthInput";
 import { AuthPrimaryButton } from "@/components/auth/AuthPrimaryButton";
+import { useAuthRedirect } from "@/hooks/useAuthRedirect";
 
 const passwordStrengthLabel = (pw: string): { label: string; color: string; width: string } => {
   if (pw.length === 0) return { label: "", color: "transparent", width: "0%" };
@@ -22,12 +23,23 @@ const getErrorMessage = (error: unknown, fallback: string) => {
 };
 
 export default function SignupPage() {
-  const { register } = useAuth();
+  useAuthRedirect();
+  const { register, user, loading } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({ name: "", email: "", password: "", confirm: "" });
+
+  const isOAuthReturn = sessionStorage.getItem("oauth_pending") === "true";
+
+  if (user || isOAuthReturn || (loading && localStorage.getItem("isAuthenticated") === "true")) {
+    return (
+      <div className="min-h-screen bg-[var(--canvas)] flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-[#7C5CFF] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   const strength = passwordStrengthLabel(form.password);
   const passwordsMatch = Boolean(form.password && form.confirm && form.password === form.confirm);
