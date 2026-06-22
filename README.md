@@ -236,7 +236,9 @@ To handle API failures or rate limits without breaking the app:
    Create a `.env.local` file in the `frontend/` folder:
    ```env
    VITE_API_BASE_URL=http://localhost:8000
+   VITE_GOOGLE_CLIENT_ID=your_google_client_id
    ```
+   *Note: Since the login flow is frontend-driven via Google Identity Services, you must also add your active client origins (like `http://localhost:5173` and your production URL) under the **Authorized JavaScript origins** list of your Google client credentials in Google Cloud Console.*
    Start the frontend:
    ```bash
    npm run dev

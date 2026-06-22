@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build":"tsc",
+    "build": "tsc",
     "start": "node dist/server.js"
   },
   "keywords": [],
@@ -21,6 +21,7 @@
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "express-session": "^1.19.0",
+    "google-auth-library": "^10.7.0",
     "groq-sdk": "^1.2.1",
     "imagekit": "^6.0.0",
     "jsonwebtoken": "^9.0.3",

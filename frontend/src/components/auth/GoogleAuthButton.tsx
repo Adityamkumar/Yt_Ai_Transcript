@@ -40,7 +40,44 @@ export function GoogleAuthButton({ label = 'Continue with Google' }: GoogleAuthB
 
   const handleClick = () => {
     setIsLoading(true);
-    loginWithGoogle();
+
+    try {
+      const google = (window as any).google;
+      if (!google) {
+        throw new Error("Google Sign-In has not loaded yet. Please try again in a moment.");
+      }
+
+      const client = google.accounts.oauth2.initCodeClient({
+        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+        scope: 'openid email profile',
+        ux_mode: 'popup',
+        callback: async (response: any) => {
+          if (response.error) {
+            setIsLoading(false);
+            console.error("Google OAuth Error:", response.error);
+            return;
+          }
+
+          if (response.code) {
+            try {
+              await loginWithGoogle(response.code);
+            } catch (err) {
+              console.error("Verification failed:", err);
+              setIsLoading(false);
+              alert("Authentication failed. Please try again.");
+            }
+          } else {
+            setIsLoading(false);
+          }
+        },
+      });
+
+      client.requestCode();
+    } catch (error: any) {
+      console.error("Google client init failed:", error);
+      setIsLoading(false);
+      alert(error.message || "Failed to launch Google login.");
+    }
   };
 
   return (
@@ -72,7 +109,7 @@ export function GoogleAuthButton({ label = 'Continue with Google' }: GoogleAuthB
       {isLoading ? (
         <>
           <Loader2 size={16} className="animate-spin text-[#94A3B8]" />
-          <span className="text-[#94A3B8]">Redirecting to Google...</span>
+          <span className="text-[#94A3B8]">Connecting...</span>
         </>
       ) : (
         <>

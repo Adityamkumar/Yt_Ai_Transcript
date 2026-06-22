@@ -12,6 +12,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { sendEmail } from "../utils/sendEmail.js";
 import crypto from "node:crypto";
 import { generateResetPasswordEmail } from "../utils/emailTemplates.js";
+import { googleClient } from "../config/googleAuth.js";
 
 export const userRegister = asyncHandler(async (req, res) => {
   try {
@@ -249,6 +250,83 @@ export const googleCallbackController = asyncHandler(async (req, res) => {
     : "http://localhost:5173";
 
   return res.redirect(`${frontendUrl}/app`);
+});
+
+export const googleVerifyController = asyncHandler(async (req, res) => {
+  const { code } = req.body;
+  
+  if (!code) {
+    throw new ApiError(400, "Authorization code is required");
+  }
+
+  try {
+    // Exchange authorization code for tokens
+    const { tokens } = await googleClient.getToken(code);
+    
+    if (!tokens.id_token) {
+      throw new ApiError(400, "Failed to retrieve id_token from Google");
+    }
+
+    // Verify ID Token
+    const ticket = await googleClient.verifyIdToken({
+      idToken: tokens.id_token,
+      audience: process.env.GOOGLE_CLIENT_ID!,
+    });
+
+    const payload = ticket.getPayload();
+    if (!payload) {
+      throw new ApiError(400, "Failed to verify ID token payload");
+    }
+
+    const googleId = payload.sub;
+    const name = payload.name;
+    const email = payload.email;
+    const avatar = payload.picture;
+
+    if (!email) {
+      throw new ApiError(400, "Google account does not have an email address");
+    }
+
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      user = await User.create({
+        name: name || "",
+        email,
+        avatar: avatar || "",
+        googleId,
+        provider: "google",
+      });
+    }
+
+    if (user.provider === "local" && !user.googleId) {
+      user.googleId = googleId;
+      if (avatar) {
+        user.avatar = avatar;
+      }
+      user.provider = "google";
+      await user.save();
+    }
+
+    const { accessToken, refreshToken } = await generateAccessTokenAndRefreshToken(user._id);
+
+    res.cookie("accessToken", accessToken, accessCookieOptions);
+    res.cookie("refreshToken", refreshToken, refreshCookieOptions);
+
+    return res.status(200).json({
+      user: {
+        id: user._id || user.id,
+        name: user.name,
+        email: user.email,
+        avatar: user.avatar,
+        provider: user.provider,
+        hasPassword: !!user.password,
+      }
+    });
+  } catch (error: any) {
+    console.error("Google authentication error:", error);
+    throw new ApiError(401, error.message || "Google authentication failed");
+  }
 });
 
 export const avatarProxyController = asyncHandler(async (req, res) => {

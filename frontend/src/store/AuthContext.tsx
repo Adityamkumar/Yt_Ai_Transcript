@@ -26,7 +26,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
   deleteAccount: (password?: string) => Promise<void>;
-  loginWithGoogle: () => void;
+  loginWithGoogle: (code: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -98,9 +98,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     navigate("/app");
   };
 
-  const loginWithGoogle = useCallback(() => {
-    authService.loginWithGoogle();
-  }, []);
+  const loginWithGoogle = useCallback(async (code: string) => {
+    const userData = await authService.verifyGoogleCode(code);
+    setUser({
+      id: userData.id || userData._id,
+      name: userData.name,
+      email: userData.email,
+      avatar: userData.avatar || undefined,
+      provider: userData.provider || "google",
+      hasPassword: userData.hasPassword,
+    });
+    localStorage.setItem("isAuthenticated", "true");
+    navigate("/app");
+  }, [navigate]);
 
   const logout = async () => {
     try {

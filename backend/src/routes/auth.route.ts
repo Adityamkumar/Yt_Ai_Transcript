@@ -7,6 +7,7 @@ import {
   getCurrentUser,
   deleteUser,
   googleCallbackController,
+  googleVerifyController,
   avatarProxyController,
   forgetPassword,
   resetPasswordController,
@@ -45,6 +46,8 @@ router.get(
 
   googleCallbackController,
 );
+
+router.post("/google/verify", googleVerifyController);
 
 router.post('/forgot-password', forgetPassword)
 router.get(

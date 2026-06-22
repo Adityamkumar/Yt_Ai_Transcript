@@ -15,6 +15,11 @@ export const authService = {
     window.location.href = `${BASE_URL}/api/v1/user/google`;
   },
 
+  verifyGoogleCode: async (code: string) => {
+    const response = await axiosInstance.post('/api/v1/user/google/verify', { code });
+    return response.data.user;
+  },
+
   forgotPassword: async (email: string) => {
     const response = await axiosInstance.post('/api/v1/user/forgot-password', { email });
     return response.data;
