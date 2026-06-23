@@ -8,7 +8,7 @@ export const pdfService = {
 
     const response = await axiosInstance.post<ApiResponse<IConversation>>("/api/v1/pdf/upload", formData, {
       headers: {
-        "Content-Type": "multipart/form-data",
+        "Content-Type": undefined,
       },
       timeout: 120000,
     });
