@@ -1,4 +1,4 @@
-import axiosInstance from '@/lib/axios';
+import axiosInstance, { getApiBaseUrl } from '@/lib/axios';
 import { AskQuestionPayload } from '@/types';
 
 export const chatService = {
@@ -12,7 +12,7 @@ export const chatService = {
     onToken: (token: string) => void,
     signal?: AbortSignal,
   ) => {
-    const url = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/v1/chat/ask`;
+    const url = `${getApiBaseUrl()}/api/v1/chat/ask`;
 
     const response = await fetch(url, {
       method: 'POST',

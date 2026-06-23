@@ -1,4 +1,4 @@
-import axiosInstance from "@/lib/axios";
+import axiosInstance, { getApiBaseUrl } from "@/lib/axios";
 import { ApiResponse, IConversation, PdfAskPayload } from "@/types";
 
 export const pdfService = {
@@ -7,9 +7,6 @@ export const pdfService = {
     formData.append("file", file);
 
     const response = await axiosInstance.post<ApiResponse<IConversation>>("/api/v1/pdf/upload", formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
       timeout: 120000,
     });
     return response.data.data;
@@ -51,7 +48,7 @@ export const pdfService = {
     onToken: (token: string) => void,
     signal?: AbortSignal,
   ) => {
-    const url = `${import.meta.env.VITE_API_BASE_URL || "http://localhost:8000"}/api/v1/pdf/ask`;
+    const url = `${getApiBaseUrl()}/api/v1/pdf/ask`;
 
     const response = await fetch(url, {
       method: "POST",

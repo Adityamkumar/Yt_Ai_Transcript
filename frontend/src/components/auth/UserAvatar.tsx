@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { getApiBaseUrl } from '@/lib/axios';
 
 interface UserAvatarProps {
   name?: string;
@@ -29,7 +30,7 @@ export function UserAvatar({ name = 'User', avatar, size = 36, className = '' }:
   const initials = getInitials(name);
   const gradient = getAvatarGradient(name);
 
-  const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+  const baseURL = getApiBaseUrl();
 
   const avatarUrl = avatar && avatar.includes('googleusercontent.com')
     ? `${baseURL}/api/v1/user/avatar-proxy?url=${encodeURIComponent(avatar)}`

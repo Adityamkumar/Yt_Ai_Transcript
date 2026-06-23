@@ -17,9 +17,29 @@ const allowedOrigins = [
   process.env.FRONTEND_PROD_URL
 ];
 
+const isLocalOrigin = (url: string): boolean => {
+  try {
+    const parsed = new URL(url);
+    const hostname = parsed.hostname;
+    return (
+      hostname === 'localhost' ||
+      hostname === '127.0.0.1' ||
+      hostname.startsWith('192.168.') ||
+      hostname.startsWith('10.') ||
+      /^172\.(1[6-9]|2\d|3[01])\./.test(hostname)
+    );
+  } catch {
+    return false;
+  }
+};
+
 app.use(cors({
   origin: function (origin, callback) {
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+    if (
+      !origin || 
+      allowedOrigins.indexOf(origin) !== -1 || 
+      (process.env.NODE_ENV === 'development' && isLocalOrigin(origin))
+    ) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));

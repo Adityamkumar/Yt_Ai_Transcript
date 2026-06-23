@@ -1,7 +1,33 @@
 import axios from 'axios';
 
+export const getApiBaseUrl = (): string => {
+    const envUrl = import.meta.env.VITE_API_BASE_URL;
+    
+    if (typeof window !== 'undefined') {
+        const currentHostname = window.location.hostname;
+        
+        if (currentHostname && currentHostname !== 'localhost' && currentHostname !== '127.0.0.1') {
+            if (envUrl) {
+                try {
+                    const url = new URL(envUrl);
+                    if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') {
+                        url.hostname = currentHostname;
+                        return url.origin;
+                    }
+                    return envUrl;
+                } catch (e) {
+                    // ignore
+                }
+            }
+            return `${window.location.protocol}//${currentHostname}:8000`;
+        }
+    }
+    
+    return envUrl || 'http://localhost:8000';
+};
+
 const axiosInstance = axios.create({
-    baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000',
+    baseURL: getApiBaseUrl(),
     timeout: 60000,
     withCredentials: true,
     headers: {
