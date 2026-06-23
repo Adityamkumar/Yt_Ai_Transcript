@@ -2,20 +2,26 @@ import axiosInstance, { getApiBaseUrl } from "@/lib/axios";
 import { ApiResponse, IConversation, PdfAskPayload } from "@/types";
 
 export const pdfService = {
-  uploadPdf: async (file: File, onProgress?: (progress: number) => void): Promise<IConversation> => {
+  uploadPdf: async (file: File): Promise<IConversation> => {
     const formData = new FormData();
     formData.append("file", file);
 
-    const response = await axiosInstance.post<ApiResponse<IConversation>>("/api/v1/pdf/upload", formData, {
-      timeout: 120000,
-      onUploadProgress: (progressEvent) => {
-        if (progressEvent.total && onProgress) {
-          const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-          onProgress(percentCompleted);
-        }
-      }
+    const url = `${getApiBaseUrl()}/api/v1/pdf/upload`;
+
+    const response = await fetch(url, {
+      method: "POST",
+      credentials: "include",
+      body: formData,
+      // Do NOT set Content-Type — the browser must set it with the multipart boundary
     });
-    return response.data.data;
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: "PDF upload failed" }));
+      throw new Error(error.message || "PDF upload failed");
+    }
+
+    const data = await response.json();
+    return data.data;
   },
 
   getPdfStatus: async (documentId: string) => {

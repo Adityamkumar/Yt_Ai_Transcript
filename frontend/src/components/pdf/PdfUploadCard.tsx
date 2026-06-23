@@ -12,7 +12,6 @@ interface PdfUploadCardProps {
 }
 
 export function PdfUploadCard({ onUploadSuccess, onUploadingStateChange }: PdfUploadCardProps) {
-  const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [isDragActive, setIsDragActive] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -60,17 +59,14 @@ export function PdfUploadCard({ onUploadSuccess, onUploadingStateChange }: PdfUp
 
     setFile(selectedFile);
     setIsUploading(true);
-    setUploadProgress(0);
     onUploadingStateChange?.(true);
 
     try {
-      const conversation = await pdfService.uploadPdf(selectedFile, (progress) => {
-        setUploadProgress(progress);
-      });
+      const conversation = await pdfService.uploadPdf(selectedFile);
       toast.success("PDF indexed successfully!");
       onUploadSuccess(conversation);
     } catch (err: any) {
-      const errMsg = err.response?.data?.message || err.message || "Failed to index PDF document";
+      const errMsg = err.message || "Failed to index PDF document";
       setErrorMsg(errMsg);
       toast.error(errMsg);
       setFile(null);
@@ -155,21 +151,16 @@ export function PdfUploadCard({ onUploadSuccess, onUploadingStateChange }: PdfUp
                  </div>
                  <div className="mt-2 w-full text-center">
                    <p className="text-[15px] font-semibold text-white">
-                     {uploadProgress < 100 
-                       ? `Uploading: ${uploadProgress}%` 
-                       : `Indexing "${file?.name}"...`}
+                     Uploading &amp; indexing "{file?.name}"...
                    </p>
                    <p className="mt-1 text-xs text-[var(--text-muted)]">
-                     {uploadProgress < 100 
-                       ? "Sending file to server..." 
-                       : "Extracting pages and building AI learning context."}
+                     Extracting pages and building AI learning context.
                    </p>
                    <div className="mt-3.5 h-1.5 w-full rounded-full bg-white/[0.04] overflow-hidden">
-                     <motion.div 
-                       className="h-full bg-[var(--accent)] rounded-full"
-                       initial={{ width: "0%" }}
-                       animate={{ width: `${uploadProgress}%` }}
-                       transition={{ duration: 0.1 }}
+                     <motion.div
+                       className="h-full w-1/3 bg-[var(--accent)] rounded-full"
+                       animate={{ x: ["0%", "200%", "0%"] }}
+                       transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
                      />
                    </div>
                  </div>
