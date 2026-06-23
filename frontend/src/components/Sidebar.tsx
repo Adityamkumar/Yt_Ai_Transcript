@@ -25,6 +25,7 @@ import { cn } from '@/utils/cn';
 import { useAuth } from '@/store/AuthContext';
 import { SettingsModal } from './SettingsModal';
 import { UserAvatar } from '@/components/auth/UserAvatar';
+import { DeleteChatModal } from './DeleteChatModal';
 
 interface SidebarProps {
   onNewChat: () => void;
@@ -39,6 +40,8 @@ export function Sidebar({ onNewChat }: SidebarProps) {
   const { sidebarOpen, toggleSidebar } = useUIStore();
   const { user, logout } = useAuth();
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [conversationToDelete, setConversationToDelete] = useState<{ id: string; title: string } | null>(null);
 
   const handleConversationClick = (id: string) => {
     navigate(`/workspace/${id}`);
@@ -47,13 +50,16 @@ export function Sidebar({ onNewChat }: SidebarProps) {
     }
   };
 
-  const handleDeleteConversation = async (id: string) => {
+  const handleConfirmDelete = async () => {
+    if (!conversationToDelete) return;
     try {
-      await deleteConversation(id);
+      await deleteConversation(conversationToDelete.id);
       toast.success('Conversation deleted');
-      if (conversationId === id) {
+      if (conversationId === conversationToDelete.id) {
         navigate('/app');
       }
+      setDeleteModalOpen(false);
+      setConversationToDelete(null);
     } catch (error) {
       toast.error('Failed to delete conversation');
     }
@@ -231,7 +237,8 @@ export function Sidebar({ onNewChat }: SidebarProps) {
                         <button
                           onClick={(event) => {
                             event.stopPropagation();
-                            handleDeleteConversation(conv._id);
+                            setConversationToDelete({ id: conv._id, title: conv.title });
+                            setDeleteModalOpen(true);
                           }}
                           aria-label={`Delete ${conv.title}`}
                           className="absolute right-2 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-lg text-[var(--text-muted)] opacity-0 transition-all hover:bg-[var(--danger-subtle)] hover:text-[var(--danger)] group-hover:opacity-100"
@@ -273,6 +280,15 @@ export function Sidebar({ onNewChat }: SidebarProps) {
         </div>
       </motion.aside>
       <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      <DeleteChatModal
+        isOpen={deleteModalOpen}
+        onClose={() => {
+          setDeleteModalOpen(false);
+          setConversationToDelete(null);
+        }}
+        onConfirm={handleConfirmDelete}
+        chatTitle={conversationToDelete?.title || ""}
+      />
     </>
   );
 }

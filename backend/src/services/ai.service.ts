@@ -625,29 +625,27 @@ export async function* streamAiAboutPdf(
 
 export const generatePdfTitle = async (sampleText: string) => {
   try {
-    // Skip intro/header noise — start sampling from a bit into the document
-    const trimmed = sampleText.slice(200, 2200);
+    // Analyze the whole document content up to 40,000 characters to capture overall context
+    const trimmed = sampleText.trim().slice(0, 40000);
 
-    const prompt = `You are a document title generator. Read the text below and output ONLY a short title.
+    const systemPrompt = `You are a professional document classifier and title generator.
+Your job is to analyze the document content and return ONLY a high-quality, topic-focused title of 2 to 5 words.
 
 STRICT RULES:
-- Output ONLY the title text, nothing else
-- Maximum 5 words
-- Must describe the document's main topic
-- Do NOT copy any sentences from the text
-- Do NOT include quotes, asterisks, markdown, or punctuation
-- Do NOT write explanations or preambles
-- If the document is about a guide or tutorial, name the subject
+1. Output ONLY the title text. No quotes, no asterisks, no markdown, no punctuation, and no preambles/explanations (e.g. do NOT write "Title: ...").
+2. The title must be a concise noun phrase of 2 to 5 words (e.g., "Effective Prompt Design Guide", "Prompt Engineering Basics").
+3. Prioritize using the main heading or title of the document (often found in the very first few lines of the text).
+4. Never copy random sentence fragments, formatting instructions, or body text fragments (like "to indicate that a new" or "paragraph breaks or bullet points").
+5. If the document is a guide, tutorial, notes, or article, incorporate that context into the title.`;
 
-GOOD examples: "Prompt Engineering Guide", "React Hooks Tutorial", "Machine Learning Basics", "Python Data Structures"
-BAD examples: "paragraph breaks or bullet points to organize...", "This document covers..."
-
-Document text:
+    const prompt = `Document Content:
+"""
 ${trimmed}
+"""
 
-Title:`;
+Generate Title:`;
 
-    const text = await aiProviderService.generateResponse(prompt);
+    const text = await aiProviderService.generateResponse(prompt, systemPrompt);
 
     let title = text
       .trim()
