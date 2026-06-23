@@ -16,15 +16,15 @@ const upload = multer({
   limits: {
     fileSize: 10 * 1024 * 1024, 
   },
-  fileFilter: (req, file, cb) => {
-    const isPdfMime = file.mimetype === "application/pdf";
-    const isPdfExt = file.originalname.toLowerCase().endsWith(".pdf");
-    if (isPdfMime || isPdfExt) {
-      cb(null, true);
-    } else {
-      cb(new Error("Only PDF files are allowed"));
-    }
-  },
+  // fileFilter: (req, file, cb) => {
+  //   const isPdfMime = file.mimetype === "application/pdf";
+  //   const isPdfExt = file.originalname.toLowerCase().endsWith(".pdf");
+  //   if (isPdfMime || isPdfExt) {
+  //     cb(null, true);
+  //   } else {
+  //     cb(new Error("Only PDF files are allowed"));
+  //   }
+  // },
 });
 
 router.use(authMiddleware);

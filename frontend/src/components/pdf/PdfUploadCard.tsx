@@ -12,6 +12,7 @@ interface PdfUploadCardProps {
 }
 
 export function PdfUploadCard({ onUploadSuccess, onUploadingStateChange }: PdfUploadCardProps) {
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [isDragActive, setIsDragActive] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -42,12 +43,30 @@ export function PdfUploadCard({ onUploadSuccess, onUploadingStateChange }: PdfUp
       return;
     }
 
+    // Check if the file is readable in the browser (handles mobile permission errors)
+    try {
+      await new Promise<void>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve();
+        reader.onerror = () => reject(reader.error);
+        reader.readAsArrayBuffer(selectedFile.slice(0, 100));
+      });
+    } catch (e: any) {
+      const errMsg = `Cannot read file: ${e?.message || "Access denied"}. Try copying the file to local Downloads first.`;
+      setErrorMsg(errMsg);
+      toast.error(errMsg);
+      return;
+    }
+
     setFile(selectedFile);
     setIsUploading(true);
+    setUploadProgress(0);
     onUploadingStateChange?.(true);
 
     try {
-      const conversation = await pdfService.uploadPdf(selectedFile);
+      const conversation = await pdfService.uploadPdf(selectedFile, (progress) => {
+        setUploadProgress(progress);
+      });
       toast.success("PDF indexed successfully!");
       onUploadSuccess(conversation);
     } catch (err: any) {
@@ -123,22 +142,38 @@ export function PdfUploadCard({ onUploadSuccess, onUploadingStateChange }: PdfUp
 
           <AnimatePresence mode="wait">
             {isUploading ? (
-              <motion.div
-                key="uploading"
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                className="flex flex-col items-center gap-3 py-4"
-              >
-                <div className="relative">
-                  <div className="h-12 w-12 rounded-full border-2 border-white/[0.06] border-t-[var(--accent)] animate-spin" />
-                  <FileText size={18} className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-[var(--accent)] animate-pulse" />
-                </div>
-                <div className="mt-2">
-                  <p className="text-[15px] font-semibold text-white">Indexing "{file?.name}"...</p>
-                  <p className="mt-1 text-xs text-[var(--text-muted)]">Extracting pages and building AI learning context.</p>
-                </div>
-              </motion.div>
+               <motion.div
+                 key="uploading"
+                 initial={{ opacity: 0, scale: 0.95 }}
+                 animate={{ opacity: 1, scale: 1 }}
+                 exit={{ opacity: 0, scale: 0.95 }}
+                 className="flex flex-col items-center gap-3 py-4 w-full max-w-[280px]"
+               >
+                 <div className="relative">
+                   <div className="h-12 w-12 rounded-full border-2 border-white/[0.06] border-t-[var(--accent)] animate-spin" />
+                   <FileText size={18} className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-[var(--accent)] animate-pulse" />
+                 </div>
+                 <div className="mt-2 w-full text-center">
+                   <p className="text-[15px] font-semibold text-white">
+                     {uploadProgress < 100 
+                       ? `Uploading: ${uploadProgress}%` 
+                       : `Indexing "${file?.name}"...`}
+                   </p>
+                   <p className="mt-1 text-xs text-[var(--text-muted)]">
+                     {uploadProgress < 100 
+                       ? "Sending file to server..." 
+                       : "Extracting pages and building AI learning context."}
+                   </p>
+                   <div className="mt-3.5 h-1.5 w-full rounded-full bg-white/[0.04] overflow-hidden">
+                     <motion.div 
+                       className="h-full bg-[var(--accent)] rounded-full"
+                       initial={{ width: "0%" }}
+                       animate={{ width: `${uploadProgress}%` }}
+                       transition={{ duration: 0.1 }}
+                     />
+                   </div>
+                 </div>
+               </motion.div>
             ) : (
               <motion.div
                 key="idle"

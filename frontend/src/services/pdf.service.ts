@@ -2,15 +2,18 @@ import axiosInstance, { getApiBaseUrl } from "@/lib/axios";
 import { ApiResponse, IConversation, PdfAskPayload } from "@/types";
 
 export const pdfService = {
-  uploadPdf: async (file: File): Promise<IConversation> => {
+  uploadPdf: async (file: File, onProgress?: (progress: number) => void): Promise<IConversation> => {
     const formData = new FormData();
     formData.append("file", file);
 
     const response = await axiosInstance.post<ApiResponse<IConversation>>("/api/v1/pdf/upload", formData, {
-      headers: {
-        "Content-Type": undefined,
-      },
       timeout: 120000,
+      onUploadProgress: (progressEvent) => {
+        if (progressEvent.total && onProgress) {
+          const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          onProgress(percentCompleted);
+        }
+      }
     });
     return response.data.data;
   },
