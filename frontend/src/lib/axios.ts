@@ -102,7 +102,13 @@ axiosInstance.interceptors.response.use(
             }
         }
 
-        const message = error.response?.data?.message || error.message || 'Something went wrong. Please try again.';
+        console.error("Axios request failed:", error);
+        let message = error.response?.data?.message || error.message || 'Something went wrong. Please try again.';
+        if (error.code === 'ECONNABORTED') {
+            message = 'Request timeout: The upload is taking too long on this network connection.';
+        } else if (message === 'Network Error') {
+            message = 'Network Error: The backend server is unreachable or CORS blocked the request.';
+        }
         return Promise.reject(new Error(message));
     }
 );

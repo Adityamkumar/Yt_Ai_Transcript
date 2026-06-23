@@ -33,11 +33,22 @@ const isLocalOrigin = (url: string): boolean => {
   }
 };
 
+const isVercelOrigin = (url: string): boolean => {
+  try {
+    const parsed = new URL(url);
+    const hostname = parsed.hostname;
+    return hostname.endsWith('.vercel.app') && hostname.includes('echomind');
+  } catch {
+    return false;
+  }
+};
+
 app.use(cors({
   origin: function (origin, callback) {
     if (
       !origin || 
       allowedOrigins.indexOf(origin) !== -1 || 
+      isVercelOrigin(origin) ||
       (process.env.NODE_ENV === 'development' && isLocalOrigin(origin))
     ) {
       callback(null, true);
