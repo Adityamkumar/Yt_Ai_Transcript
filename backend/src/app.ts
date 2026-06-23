@@ -14,7 +14,8 @@ const app = express();
 
 const allowedOrigins = [
   process.env.FRONTEND_URL,
-  process.env.FRONTEND_PROD_URL
+  process.env.FRONTEND_PROD_URL,
+  process.env.FRONTEND_CLOUDFLARE_URL
 ];
 
 const isLocalOrigin = (url: string): boolean => {
