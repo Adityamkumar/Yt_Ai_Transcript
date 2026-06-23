@@ -625,22 +625,49 @@ export async function* streamAiAboutPdf(
 
 export const generatePdfTitle = async (sampleText: string) => {
   try {
-    const prompt = `
-Generate a concise searchable title based on this document text sample.
+    // Skip intro/header noise — start sampling from a bit into the document
+    const trimmed = sampleText.slice(200, 2200);
 
-RULES:
-- 2-5 words
-- Educational / Professional
-- Topic-focused
-- No quotes
-- No filler words
+    const prompt = `You are a document title generator. Read the text below and output ONLY a short title.
 
-Sample Text:
-${sampleText.slice(0, 3000)}
-`;
+STRICT RULES:
+- Output ONLY the title text, nothing else
+- Maximum 5 words
+- Must describe the document's main topic
+- Do NOT copy any sentences from the text
+- Do NOT include quotes, asterisks, markdown, or punctuation
+- Do NOT write explanations or preambles
+- If the document is about a guide or tutorial, name the subject
+
+GOOD examples: "Prompt Engineering Guide", "React Hooks Tutorial", "Machine Learning Basics", "Python Data Structures"
+BAD examples: "paragraph breaks or bullet points to organize...", "This document covers..."
+
+Document text:
+${trimmed}
+
+Title:`;
 
     const text = await aiProviderService.generateResponse(prompt);
-    return text.trim().replace(/["']/g, "").replace(/\*\*/g, "");
+
+    let title = text
+      .trim()
+      .replace(/^(title:\s*)/i, "")
+      .replace(/[\"'`*#\n\r]/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    // Hard limit: if AI still returns something too long, take only the first 5 words
+    const words = title.split(" ");
+    if (words.length > 6) {
+      title = words.slice(0, 5).join(" ");
+    }
+
+    // If the title is absurdly long in characters, truncate
+    if (title.length > 50) {
+      title = title.slice(0, 47) + "...";
+    }
+
+    return title || "New Document";
   } catch {
     return "New Document";
   }
