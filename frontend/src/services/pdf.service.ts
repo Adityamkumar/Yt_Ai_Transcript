@@ -6,22 +6,18 @@ export const pdfService = {
     const formData = new FormData();
     formData.append("file", file);
 
-    const url = `${getApiBaseUrl()}/api/v1/pdf/upload`;
+    const response = await axiosInstance.post<ApiResponse<IConversation>>(
+      "/api/v1/pdf/upload",
+      formData,
+      {
+        headers: {
+          "Content-Type": undefined as any, // Let the browser set multipart/form-data with boundary
+        },
+        timeout: 120000, // 2 minutes for large PDFs on slow mobile networks
+      },
+    );
 
-    const response = await fetch(url, {
-      method: "POST",
-      credentials: "include",
-      body: formData,
-      // Do NOT set Content-Type — the browser must set it with the multipart boundary
-    });
-
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: "PDF upload failed" }));
-      throw new Error(error.message || "PDF upload failed");
-    }
-
-    const data = await response.json();
-    return data.data;
+    return response.data.data;
   },
 
   getPdfStatus: async (documentId: string) => {

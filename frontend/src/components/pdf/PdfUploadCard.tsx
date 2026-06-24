@@ -30,7 +30,12 @@ export function PdfUploadCard({ onUploadSuccess, onUploadingStateChange }: PdfUp
 
   const validateAndUpload = async (selectedFile: File) => {
     setErrorMsg(null);
-    if (selectedFile.type !== "application/pdf" && !selectedFile.name.endsWith(".pdf")) {
+    // Mobile devices often report incorrect MIME types (octet-stream, empty, etc.)
+    // Accept by MIME or by .pdf extension, matching backend multer filter
+    const acceptableMimes = ["application/pdf", "application/octet-stream", ""];
+    const isPdfByMime = acceptableMimes.includes(selectedFile.type);
+    const isPdfByExt = selectedFile.name.toLowerCase().endsWith(".pdf");
+    if (!isPdfByMime && !isPdfByExt) {
       setErrorMsg("Only PDF documents are supported");
       toast.error("Invalid file format. Please upload a PDF.");
       return;
@@ -130,7 +135,7 @@ export function PdfUploadCard({ onUploadSuccess, onUploadingStateChange }: PdfUp
           <input
             ref={inputRef}
             type="file"
-            accept=".pdf,application/pdf"
+            accept=".pdf,application/pdf,application/octet-stream"
             onChange={handleChange}
             className="hidden"
             disabled={isUploading}
