@@ -10,9 +10,9 @@ export const pdfService = {
       "/api/v1/pdf/upload",
       formData,
       {
-        headers: {
-          "Content-Type": undefined as any, // Let the browser set multipart/form-data with boundary
-        },
+        // headers: {
+        //   "Content-Type": undefined as any, // Let the browser set multipart/form-data with boundary
+        // },
         timeout: 120000, // 2 minutes for large PDFs on slow mobile networks
       },
     );

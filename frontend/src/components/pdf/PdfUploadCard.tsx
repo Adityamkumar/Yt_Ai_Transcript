@@ -30,8 +30,7 @@ export function PdfUploadCard({ onUploadSuccess, onUploadingStateChange }: PdfUp
 
   const validateAndUpload = async (selectedFile: File) => {
     setErrorMsg(null);
-    // Mobile devices often report incorrect MIME types (octet-stream, empty, etc.)
-    // Accept by MIME or by .pdf extension, matching backend multer filter
+  
     const acceptableMimes = ["application/pdf", "application/octet-stream", ""];
     const isPdfByMime = acceptableMimes.includes(selectedFile.type);
     const isPdfByExt = selectedFile.name.toLowerCase().endsWith(".pdf");
@@ -47,7 +46,6 @@ export function PdfUploadCard({ onUploadSuccess, onUploadingStateChange }: PdfUp
       return;
     }
 
-    // Check if the file is readable in the browser (handles mobile permission errors)
     try {
       await new Promise<void>((resolve, reject) => {
         const reader = new FileReader();
