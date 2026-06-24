@@ -17,8 +17,8 @@ const upload = multer({
     fileSize: 10 * 1024 * 1024, 
   },
   fileFilter: (req, file, cb) => {
-    const isPdfMime = file.mimetype === "application/pdf";
-    const isPdfExt = file.originalname.toLowerCase().endsWith(".pdf");
+    const isPdfMime = ["application/pdf", "application/octet-stream"].includes(file.mimetype);
+    const isPdfExt = file.originalname.toLowerCase().endsWith(".pdf")
     if (isPdfMime || isPdfExt) {
       cb(null, true);
     } else {

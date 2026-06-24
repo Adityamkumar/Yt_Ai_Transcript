@@ -8,12 +8,10 @@ import { Types } from "mongoose";
 
 
 
+
 export const hashPdfBuffer = (buffer: Buffer): string => {
   return crypto.createHash("sha256").update(buffer).digest("hex");
 };
-
-
-
 
 
 export const processPdfUpload = async (
