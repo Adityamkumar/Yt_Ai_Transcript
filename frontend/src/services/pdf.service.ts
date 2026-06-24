@@ -6,13 +6,13 @@ export const pdfService = {
     const formData = new FormData();
     formData.append("file", file);
 
+    console.log("Selected file:", file.name);
+    console.log("File size:", file.size);
+    console.log("File type:", file.type);
     const response = await axiosInstance.post<ApiResponse<IConversation>>(
       "/api/v1/pdf/upload",
       formData,
       {
-        // headers: {
-        //   "Content-Type": undefined as any, // Let the browser set multipart/form-data with boundary
-        // },
         timeout: 120000, // 2 minutes for large PDFs on slow mobile networks
       },
     );
