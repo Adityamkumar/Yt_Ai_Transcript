@@ -5,9 +5,6 @@ import { createHighlighter, type Highlighter } from 'shiki';
 import { getLanguageConfig } from './languageBadge.config';
 
 
-import 'devicon/devicon.min.css';
-
-
 let highlighterPromise: Promise<Highlighter> | null = null;
 
 function getHighlighterInstance(): Promise<Highlighter> {
@@ -49,10 +46,10 @@ function LanguageBadge({ language }: LanguageBadgeProps) {
       className="flex items-center gap-2 h-7 px-2.5 rounded-md border border-[var(--border-soft)] bg-[#111622]/65 hover:bg-[#111622]/85 hover:border-[var(--border-medium)] transition-all text-[var(--text-secondary)] select-none"
       aria-label={`${config.displayName} code block`}
     >
-      {config.iconType === 'devicon' ? (
-        <i
-          className={`${config.icon as string} text-[14px] shrink-0`}
-          style={{ color: config.color }}
+      {config.iconType === 'svg-raw' ? (
+        <div
+          className="w-3.5 h-3.5 shrink-0 flex items-center justify-center [&>svg]:w-full [&>svg]:h-full"
+          dangerouslySetInnerHTML={{ __html: config.icon as string }}
           aria-hidden="true"
         />
       ) : (
@@ -71,6 +68,8 @@ function LanguageBadge({ language }: LanguageBadgeProps) {
   );
 }
 
+const htmlCache = new Map<string, string>();
+
 interface CodeBlockProps {
   code: string;
   language?: string;
@@ -85,6 +84,13 @@ export function CodeBlock({ code, language = '' }: CodeBlockProps) {
     let active = true;
 
     const highlightCode = async () => {
+      const cacheKey = `${language}:${code}`;
+      if (htmlCache.has(cacheKey)) {
+        setHighlightedHtml(htmlCache.get(cacheKey)!);
+        setLoading(false);
+        return;
+      }
+
       try {
         const highlighter = await getHighlighterInstance();
         if (!active) return;
@@ -111,6 +117,8 @@ export function CodeBlock({ code, language = '' }: CodeBlockProps) {
           lang: targetLang,
           theme: 'one-dark-pro',
         });
+
+        htmlCache.set(cacheKey, html);
 
         if (active) {
           setHighlightedHtml(html);

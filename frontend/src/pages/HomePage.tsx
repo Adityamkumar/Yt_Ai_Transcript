@@ -1,11 +1,13 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState, lazy, Suspense } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { Youtube, FileText } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { ChatContainer } from '@/components/ChatContainer';
-import { PdfChatContainer } from '@/components/pdf/PdfChatContainer';
+
+const ChatContainer = lazy(() => import('@/components/ChatContainer').then(m => ({ default: m.ChatContainer })));
+const PdfChatContainer = lazy(() => import('@/components/pdf/PdfChatContainer').then(m => ({ default: m.PdfChatContainer })));
+
 import { PdfUploadCard } from '@/components/pdf/PdfUploadCard';
 import { PdfIndexingStatus } from '@/components/pdf/PdfIndexingStatus';
 import { GreetingHero } from '@/components/chat/GreetingHero';
@@ -88,19 +90,28 @@ export default function HomePage({ onActionReady }: HomePageProps) {
           exit="exit"
           className="h-full min-h-0 w-full"
         >
-          {activeConversation.type === 'pdf' ? (
-            <PdfChatContainer
-              conversationId={activeConversation._id}
-              pdf={activeConversation.pdfDocumentId as PdfDocument}
-              onActionReady={onActionReady}
-            />
-          ) : (
-            <ChatContainer
-              conversationId={activeConversation._id}
-              video={typeof activeConversation.videoId === 'string' ? { _id: activeConversation.videoId } as any : activeConversation.videoId}
-              onActionReady={onActionReady}
-            />
-          )}
+          <Suspense fallback={
+            <div className="flex h-full w-full items-center justify-center bg-[var(--canvas)]">
+              <div className="flex flex-col items-center gap-3">
+                <div className="w-8 h-8 border-4 border-[#7C5CFF] border-t-transparent rounded-full animate-spin" />
+                <span className="text-xs text-[var(--text-muted)] animate-pulse">Initializing workspace...</span>
+              </div>
+            </div>
+          }>
+            {activeConversation.type === 'pdf' ? (
+              <PdfChatContainer
+                conversationId={activeConversation._id}
+                pdf={activeConversation.pdfDocumentId as PdfDocument}
+                onActionReady={onActionReady}
+              />
+            ) : (
+              <ChatContainer
+                conversationId={activeConversation._id}
+                video={typeof activeConversation.videoId === 'string' ? { _id: activeConversation.videoId } as any : activeConversation.videoId}
+                onActionReady={onActionReady}
+              />
+            )}
+          </Suspense>
         </motion.div>
       ) : (
         <motion.div

@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;600;700&family=JetBrains+Mono:wght@400;500&family=Lora:ital,wght@0,400;0,500;1,400&display=swap');
 @import "tailwindcss";
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
+/* @import "tw-animate-css"; */
+/* @import "shadcn/tailwind.css"; */
 @import "@fontsource-variable/geist";
 
 @custom-variant dark (&:is(.dark *));
@@ -502,14 +502,6 @@ p {
   font-size: inherit !important;
 }
 
-/* Devicon font normalization */
-i[class^="devicon-"], i[class*=" devicon-"] {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;
-  font-style: normal;
-}
 
 /* ──────────────────────────────────────────
    9. STREAMING CURSOR

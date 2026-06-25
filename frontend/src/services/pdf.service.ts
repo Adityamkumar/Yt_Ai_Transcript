@@ -3,8 +3,7 @@ import { ApiResponse, IConversation, PdfAskPayload } from "@/types";
 
 export const pdfService = {
  uploadPdf: async (file: File): Promise<IConversation> => {
-  // Clone the file into memory
-  const fileBuffer  = await file.arrayBuffer();
+ const fileBuffer  = await file.arrayBuffer();
 
   const uploadFile = new File(
     [fileBuffer],

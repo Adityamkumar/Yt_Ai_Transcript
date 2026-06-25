@@ -1,4 +1,4 @@
-import { Children, cloneElement, isValidElement, useCallback, useState, useRef, useEffect } from 'react';
+import { Children, cloneElement, isValidElement, useCallback, useState, useRef, useEffect, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Bot,
@@ -21,7 +21,7 @@ import { stripMarkdown } from '@/utils/stripMarkdown';
 import { fixInlineLists } from '@/utils/fixInlineLists';
 import { useFollowUpQuestions } from '@/hooks/useFollowUpQuestions';
 import { FollowUpQuestions } from '@/components/chat/FollowUpQuestions';
-import { CodeBlock } from './chat/CodeBlock';
+const CodeBlock = lazy(() => import('./chat/CodeBlock').then(m => ({ default: m.CodeBlock })));
 import { CitationChip } from './chat/CitationChip';
 
 export function renderCitations(content: string): string {
@@ -180,7 +180,23 @@ export function MessageBubble({
       const isBlockCode = Boolean(language) || (typeof children === 'string' && children.includes('\n'));
 
       if (isBlockCode) {
-        return <CodeBlock code={String(children).replace(/\n$/, '')} language={language} />;
+        const rawCode = String(children).replace(/\n$/, '');
+        return (
+          <Suspense fallback={
+            <div className="my-4 overflow-hidden rounded-xl border border-[var(--border-soft)] bg-[#0b0e14] shadow-lg">
+              <div className="flex h-11 items-center justify-between border-b border-[var(--border-soft)] bg-[#0e121a] px-4 text-xs font-medium text-[var(--text-secondary)] select-none">
+                <div className="flex items-center gap-2 h-7 px-2.5 rounded-md border border-[var(--border-soft)] bg-[#111622]/65 text-[var(--text-secondary)] font-sans text-[11px] font-medium tracking-wide">
+                  {language || 'Code'}
+                </div>
+              </div>
+              <div className="relative overflow-x-auto pl-6 pr-4 py-4 font-mono text-[13px] leading-relaxed no-scrollbar max-w-full">
+                <pre className="whitespace-pre text-gray-100">{rawCode}</pre>
+              </div>
+            </div>
+          }>
+            <CodeBlock code={rawCode} language={language} />
+          </Suspense>
+        );
       }
 
       return (
