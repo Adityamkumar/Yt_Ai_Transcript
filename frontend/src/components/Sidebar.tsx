@@ -241,7 +241,7 @@ export function Sidebar({ onNewChat }: SidebarProps) {
                             setDeleteModalOpen(true);
                           }}
                           aria-label={`Delete ${conv.title}`}
-                          className="absolute right-2 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-lg text-[var(--text-muted)] opacity-0 transition-all hover:bg-[var(--danger-subtle)] hover:text-[var(--danger)] group-hover:opacity-100"
+                          className="absolute right-2 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-lg text-[var(--text-muted)] opacity-100 lg:opacity-0 transition-all hover:bg-[var(--danger-subtle)] hover:text-[var(--danger)] lg:group-hover:opacity-100"
                         >
                           <Trash2 size={13} />
                         </button>

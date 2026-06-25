@@ -33,13 +33,13 @@ export function PdfIndexingStatus({ fileName }: PdfIndexingStatusProps) {
   }, []);
 
   return (
-    <div className="mx-auto w-full max-w-[500px] rounded-3xl border border-white/[0.08] bg-[#070a10]/80 p-6 shadow-[0_24px_80px_rgba(0,0,0,0.5)] backdrop-blur-2xl">
+    <div className="mx-auto w-full max-w-[500px] rounded-3xl border border-white/[0.08] bg-[#070a10]/80 p-4 sm:p-6 shadow-[0_24px_80px_rgba(0,0,0,0.5)] backdrop-blur-2xl">
       <div className="mb-6 text-center">
-        <span className="rounded-full bg-[rgba(139,156,255,0.1)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--accent)]">
+        <span className="inline-block rounded-full bg-[rgba(139,156,255,0.1)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--accent)]">
           Indexing Pipeline
         </span>
-        <h3 className="mt-3 text-lg font-semibold text-white truncate max-w-full">
-          Processing "{fileName}"
+        <h3 className="mt-3 text-base sm:text-lg font-semibold text-white mx-auto max-w-full px-2">
+          <span className="block truncate text-center">Processing &quot;{fileName}&quot;</span>
         </h3>
         <p className="mt-1.5 text-xs text-[var(--text-muted)]">
           Structuring source files for grounded AI workspace chat.
