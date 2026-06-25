@@ -31,7 +31,7 @@ export function PdfUploadCard({ onUploadSuccess, onUploadingStateChange }: PdfUp
   const validateAndUpload = async (selectedFile: File) => {
     setErrorMsg(null);
   
-    const acceptableMimes = ["application/pdf", "application/octet-stream", ""];
+    const acceptableMimes = ["application/pdf"];
     const isPdfByMime = acceptableMimes.includes(selectedFile.type);
     const isPdfByExt = selectedFile.name.toLowerCase().endsWith(".pdf");
     if (!isPdfByMime && !isPdfByExt) {
@@ -133,7 +133,7 @@ export function PdfUploadCard({ onUploadSuccess, onUploadingStateChange }: PdfUp
           <input
             ref={inputRef}
             type="file"
-            accept=".pdf,application/pdf,application/octet-stream"
+            accept=".pdf,application/pdf"
             onChange={handleChange}
             className="hidden"
             disabled={isUploading}

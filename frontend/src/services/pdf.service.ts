@@ -2,23 +2,35 @@ import axiosInstance, { getApiBaseUrl } from "@/lib/axios";
 import { ApiResponse, IConversation, PdfAskPayload } from "@/types";
 
 export const pdfService = {
-  uploadPdf: async (file: File): Promise<IConversation> => {
-    const formData = new FormData();
-    formData.append("file", file);
+ uploadPdf: async (file: File): Promise<IConversation> => {
+  // Clone the file into memory
+  const buffer = await file.arrayBuffer();
 
-    console.log("Selected file:", file.name);
-    console.log("File size:", file.size);
-    console.log("File type:", file.type);
-    const response = await axiosInstance.post<ApiResponse<IConversation>>(
-      "/api/v1/pdf/upload",
-      formData,
-      {
-        timeout: 120000, // 2 minutes for large PDFs on slow mobile networks
-      },
-    );
+  const clonedFile = new File(
+    [buffer],
+    file.name,
+    {
+      type: file.type,
+      lastModified: file.lastModified,
+    }
+  );
 
-    return response.data.data;
-  },
+  const formData = new FormData();
+  formData.append("file", clonedFile);
+
+  console.log("Original File:", file);
+  console.log("Cloned File:", clonedFile);
+
+  const response = await axiosInstance.post<ApiResponse<IConversation>>(
+    "/api/v1/pdf/upload",
+    formData,
+    {
+      timeout: 120000,
+    },
+  );
+
+  return response.data.data;
+},
 
   getPdfStatus: async (documentId: string) => {
     const response = await axiosInstance.get<
