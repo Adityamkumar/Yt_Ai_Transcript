@@ -46,20 +46,6 @@ export function PdfUploadCard({ onUploadSuccess, onUploadingStateChange }: PdfUp
       return;
     }
 
-    try {
-      await new Promise<void>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve();
-        reader.onerror = () => reject(reader.error);
-        reader.readAsArrayBuffer(selectedFile.slice(0, 100));
-      });
-    } catch (e: any) {
-      const errMsg = `Cannot read file: ${e?.message || "Access denied"}. Try copying the file to local Downloads first.`;
-      setErrorMsg(errMsg);
-      toast.error(errMsg);
-      return;
-    }
-
     setFile(selectedFile);
     setIsUploading(true);
     onUploadingStateChange?.(true);

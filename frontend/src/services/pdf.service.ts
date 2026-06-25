@@ -4,10 +4,10 @@ import { ApiResponse, IConversation, PdfAskPayload } from "@/types";
 export const pdfService = {
  uploadPdf: async (file: File): Promise<IConversation> => {
   // Clone the file into memory
-  const buffer = await file.arrayBuffer();
+  const fileBuffer  = await file.arrayBuffer();
 
-  const clonedFile = new File(
-    [buffer],
+  const uploadFile = new File(
+    [fileBuffer],
     file.name,
     {
       type: file.type,
@@ -16,10 +16,7 @@ export const pdfService = {
   );
 
   const formData = new FormData();
-  formData.append("file", clonedFile);
-
-  console.log("Original File:", file);
-  console.log("Cloned File:", clonedFile);
+  formData.append("file", uploadFile);
 
   const response = await axiosInstance.post<ApiResponse<IConversation>>(
     "/api/v1/pdf/upload",
