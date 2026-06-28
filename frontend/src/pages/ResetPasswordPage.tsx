@@ -81,7 +81,7 @@ export default function ResetPasswordPage() {
                 <span className="text-sm font-medium">Reset link is invalid or expired</span>
               </div>
               <p className="text-xs text-[var(--text-secondary)] mb-4">For security, password reset links are time-limited and single-use. Request a new reset link to continue.</p>
-              <Link to="/forgot-password" className="inline-flex items-center gap-2 text-xs px-3 py-2 rounded-lg bg-[var(--accent)] text-white hover:bg-[var(--accent-strong)] transition-colors">
+              <Link to="/forgot-password" className="inline-flex items-center gap-2 text-xs px-3 py-2 rounded-lg bg-[var(--accent)] text-neutral-950 hover:bg-[var(--accent-strong)] transition-colors">
                 Request New Link
                 <ArrowRight size={13} />
               </Link>
@@ -95,7 +95,7 @@ export default function ResetPasswordPage() {
               </div>
               <p className="text-sm text-[var(--text-primary)] mb-1">Password reset successful</p>
               <p className="text-xs text-[var(--text-secondary)] mb-4">Your password has been updated. You can now sign in with your new password.</p>
-              <Link to="/login" className="inline-flex items-center gap-2 text-xs px-3 py-2 rounded-lg bg-[var(--accent)] text-white hover:bg-[var(--accent-strong)] transition-colors">
+              <Link to="/login" className="inline-flex items-center gap-2 text-xs px-3 py-2 rounded-lg bg-[var(--accent)] text-neutral-950 hover:bg-[var(--accent-strong)] transition-colors">
                 Go to Login
                 <ArrowRight size={13} />
               </Link>

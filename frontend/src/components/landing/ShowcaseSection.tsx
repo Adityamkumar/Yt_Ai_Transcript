@@ -383,7 +383,7 @@ export function ShowcaseSection() {
                           className={`max-w-[85%] px-3.5 py-2.5 rounded-2xl text-[11px] leading-relaxed ${
                             isAi
                               ? 'bg-[var(--surface-1)] border border-[var(--border-medium)] text-[var(--text-primary)] rounded-tl-sm shadow-sm'
-                              : 'bg-[var(--accent)] text-white rounded-tr-sm font-medium'
+                              : 'bg-[var(--accent)] text-neutral-950 rounded-tr-sm font-medium'
                           }`}
                         >
                           {msg.content.split('\n').map((line, lIdx) => (

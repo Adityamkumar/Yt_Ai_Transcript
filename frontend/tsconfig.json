@@ -12,7 +12,6 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "baseUrl": ".",
-    "ignoreDeprecations": "5.0",
     "paths": {
       "@/*": ["./src/*"]
     },
@@ -20,7 +19,6 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
-    "ignoreDeprecations": "6.0",
     "types": ["vite/client"]
   },
   "include": ["src"]

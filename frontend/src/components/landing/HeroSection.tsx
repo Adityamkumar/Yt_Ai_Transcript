@@ -7,6 +7,7 @@ import {
   Database, BrainCircuit, Terminal, ArrowUpRight, Check
 } from 'lucide-react';
 import { BackgroundBeams } from '@/components/ui/background-beams';
+import { Cover } from '@/components/ui/cover';
 
 
 export function HeroSection() {
@@ -140,28 +141,14 @@ export function HeroSection() {
       style={{ background: 'var(--canvas)' }}
     >
       {/* Background Animated Beams */}
-      <BackgroundBeams className="opacity-35 pointer-events-none" />
+      <BackgroundBeams className="opacity-45 pointer-events-none" />
 
 
-      {/* Decorative Blur Orbs */}
-      <div
-        className="absolute inset-y-0 w-screen left-1/2 -translate-x-1/2 pointer-events-none overflow-hidden"
-        style={{
-          background:
-            'radial-gradient(ellipse 60% 40% at 50% -10%, rgba(139,156,247,0.12) 0%, transparent 60%)',
-        }}
-      />
-      <div
-        className="absolute inset-y-0 w-screen left-1/2 -translate-x-1/2 pointer-events-none overflow-hidden"
-        style={{
-          background:
-            'radial-gradient(ellipse 40% 40% at 85% 75%, rgba(77,162,255,0.06) 0%, transparent 60%)',
-        }}
-      />
+
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         {/* Mobile-First Layout Grid: Stacks on mobile, splits into 12 columns on large screens */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 xl:gap-24 items-center">
           
           {/* Column Left: Copy and Static CTAs */}
           <div className="lg:col-span-6 xl:col-span-6 flex flex-col items-start text-left max-w-2xl lg:max-w-none">
@@ -186,9 +173,8 @@ export function HeroSection() {
               className="text-4xl sm:text-5xl lg:text-5xl xl:text-6xl font-bold tracking-tight text-[var(--text-primary)] leading-[1.15] mb-6 font-sans"
             >
               Turn YouTube videos and documents into{' '}
-              <span className="font-serif italic font-normal text-[var(--accent)] text-4xl sm:text-5xl lg:text-5xl xl:text-6xl leading-[1.15] inline-block pr-1">
-                intelligent conversations
-              </span>
+              <br />
+              <Cover>intelligent conversations</Cover>
               .
             </motion.h1>
 
@@ -203,17 +189,16 @@ export function HeroSection() {
               dialogues from your media library. Crafted for students, writers, and thorough researchers.
             </motion.p>
 
-            {/* CTA Buttons */}
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
-              className="flex flex-col sm:flex-row items-center gap-3.5 w-full sm:w-auto"
+              className="flex flex-col sm:flex-row items-center gap-3.5 w-full sm:w-auto mt-8"
             >
               <Link
                 to="/signup"
                 id="hero-cta-primary"
-                className="w-full sm:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-[#7c5cff] to-[#4da2ff] hover:from-[#6c4cef] hover:to-[#3da2ef] text-white text-xs font-semibold flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-md shadow-indigo-950/30"
+                className="w-full sm:w-auto px-6 py-3 rounded-xl bg-white hover:bg-neutral-200 text-neutral-900 text-xs font-semibold flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-md shadow-black/30"
               >
                 <span>Create Account</span>
                 <ArrowRight size={13} />
@@ -255,7 +240,7 @@ export function HeroSection() {
                         onClick={() => { setSourceType('youtube'); setInputUrl(''); }}
                         className={`px-2.5 py-1 rounded-md text-[10px] font-semibold transition-all flex items-center justify-center flex-1 sm:flex-none gap-1.5 ${
                           sourceType === 'youtube'
-                            ? 'bg-[var(--accent)] text-white shadow-sm'
+                            ? 'bg-[var(--accent)] text-neutral-950 shadow-sm'
                             : 'text-[var(--text-secondary)] hover:text-white'
                         }`}
                       >
@@ -266,7 +251,7 @@ export function HeroSection() {
                         onClick={() => { setSourceType('pdf'); setInputUrl(''); }}
                         className={`px-2.5 py-1 rounded-md text-[10px] font-semibold transition-all flex items-center justify-center flex-1 sm:flex-none gap-1.5 ${
                           sourceType === 'pdf'
-                            ? 'bg-[var(--accent)] text-white shadow-sm'
+                            ? 'bg-[var(--accent)] text-neutral-950 shadow-sm'
                             : 'text-[var(--text-secondary)] hover:text-white'
                         }`}
                       >
@@ -292,7 +277,7 @@ export function HeroSection() {
                         </div>
                         <button
                           onClick={startSimulation}
-                          className="w-full sm:w-auto px-5 py-3 rounded-xl bg-[var(--accent)] hover:bg-[var(--accent-strong)] text-white text-xs font-semibold flex items-center justify-center gap-2 shadow-md hover:shadow-[0_0_16px_rgba(139,156,247,0.3)] transition-all active:scale-[0.98]"
+                          className="w-full sm:w-auto px-5 py-3 rounded-xl bg-[var(--accent)] hover:bg-[var(--accent-strong)] text-neutral-950 text-xs font-semibold flex items-center justify-center gap-2 shadow-md hover:shadow-[0_0_16px_rgba(139,156,247,0.3)] transition-all active:scale-[0.98]"
                         >
                           <Sparkles size={13} />
                           <span>Index</span>
@@ -484,7 +469,7 @@ export function HeroSection() {
                   <div className="pt-2 border-t border-[var(--border-soft)] flex justify-end">
                     <Link
                       to="/signup"
-                      className="px-4 py-2 rounded-lg bg-[var(--accent-subtle)] hover:bg-[var(--accent)] border border-[var(--accent)] text-[var(--accent)] hover:text-white text-[11px] font-semibold flex items-center gap-1.5 transition-all active:scale-[0.98] shadow-sm"
+                      className="px-4 py-2 rounded-lg bg-[var(--accent-subtle)] hover:bg-[var(--accent)] border border-[var(--accent)] text-[var(--accent)] hover:text-neutral-950 text-[11px] font-semibold flex items-center gap-1.5 transition-all active:scale-[0.98] shadow-sm"
                     >
                       <span>Access full workspace</span>
                       <ArrowUpRight size={12} />

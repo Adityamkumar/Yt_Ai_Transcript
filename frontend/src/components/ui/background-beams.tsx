@@ -6,6 +6,10 @@ import { cn } from "@/utils/cn";
 export const BackgroundBeams = React.memo(
   ({ className }: { className?: string }) => {
     const paths = [
+      "M-408 -157C-408 -157 -340 248 124 375C588 502 656 907 656 907",
+      "M-401 -165C-401 -165 -333 240 131 367C595 494 663 899 663 899",
+      "M-394 -173C-394 -173 -326 232 138 359C602 486 670 891 670 891",
+      "M-387 -181C-387 -181 -319 224 145 351C609 478 677 883 677 883",
       "M-380 -189C-380 -189 -312 216 152 343C616 470 684 875 684 875",
       "M-373 -197C-373 -197 -305 208 159 335C623 462 691 867 691 867",
       "M-366 -205C-366 -205 -298 200 166 327C630 454 698 859 698 859",
@@ -56,6 +60,12 @@ export const BackgroundBeams = React.memo(
       "M-51 -565C-51 -565 17 -160 481 -33C945 94 1013 499 1013 499",
       "M-44 -573C-44 -573 24 -168 488 -41C952 86 1020 491 1020 491",
       "M-37 -581C-37 -581 31 -176 495 -49C959 78 1027 483 1027 483",
+      "M-30 -589C-30 -589 38 -184 502 -57C966 70 1034 475 1034 475",
+      "M-23 -597C-23 -597 45 -192 509 -65C973 62 1041 467 1041 467",
+      "M-16 -605C-16 -605 52 -200 516 -73C980 54 1048 459 1048 459",
+      "M-9 -613C-9 -613 59 -208 523 -81C987 46 1055 451 1055 451",
+      "M-2 -621C-2 -621 66 -216 530 -89C994 38 1062 443 1062 443",
+      "M5 -629C5 -629 73 -224 537 -97C1001 30 1069 435 1069 435",
     ];
     return (
       <div
@@ -84,8 +94,8 @@ export const BackgroundBeams = React.memo(
               key={`path-` + index}
               d={path}
               stroke={`url(#linearGradient-${index})`}
-              strokeOpacity="0.4"
-              strokeWidth="0.5"
+              strokeOpacity="0.5"
+              strokeWidth="0.6"
             ></motion.path>
           ))}
           <defs>
@@ -112,9 +122,11 @@ export const BackgroundBeams = React.memo(
                   delay: Math.random() * 10,
                 }}
               >
-                <stop stopColor="#18CCFC" stopOpacity="0"></stop>
-                <stop stopColor="#18CCFC"></stop>
-                <stop offset="32.5%" stopColor="#6344F5"></stop>
+                <stop offset="0%" stopColor="#18CCFC" stopOpacity="0"></stop>
+                <stop offset="15%" stopColor="#18CCFC" stopOpacity="0"></stop>
+                <stop offset="25%" stopColor="#18CCFC" stopOpacity="1"></stop>
+                <stop offset="35%" stopColor="#6344F5" stopOpacity="1"></stop>
+                <stop offset="45%" stopColor="#AE48FF" stopOpacity="0"></stop>
                 <stop offset="100%" stopColor="#AE48FF" stopOpacity="0"></stop>
               </motion.linearGradient>
             ))}
