@@ -86,7 +86,7 @@ export function GreetingHero() {
         className="text-xl sm:text-2xl md:text-3xl font-medium tracking-tight text-center w-full max-w-full md:max-w-3xl leading-snug break-words px-1"
       >
         {parsedGreeting.before}
-        <span className="bg-gradient-to-r from-[var(--accent)] to-[var(--accent-strong)] bg-clip-text text-transparent font-semibold">
+        <span className="bg-gradient-to-r from-[var(--accent)] to-[#6B9EF7] bg-clip-text text-transparent font-bold">
           {userName}
         </span>
         {parsedGreeting.after}
