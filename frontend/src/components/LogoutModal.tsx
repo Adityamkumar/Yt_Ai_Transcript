@@ -1,12 +1,11 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { AlertTriangle, Loader2, X } from "lucide-react";
+import { Loader2, LogOut, X } from "lucide-react";
 import { useState } from "react";
 
-interface DeleteChatModalProps {
+interface LogoutModalProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => Promise<void>;
-  chatTitle: string;
 }
 
 const overlayVariants = {
@@ -36,20 +35,20 @@ const modalVariants = {
   },
 };
 
-export function DeleteChatModal({ isOpen, onClose, onConfirm, chatTitle }: DeleteChatModalProps) {
-  const [isDeleting, setIsDeleting] = useState(false);
+export function LogoutModal({ isOpen, onClose, onConfirm }: LogoutModalProps) {
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const handleClose = () => {
-    if (isDeleting) return;
+    if (isLoggingOut) return;
     onClose();
   };
 
-  const handleDelete = async () => {
-    setIsDeleting(true);
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
     try {
       await onConfirm();
-    } finally {
-      setIsDeleting(false);
+    } catch (error) {
+      setIsLoggingOut(false);
     }
   };
 
@@ -85,20 +84,20 @@ export function DeleteChatModal({ isOpen, onClose, onConfirm, chatTitle }: Delet
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
                   <span className="grid h-10 w-10 place-items-center rounded-xl border border-[var(--accent)]/20 bg-[var(--accent-subtle)]">
-                    <AlertTriangle size={20} className="text-[var(--accent)]" />
+                    <LogOut size={18} className="text-[var(--accent)]" />
                   </span>
                   <div>
                     <h2 className="text-base font-semibold text-white">
-                      Delete Chat
+                      Sign Out
                     </h2>
                     <p className="text-xs text-[var(--text-muted)]">
-                      This action is permanent
+                      Confirm logout from account
                     </p>
                   </div>
                 </div>
                 <button
                   onClick={handleClose}
-                  disabled={isDeleting}
+                  disabled={isLoggingOut}
                   className="grid h-8 w-8 place-items-center rounded-lg text-[var(--text-muted)] transition-colors hover:bg-white/[0.06] hover:text-white disabled:opacity-50"
                 >
                   <X size={17} />
@@ -107,15 +106,9 @@ export function DeleteChatModal({ isOpen, onClose, onConfirm, chatTitle }: Delet
             </div>
 
             {/* Content */}
-            <div className="px-6 py-5 space-y-3">
+            <div className="px-6 py-5">
               <p className="text-sm leading-relaxed text-[var(--text-secondary)]">
-                Are you sure you want to delete the conversation:
-              </p>
-              <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-3.5 py-2.5 text-sm font-medium text-white truncate">
-                "{chatTitle}"
-              </div>
-              <p className="text-[12px] leading-normal text-[var(--text-muted)]">
-                All messages and indexed workspace resources for this chat will be permanently removed.
+                Are you sure you want to sign out of your EchoMind AI account? You will need to log back in to access your workspace conversations and bookmarks.
               </p>
             </div>
 
@@ -123,23 +116,23 @@ export function DeleteChatModal({ isOpen, onClose, onConfirm, chatTitle }: Delet
             <div className="flex items-center gap-3 border-t border-white/[0.07] px-6 py-4">
               <button
                 onClick={handleClose}
-                disabled={isDeleting}
+                disabled={isLoggingOut}
                 className="flex-1 rounded-xl border border-white/[0.1] bg-white/[0.04] py-2.5 text-sm font-medium text-[var(--text-secondary)] transition-all hover:bg-white/[0.08] hover:text-white disabled:opacity-50 active:scale-[0.97]"
               >
                 Cancel
               </button>
               <button
-                onClick={handleDelete}
-                disabled={isDeleting}
+                onClick={handleLogout}
+                disabled={isLoggingOut}
                 className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-white hover:bg-neutral-200 py-2.5 text-sm font-semibold text-neutral-900 transition-all disabled:cursor-not-allowed disabled:opacity-40 active:scale-[0.97]"
               >
-                {isDeleting ? (
+                {isLoggingOut ? (
                   <>
                     <Loader2 size={15} className="animate-spin text-neutral-900" />
-                    <span>Deleting…</span>
+                    <span>Signing out…</span>
                   </>
                 ) : (
-                  <span>Delete Chat</span>
+                  <span>Sign Out</span>
                 )}
               </button>
             </div>

@@ -119,23 +119,20 @@ export function DeleteAccountModal({ isOpen, onClose }: Props) {
             onClick={handleClose}
           />
 
-          {}
           <motion.div
             variants={modalVariants}
             initial="hidden"
             animate="visible"
             exit="exit"
-            className="relative w-full max-w-sm overflow-hidden rounded-2xl border border-red-500/15 bg-[#0e1019]/98 shadow-2xl shadow-red-900/10 backdrop-blur-xl"
+            className="relative w-full max-w-sm overflow-hidden rounded-2xl border border-[var(--border-medium)] bg-[#0e1019]/98 shadow-2xl backdrop-blur-xl"
           >
-            {}
-            <div className="h-1 w-full bg-gradient-to-r from-red-600 via-red-500 to-orange-500" />
+            <div className="h-1 w-full bg-gradient-to-r from-[var(--accent)] via-[#6B9EF7] to-[#7C5CFF]" />
 
-            {}
             <div className="px-6 pt-5 pb-0">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
-                  <span className="grid h-10 w-10 place-items-center rounded-xl border border-red-500/20 bg-red-500/10">
-                    <AlertTriangle size={20} className="text-red-400" />
+                  <span className="grid h-10 w-10 place-items-center rounded-xl border border-[var(--accent)]/20 bg-[var(--accent-subtle)]">
+                    <AlertTriangle size={20} className="text-[var(--accent)]" />
                   </span>
                   <div>
                     <h2 className="text-base font-semibold text-white">
@@ -247,11 +244,11 @@ export function DeleteAccountModal({ isOpen, onClose }: Props) {
               <button
                 onClick={handleDelete}
                 disabled={isDeleting || (requiresPassword && !password.trim())}
-                className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-red-500/25 bg-red-500/15 py-2.5 text-sm font-semibold text-red-400 transition-all hover:bg-red-500/25 hover:text-red-300 hover:shadow-lg hover:shadow-red-500/10 disabled:cursor-not-allowed disabled:opacity-40 active:scale-[0.97]"
+                className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-white hover:bg-neutral-200 py-2.5 text-sm font-semibold text-neutral-900 transition-all disabled:cursor-not-allowed disabled:opacity-40 active:scale-[0.97]"
               >
                 {isDeleting ? (
                   <>
-                    <Loader2 size={15} className="animate-spin" />
+                    <Loader2 size={15} className="animate-spin text-neutral-900" />
                     <span>Deleting…</span>
                   </>
                 ) : (

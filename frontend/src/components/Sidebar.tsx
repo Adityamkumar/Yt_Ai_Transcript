@@ -26,6 +26,7 @@ import { useAuth } from '@/store/AuthContext';
 import { SettingsModal } from './SettingsModal';
 import { UserAvatar } from '@/components/auth/UserAvatar';
 import { DeleteChatModal } from './DeleteChatModal';
+import { LogoutModal } from '@/components/LogoutModal';
 
 interface SidebarProps {
   onNewChat: () => void;
@@ -42,6 +43,7 @@ export function Sidebar({ onNewChat }: SidebarProps) {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [conversationToDelete, setConversationToDelete] = useState<{ id: string; title: string } | null>(null);
+  const [logoutOpen, setLogoutOpen] = useState(false);
 
   const handleConversationClick = (id: string) => {
     navigate(`/workspace/${id}`);
@@ -262,7 +264,7 @@ export function Sidebar({ onNewChat }: SidebarProps) {
                 <span className="block text-[11px] text-[var(--text-muted)] truncate">{user?.email}</span>
               </span>
               <button
-                onClick={logout}
+                onClick={() => setLogoutOpen(true)}
                 title="Logout"
                 className="p-1.5 rounded-lg text-[var(--text-muted)] hover:bg-[var(--danger-subtle)] hover:text-[var(--danger)] transition-colors"
               >
@@ -288,6 +290,11 @@ export function Sidebar({ onNewChat }: SidebarProps) {
         }}
         onConfirm={handleConfirmDelete}
         chatTitle={conversationToDelete?.title || ""}
+      />
+      <LogoutModal
+        isOpen={logoutOpen}
+        onClose={() => setLogoutOpen(false)}
+        onConfirm={logout}
       />
     </>
   );

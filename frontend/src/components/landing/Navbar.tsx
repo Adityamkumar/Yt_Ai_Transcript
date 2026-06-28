@@ -5,6 +5,7 @@ import { Menu, X, Zap, Github, LayoutDashboard, LogOut, ChevronDown, Sun, Moon, 
 import { useAuth } from '@/store/AuthContext';
 import { UserAvatar } from '@/components/auth/UserAvatar';
 import { useTheme, ThemePreference } from '@/store/ThemeContext';
+import { LogoutModal } from '@/components/LogoutModal';
 
 const navLinks = [
   { label: 'Features', href: '#features' },
@@ -136,6 +137,7 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [logoutOpen, setLogoutOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
 
@@ -260,7 +262,7 @@ export function Navbar() {
                         name={user.name}
                         email={user.email}
                         avatar={user.avatar}
-                        onLogout={logout}
+                        onLogout={() => setLogoutOpen(true)}
                         onClose={() => setDropdownOpen(false)}
                       />
                     )}
@@ -388,7 +390,7 @@ export function Navbar() {
                       Dashboard
                     </Link>
                     <button
-                      onClick={logout}
+                      onClick={() => { setLogoutOpen(true); setMobileOpen(false); }}
                       className="w-full text-center py-2.5 text-sm text-red-400 hover:text-red-300 border border-red-500/20 hover:bg-red-500/[0.04] rounded-lg transition-all duration-200"
                     >
                       Sign out
@@ -416,6 +418,11 @@ export function Navbar() {
           </>
         )}
       </AnimatePresence>
+      <LogoutModal
+        isOpen={logoutOpen}
+        onClose={() => setLogoutOpen(false)}
+        onConfirm={logout}
+      />
     </>
   );
 }
