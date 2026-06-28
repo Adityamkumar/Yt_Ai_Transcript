@@ -12,6 +12,7 @@ interface AuthInputProps {
   minLength?: number;
   rightSlot?: React.ReactNode;
   hasError?: boolean;
+  disabled?: boolean;
 }
 
 export function AuthInput({
@@ -26,6 +27,7 @@ export function AuthInput({
   minLength,
   rightSlot,
   hasError,
+  disabled,
 }: AuthInputProps) {
   return (
     <div className="space-y-1.5">
@@ -42,7 +44,8 @@ export function AuthInput({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
-          className="w-full px-3.5 py-2.5 rounded-xl text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] transition-all duration-200 outline-none"
+          disabled={disabled}
+          className="w-full px-3.5 py-2.5 rounded-xl text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] transition-all duration-200 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
           style={{
             background: "var(--surface-3)",
             border: hasError ? "1px solid rgba(248, 113, 113, 0.45)" : "1px solid var(--border-soft)",
@@ -66,6 +69,7 @@ interface AuthPasswordInputProps {
   required?: boolean;
   minLength?: number;
   hasError?: boolean;
+  disabled?: boolean;
 }
 
 export function AuthPasswordInput({
@@ -80,6 +84,7 @@ export function AuthPasswordInput({
   required,
   minLength,
   hasError,
+  disabled,
 }: AuthPasswordInputProps) {
   return (
     <AuthInput
@@ -93,11 +98,13 @@ export function AuthPasswordInput({
       required={required}
       minLength={minLength}
       hasError={hasError}
+      disabled={disabled}
       rightSlot={
         <button
           type="button"
           onClick={onToggleVisible}
-          className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors duration-200"
+          disabled={disabled}
+          className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 text-[var(--text-muted)] hover:text-[var(--text-primary)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
         >
           {visible ? <EyeOff size={15} /> : <Eye size={15} />}
         </button>

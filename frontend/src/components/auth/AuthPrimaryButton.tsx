@@ -21,7 +21,7 @@ export function AuthPrimaryButton({
     <button
       type={type}
       disabled={disabled || isLoading}
-      className="relative w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold text-white overflow-hidden transition-all duration-300 hover:scale-[1.01] disabled:opacity-70 disabled:scale-100"
+      className="relative w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold text-white overflow-hidden transition-all duration-300 hover:scale-[1.01] disabled:opacity-70 disabled:scale-100 disabled:cursor-not-allowed"
     >
       <span className="absolute inset-0 bg-gradient-to-r from-[var(--accent)] to-[#6B9EF7]" />
       <span className="relative flex items-center gap-2">

@@ -10,6 +10,7 @@ class ApiError extends Error {
     stack = "",
   ) {
     super(message);
+    Object.setPrototypeOf(this, new.target.prototype);
     this.statusCode = statusCode;
     this.stack = stack;
     this.errors = errors;

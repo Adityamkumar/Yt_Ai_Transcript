@@ -13,6 +13,7 @@ import { sendEmail } from "../utils/sendEmail.js";
 import crypto from "node:crypto";
 import { generateResetPasswordEmail } from "../utils/emailTemplates.js";
 import { googleClient } from "../config/googleAuth.js";
+import { authRateLimiterService } from "../services/authRateLimiter.service.js";
 
 export const userRegister = asyncHandler(async (req, res) => {
   try {
@@ -57,23 +58,50 @@ export const userRegister = asyncHandler(async (req, res) => {
       },
     });
   } catch (error) {
+    if (error instanceof ApiError || (error && typeof error === "object" && "statusCode" in error)) {
+      throw error;
+    }
     throw new ApiError(500, "Internal server error!");
   }
 });
 
 export const userLogin = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
+  const ip = req.ip || req.socket.remoteAddress || "";
 
   try {
+    if (!email || !password || typeof password !== "string") {
+      throw new ApiError(401, "Invalid email or password");
+    }
+
     const user = await User.findOne({ email });
 
-    if (!user) {
-      throw new ApiError(400, "Invalid email or password!");
+    if (!user || !user.password) {
+      authRateLimiterService.recordFailure(ip);
+      if (authRateLimiterService.isBlocked(ip)) {
+        const retryAfter = authRateLimiterService.getRetryAfter(ip);
+        return res.status(429).json({
+          success: false,
+          message: "Too many failed login attempts. Please try again later.",
+          retryAfter,
+        });
+      }
+      throw new ApiError(401, "Invalid email or password");
     }
+
     const isPasswordMatched = await user.isPasswordCorrect(password);
 
     if (!isPasswordMatched) {
-      throw new ApiError(400, "Invalid email or password!");
+      authRateLimiterService.recordFailure(ip);
+      if (authRateLimiterService.isBlocked(ip)) {
+        const retryAfter = authRateLimiterService.getRetryAfter(ip);
+        return res.status(429).json({
+          success: false,
+          message: "Too many failed login attempts. Please try again later.",
+          retryAfter,
+        });
+      }
+      throw new ApiError(401, "Invalid email or password");
     }
 
     const { accessToken, refreshToken } =
@@ -82,6 +110,9 @@ export const userLogin = asyncHandler(async (req, res) => {
     const loggedInUser = await User.findById(user._id).select(
       "-password -refreshToken",
     );
+
+    // Reset rate limiter on successful login
+    authRateLimiterService.reset(ip);
 
     res.cookie("accessToken", accessToken, accessCookieOptions);
     res.cookie("refreshToken", refreshToken, refreshCookieOptions);
@@ -95,6 +126,9 @@ export const userLogin = asyncHandler(async (req, res) => {
       },
     });
   } catch (error) {
+    if (error instanceof ApiError || (error && typeof error === "object" && "statusCode" in error)) {
+      throw error;
+    }
     throw new ApiError(500, "Internal server error");
   }
 });
@@ -325,6 +359,9 @@ export const googleVerifyController = asyncHandler(async (req, res) => {
     });
   } catch (error: any) {
     console.error("Google authentication error:", error);
+    if (error instanceof ApiError || (error && typeof error === "object" && "statusCode" in error)) {
+      throw error;
+    }
     throw new ApiError(401, error.message || "Google authentication failed");
   }
 });

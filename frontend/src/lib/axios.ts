@@ -106,7 +106,11 @@ axiosInstance.interceptors.response.use(
         } else if (message === 'Network Error') {
             message = 'Network Error: The backend server is unreachable or CORS blocked the request.';
         }
-        return Promise.reject(new Error(message));
+        
+        const customError = new Error(message) as any;
+        customError.status = error.response?.status;
+        customError.retryAfter = error.response?.data?.retryAfter;
+        return Promise.reject(customError);
     }
 );
 

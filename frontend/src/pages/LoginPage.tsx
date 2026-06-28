@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight, AlertCircle } from "lucide-react";
@@ -22,6 +22,79 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({ email: "", password: "" });
 
+  const [lockedUntil, setLockedUntil] = useState<number | null>(() => {
+    const stored = localStorage.getItem("loginLockedUntil");
+    if (stored) {
+      const time = parseInt(stored, 10);
+      if (time > Date.now()) {
+        return time;
+      }
+      localStorage.removeItem("loginLockedUntil");
+    }
+    return null;
+  });
+  const [remainingTime, setRemainingTime] = useState<number>(0);
+
+  useEffect(() => {
+    if (!lockedUntil) {
+      setRemainingTime(0);
+      return;
+    }
+
+    const diff = lockedUntil - Date.now();
+    if (diff <= 0) {
+      setLockedUntil(null);
+      localStorage.removeItem("loginLockedUntil");
+      return;
+    }
+
+    setRemainingTime(diff);
+
+    const interval = setInterval(() => {
+      const currentDiff = lockedUntil - Date.now();
+      if (currentDiff <= 0) {
+        setLockedUntil(null);
+        localStorage.removeItem("loginLockedUntil");
+        setRemainingTime(0);
+        clearInterval(interval);
+      } else {
+        setRemainingTime(currentDiff);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [lockedUntil]);
+
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "loginLockedUntil") {
+        const value = e.newValue;
+        if (value) {
+          const time = parseInt(value, 10);
+          if (time > Date.now()) {
+            setLockedUntil(time);
+          } else {
+            setLockedUntil(null);
+          }
+        } else {
+          setLockedUntil(null);
+        }
+      }
+    };
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
+
+  const formatTime = (ms: number): string => {
+    const totalSeconds = Math.ceil(ms / 1000);
+    if (totalSeconds <= 0) return "00:00";
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+  };
+
+  const isLocked = Boolean(lockedUntil && remainingTime > 0);
+
   const isOAuthReturn = sessionStorage.getItem("oauth_pending") === "true";
 
   if (user || isOAuthReturn || (loading && localStorage.getItem("isAuthenticated") === "true")) {
@@ -34,13 +107,23 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isLocked) return;
     setIsLoading(true);
     setError(null);
 
     try {
       await login(form.email, form.password);
-    } catch (err: unknown) {
-      setError(getErrorMessage(err, "Invalid email or password"));
+      localStorage.removeItem("loginLockedUntil");
+    } catch (err: any) {
+      if (err.status === 429 && err.retryAfter) {
+        const retryAfterSeconds = err.retryAfter;
+        const lockTime = Date.now() + retryAfterSeconds * 1000;
+        localStorage.setItem("loginLockedUntil", lockTime.toString());
+        setLockedUntil(lockTime);
+        setError("Too many failed login attempts. Please try again later.");
+      } else {
+        setError("Invalid email or password");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -73,6 +156,7 @@ export default function LoginPage() {
           value={form.email}
           onChange={(value) => setForm((prev) => ({ ...prev, email: value }))}
           placeholder="you@example.com"
+          disabled={isLocked}
         />
 
         <div className="space-y-1.5">
@@ -99,6 +183,7 @@ export default function LoginPage() {
             placeholder="Enter your password"
             visible={showPassword}
             onToggleVisible={() => setShowPassword((prev) => !prev)}
+            disabled={isLocked}
           />
         </div>
 
@@ -106,8 +191,9 @@ export default function LoginPage() {
           type="submit"
           isLoading={isLoading}
           loadingText="Signing in..."
-          text="Sign In"
-          icon={<ArrowRight size={15} />}
+          text={isLocked ? `Try again in ${formatTime(remainingTime)}` : "Sign In"}
+          icon={!isLocked && <ArrowRight size={15} />}
+          disabled={isLocked || isLoading}
         />
       </form>
 

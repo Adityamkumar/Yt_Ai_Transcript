@@ -30,6 +30,7 @@ It has a responsive dark-mode interface, simple login/signup (including Google L
 - [🛠️ Tech Stack](#️-tech-stack)
 - [🏗️ How the RAG Database works](#️-how-the-rag-database-works)
 - [🤖 Multi-Model Fallback Architecture](#-multi-model-fallback-architecture)
+- [🛡️ Secure Authentication Rate Limiting](#️-secure-authentication-rate-limiting)
 - [🔄 Retries & Cooldown System](#-retries--cooldown-system)
 - [🚀 Getting Started](#-getting-started)
 - [🛡️ Security & Account Settings](#️-security--account-settings)
@@ -167,6 +168,22 @@ To ensure high availability, the backend employs a fallback model chain:
 2. **Health Monitoring:** If a provider fails (due to rate limits, API timeout, or authorization errors), it is dynamically marked **unhealthy** and placed on a **5-minute cooldown**.
 3. **Seamless Handover:** The request is immediately passed to the next provider in the chain without failing the user's chat session.
 4. **Reasoning Sanitization:** Automatically parses and strips out thinking/reasoning tags (`<think>`, `<thinking>`, and `<reasoning>`) from both text outputs and streaming responses to keep the chat interface clean and distraction-free.
+
+---
+
+## 🛡️ Secure Authentication Rate Limiting
+
+To prevent brute-force attacks and user enumeration vulnerability:
+- **Lockout Mechanism:** If an IP address registers 5 failed login attempts (either due to a non-existent email or incorrect password), it is locked out for **20 minutes**.
+- **IP-Based Isolation:** Rate limiting is scoped strictly to the client IP address (`req.ip`), ensuring that blocking one client does not affect other users.
+- **Backend Enforcement:** During the lockout period, all requests from the blocked IP are rejected early by the `authRateLimiterMiddleware` returning `429 Too Many Requests` with a `retryAfter` value representing remaining seconds.
+- **DDoS/Brute-force Prevention:** Counter values are not incremented while the lockout is active.
+- **Memory-Safe Cleanups:** The rate limiter uses an in-memory `Map` with automatic memory cleanup. Stale records are purged immediately on lockout expiration, successful login, or attempt resets, preventing memory leaks.
+- **Synchronized Frontend Lockout UI:**
+  - Synchronously initialized from `localStorage` to avoid any page-load flickering.
+  - Dynamically disables inputs, form submissions, the Enter key, and displays a live countdown on the button: `Try again in MM:SS`.
+  - Instantly synchronizes the locked state across all open browser tabs using the browser `storage` event.
+  - Removes the client-side locked timestamp immediately after a successful authentication.
 
 ---
 

@@ -11,6 +11,7 @@ import cookieParser from 'cookie-parser'
 import passport from "./config/passport.js";
 
 const app = express();
+app.set("trust proxy", true);
 
 const allowedOrigins = [
   process.env.FRONTEND_URL,

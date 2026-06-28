@@ -14,12 +14,13 @@ import {
   validateResetPasswordTokenController,
 } from "../controller/auth.controller.js";
 import { authMiddleware } from "../middleware/auth.middleware.js";
+import { authRateLimiterMiddleware } from "../middleware/authRateLimiter.middleware.js";
 import passport from "passport";
 
 const router = express.Router();
 
 router.post("/register", userRegister);
-router.post("/login", userLogin);
+router.post("/login", authRateLimiterMiddleware, userLogin);
 
 router.post("/logout", authMiddleware, userLogout);
 router.post("/refresh-token", refreshAccessToken);
