@@ -37,7 +37,7 @@ const videoUrl = new Schema<IVideo>(
     uploadedBy: {
       type: Schema.Types.ObjectId,
       ref: "User",
-      required: false,
+      required: true,
     },
     totalChunks: {
       type: Number,
