@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { Message } from "../models/message.model.js";
+import { Conversation } from "../models/conversation.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -18,6 +19,9 @@ export const createMessage = asyncHandler(async (req, res) => {
     type,
     ...(source ? { source } : {}),
   });
+
+  // Touch parent conversation to update its updatedAt timestamp
+  await Conversation.findByIdAndUpdate(conversationId, { updatedAt: new Date() });
 
   return res
     .status(201)
@@ -59,6 +63,9 @@ export const updateMessage = asyncHandler(async (req, res) => {
 
   existingMessage.content = content;
   const updatedMessage = await existingMessage.save();
+
+  // Touch parent conversation to update its updatedAt timestamp
+  await Conversation.findByIdAndUpdate(existingMessage.conversationId, { updatedAt: new Date() });
 
   return res
     .status(200)

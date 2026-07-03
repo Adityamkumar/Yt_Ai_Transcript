@@ -7,6 +7,7 @@ import conversationRouter from './routes/conversation.route.js'
 import messageRouter from './routes/message.route.js'
 import bookmarkRouter from './routes/bookmark.route.js'
 import pdfRouter from './routes/pdf.route.js'
+import searchRouter from './search/search.routes.js'
 import cookieParser from 'cookie-parser'
 import passport from "./config/passport.js";
 
@@ -74,6 +75,7 @@ app.use("/api/v1/conversations",conversationRouter);
 app.use("/api/v1/messages",messageRouter);
 app.use("/api/v1/bookmarks", bookmarkRouter)
 app.use("/api/v1/pdf", pdfRouter);
+app.use("/api/v1/search", searchRouter);
 
 
 app.use((err: any, req: any, res: any, next: any) => {

@@ -1,9 +1,10 @@
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Toaster } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { Sidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 import { WorkspaceActions } from '@/components/workspace-actions/WorkspaceActions';
+import { SearchModal } from '@/components/search/SearchModal';
 import { useUIStore } from '@/store/useUIStore';
 import { useKeyboardShortcut } from '@/hooks/useKeyboardShortcut';
 import { WorkspaceAction } from '@/components/workspace-actions/workspaceActionConfig';
@@ -29,8 +30,15 @@ export function AppLayout({ children }: AppLayoutProps) {
     actionTriggerRef.current?.(action);
   }, []);
 
+  // ── Search modal state ──
+  const [searchOpen, setSearchOpen] = useState(false);
+  const openSearch = useCallback(() => setSearchOpen(true), []);
+  const closeSearch = useCallback(() => setSearchOpen(false), []);
+
   useKeyboardShortcut({ key: 'b', ctrl: true }, toggleSidebar);
   useKeyboardShortcut({ key: 'n', ctrl: true }, handleNewChat);
+  useKeyboardShortcut({ key: 'k', ctrl: true }, openSearch);
+  useKeyboardShortcut({ key: 'k', meta: true }, openSearch);
 
   useEffect(() => {
     const syncSidebarToViewport = () => {
@@ -77,13 +85,15 @@ export function AppLayout({ children }: AppLayoutProps) {
       <Sidebar onNewChat={handleNewChat} />
 
       <div className="app-main">
-        <Header onNewChat={handleNewChat} workspaceActions={workspaceActionsNode} />
+        <Header onNewChat={handleNewChat} onSearchOpen={openSearch} workspaceActions={workspaceActionsNode} />
         <main className="app-scroll">
           {React.isValidElement(children)
             ? React.cloneElement(children as React.ReactElement<any>, { onActionReady: handleActionReady })
             : children}
         </main>
       </div>
+
+      <SearchModal isOpen={searchOpen} onClose={closeSearch} />
 
       <Toaster
         position="top-right"

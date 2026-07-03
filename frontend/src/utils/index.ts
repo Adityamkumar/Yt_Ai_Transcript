@@ -38,7 +38,15 @@ export function formatRelativeTime(date: Date | string): string {
   if (minutes < 60) return `${minutes}m ago`;
   if (hours < 24) return `${hours}h ago`;
   if (days < 7) return `${days}d ago`;
-  return parsed.toLocaleDateString();
+  
+  const weeks = Math.floor(days / 7);
+  if (weeks < 4) return `${weeks}w ago`;
+  
+  const months = Math.floor(days / 30);
+  if (months < 12) return `${months}mo ago`;
+  
+  const years = Math.floor(days / 365);
+  return `${years}y ago`;
 }
 
 export function truncate(str: string, max: number): string {

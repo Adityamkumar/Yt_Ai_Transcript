@@ -43,6 +43,9 @@ const conversationSchema = new Schema(
   },
 );
 
+// Text index for full-text search on conversation titles (Phase 1 Search)
+conversationSchema.index({ title: "text" });
+
 export const Conversation = mongoose.model<IConversation>("Conversation", conversationSchema);
 
 

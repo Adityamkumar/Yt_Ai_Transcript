@@ -1,4 +1,4 @@
-import { PanelLeft, Plus, Sparkles } from 'lucide-react';
+import { PanelLeft, Plus, Search, Sparkles } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 import { useUIStore } from '@/store/useUIStore';
 import { useConversations } from '@/hooks/useConversations';
@@ -7,10 +7,11 @@ import { cn } from '@/utils/cn';
 
 interface HeaderProps {
   onNewChat?: () => void;
+  onSearchOpen?: () => void;
   workspaceActions?: React.ReactNode;
 }
 
-export function Header({ onNewChat, workspaceActions }: HeaderProps) {
+export function Header({ onNewChat, onSearchOpen, workspaceActions }: HeaderProps) {
   const { sidebarOpen, toggleSidebar } = useUIStore();
   const { conversationId } = useParams<{ conversationId: string }>();
   const { conversations } = useConversations();
@@ -50,6 +51,18 @@ export function Header({ onNewChat, workspaceActions }: HeaderProps) {
         </div>
 
         <div className="flex shrink-0 items-center gap-2">
+          <button
+            onClick={onSearchOpen}
+            className="inline-flex h-9 shrink-0 items-center gap-2.5 rounded-xl border border-[var(--border-medium)] bg-[var(--surface-3)] pl-3.5 pr-2.5 text-[13px] font-medium text-[var(--text-secondary)] transition-colors hover:border-[var(--border-strong)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] sm:min-w-[160px]"
+            aria-label="Search conversations"
+          >
+            <Search size={15} className="text-[var(--text-primary)]" />
+            <span className="hidden flex-1 text-left sm:inline">Search</span>
+            <kbd className="ml-1 hidden items-center gap-0.5 rounded-md border border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.06)] px-2 py-1 text-[11px] font-medium leading-none text-[var(--text-primary)] sm:inline-flex">
+              ⌘K
+            </kbd>
+          </button>
+
           {activeConversation && activeConversation.type !== 'pdf' && workspaceActions}
 
           <button
