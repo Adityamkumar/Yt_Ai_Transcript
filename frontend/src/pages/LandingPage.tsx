@@ -3,7 +3,6 @@ import { HeroSection } from '@/components/landing/HeroSection';
 import { FeaturesSection } from '@/components/landing/FeaturesSection';
 import { ShowcaseSection } from '@/components/landing/ShowcaseSection';
 import { Footer } from '@/components/landing/Footer';
-import { TracingBeam } from '@/components/ui/tracing-beam';
 import { useAuthRedirect } from '@/hooks/useAuthRedirect';
 
 export default function LandingPage() {
@@ -16,15 +15,17 @@ export default function LandingPage() {
     >
       <Navbar />
       <main>
-        <TracingBeam className="max-w-7xl px-6 md:px-16 lg:px-24">
-          <HeroSection />
+        <HeroSection />
+        <div className="max-w-7xl mx-auto px-6 md:px-16 lg:px-24">
           <FeaturesSection />
           <ShowcaseSection />
-        </TracingBeam>
+        </div>
       </main>
       <Footer />
     </div>
   );
 }
+
+
 
 

@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Zap } from "lucide-react";
-import { BackgroundBeams } from "@/components/ui/background-beams";
 
 
 interface AuthShellProps {
@@ -19,7 +18,6 @@ export function AuthShell({
 }: AuthShellProps) {
   return (
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden px-4" style={{ background: "var(--canvas)" }}>
-      <BackgroundBeams className="opacity-45 pointer-events-none" />
 
 
       <motion.div

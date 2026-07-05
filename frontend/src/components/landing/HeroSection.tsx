@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -6,8 +6,10 @@ import {
   Play, Send, CheckCircle, RefreshCw, UploadCloud,
   Database, BrainCircuit, Terminal, ArrowUpRight, Check
 } from 'lucide-react';
-import { BackgroundBeams } from '@/components/ui/background-beams';
+
 import { Cover } from '@/components/ui/cover';
+import Silk from '@/components/background/Silk';
+
 
 
 export function HeroSection() {
@@ -20,21 +22,7 @@ export function HeroSection() {
   const [isTyping, setIsTyping] = useState(false);
 
   
-  const heroRef = useRef<HTMLDivElement>(null);
-  const [mouseOffset, setMouseOffset] = useState({ x: 0, y: 0 });
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!heroRef.current) return;
-    const { clientX, clientY } = e;
-    const { left, top, width, height } = heroRef.current.getBoundingClientRect();
-    const x = (clientX - left) / width - 0.5; // -0.5 to 0.5
-    const y = (clientY - top) / height - 0.5; // -0.5 to 0.5
-    setMouseOffset({ x, y });
-  };
-
-  const handleMouseLeave = () => {
-    setMouseOffset({ x: 0, y: 0 });
-  };
 
   
   const startSimulation = () => {
@@ -133,18 +121,26 @@ export function HeroSection() {
 
   return (
     <section
-      ref={heroRef}
       id="hero"
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
       className="relative min-h-[105dvh] flex flex-col justify-center pt-24 pb-20 overflow-hidden"
-      style={{ background: 'var(--canvas)' }}
     >
-      {/* Background Animated Beams */}
-      <BackgroundBeams className="opacity-45 pointer-events-none" />
-
-
-
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+        <Silk speed={6} scale={1} color="#2b00ff" noiseIntensity={2.3} rotation={0} />
+        {/* Dark radial overlay to ensure readability */}
+        <div 
+          className="absolute inset-0 z-1 pointer-events-none" 
+          style={{
+            background: 'radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0.15) 0%, rgba(10, 10, 10, 0.65) 100%)',
+          }}
+        />
+        {/* Bottom fade block to blend background seamlessly into black mode */}
+        <div
+          className="absolute bottom-0 left-0 right-0 h-32 pointer-events-none"
+          style={{
+            background: 'linear-gradient(to bottom, transparent, var(--canvas))',
+          }}
+        />
+      </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         {/* Mobile-First Layout Grid: Stacks on mobile, splits into 12 columns on large screens */}
@@ -170,10 +166,9 @@ export function HeroSection() {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
-              className="text-4xl sm:text-5xl lg:text-5xl xl:text-6xl font-bold tracking-tight text-[var(--text-primary)] leading-[1.15] mb-6 font-sans"
+              className="text-3xl sm:text-4xl lg:text-4xl xl:text-5xl font-semibold tracking-tight text-[var(--text-primary)] leading-snug mb-4 font-sans"
             >
               Turn YouTube videos and documents into{' '}
-              <br />
               <Cover>intelligent conversations</Cover>
               .
             </motion.h1>
@@ -183,7 +178,7 @@ export function HeroSection() {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="text-sm sm:text-base lg:text-base text-[var(--text-secondary)] leading-relaxed max-w-xl mb-10"
+              className="text-sm sm:text-base lg:text-base text-[var(--text-secondary)] leading-relaxed max-w-xl mb-6"
             >
               Extract transcripts, synthesize deep chapters, and map interactive vector
               dialogues from your media library. Crafted for students, writers, and thorough researchers.
@@ -193,7 +188,7 @@ export function HeroSection() {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
-              className="flex flex-col sm:flex-row items-center gap-3.5 w-full sm:w-auto mt-8"
+              className="flex flex-col sm:flex-row items-center gap-3.5 w-full sm:w-auto mt-4"
             >
               <Link
                 to="/signup"
@@ -482,13 +477,6 @@ export function HeroSection() {
         </div>
       </div>
 
-      {/* Under-hero fade gradient block */}
-      <div
-        className="absolute bottom-0 left-0 right-0 h-32 pointer-events-none"
-        style={{
-          background: 'linear-gradient(to bottom, transparent, var(--canvas))',
-        }}
-      />
     </section>
   );
 }

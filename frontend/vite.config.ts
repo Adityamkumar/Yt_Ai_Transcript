@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite' // Forced reload to fix Outdated Optimize Dep error
+import { defineConfig } from 'vite' // Forced reload to trigger re-bundling of three/@react-three/fiber
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import path from 'path'

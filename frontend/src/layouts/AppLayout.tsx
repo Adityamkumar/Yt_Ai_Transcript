@@ -54,25 +54,6 @@ export function AppLayout({ children }: AppLayoutProps) {
     const root = window.document.documentElement;
     root.classList.add('dark');
     root.classList.remove('light');
-
-    return () => {
-      const savedPreference = localStorage.getItem('theme-preference') || 'system';
-      let activeTheme = 'dark';
-      if (savedPreference === 'system') {
-        const systemIsDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        activeTheme = systemIsDark ? 'dark' : 'light';
-      } else {
-        activeTheme = savedPreference;
-      }
-      
-      if (activeTheme === 'dark') {
-        root.classList.add('dark');
-        root.classList.remove('light');
-      } else {
-        root.classList.add('light');
-        root.classList.remove('dark');
-      }
-    };
   }, []);
 
 

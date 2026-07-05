@@ -1,10 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Zap, Github, LayoutDashboard, LogOut, ChevronDown, Sun, Moon, Monitor } from 'lucide-react';
+import { Menu, X, Zap, Github, LayoutDashboard, LogOut, ChevronDown } from 'lucide-react';
 import { useAuth } from '@/store/AuthContext';
 import { UserAvatar } from '@/components/auth/UserAvatar';
-import { useTheme, ThemePreference } from '@/store/ThemeContext';
 import { LogoutModal } from '@/components/LogoutModal';
 
 const navLinks = [
@@ -61,76 +60,7 @@ function UserDropdown({ name, email, avatar, onLogout, onClose }: UserDropdownPr
   );
 }
 
-function ThemeToggle() {
-  const { theme, resolvedTheme, setTheme } = useTheme();
-  const [open, setOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (!open) return;
-    const handler = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [open]);
-
-  const themes: { value: ThemePreference; label: string; icon: typeof Sun }[] = [
-    { value: 'light', label: 'Light', icon: Sun },
-    { value: 'dark', label: 'Dark', icon: Moon },
-    { value: 'system', label: 'System', icon: Monitor },
-  ];
-
-  const CurrentIcon = resolvedTheme === 'dark' ? Moon : Sun;
-
-  return (
-    <div ref={dropdownRef} className="relative z-50">
-      <button
-        onClick={() => setOpen(!open)}
-        className="flex items-center justify-center w-9 h-9 rounded-xl border border-[var(--border-medium)] bg-[var(--surface-3)] hover:bg-[var(--surface-hover)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all duration-200"
-        aria-label="Toggle theme"
-      >
-        <CurrentIcon size={16} className="transition-transform duration-300 hover:rotate-12" />
-      </button>
-
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            initial={{ opacity: 0, y: 8, scale: 0.96 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 8, scale: 0.96 }}
-            transition={{ duration: 0.15, ease: 'easeOut' }}
-            className="absolute right-0 mt-2 w-32 rounded-2xl overflow-hidden shadow-2xl border bg-[var(--surface-1)] border-[var(--border-medium)] backdrop-blur-xl p-1.5"
-          >
-            {themes.map((t) => {
-              const Icon = t.icon;
-              const isActive = theme === t.value;
-              return (
-                <button
-                  key={t.value}
-                  onClick={() => {
-                    setTheme(t.value);
-                    setOpen(false);
-                  }}
-                  className={`w-full flex items-center gap-2.5 px-3 py-2 text-xs rounded-xl transition-colors font-medium ${
-                    isActive
-                      ? 'bg-[var(--accent-subtle)] text-[var(--accent)]'
-                      : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)]'
-                  }`}
-                >
-                  <Icon size={14} />
-                  {t.label}
-                </button>
-              );
-            })}
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-}
 
 export function Navbar() {
   const { user, logout } = useAuth();
@@ -233,7 +163,6 @@ export function Navbar() {
             </nav>
 
             <div className="hidden md:flex items-center gap-4">
-              <ThemeToggle />
               
               {user ? (
                 <div ref={dropdownRef} className="relative">
@@ -333,7 +262,6 @@ export function Navbar() {
                   EchoMind <span className="text-[var(--accent)]">AI</span>
                 </span>
                 <div className="flex items-center gap-2">
-                  <ThemeToggle />
                   <button onClick={() => setMobileOpen(false)} className="p-2 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--surface-3)] transition-colors">
                     <X size={18} />
                   </button>
