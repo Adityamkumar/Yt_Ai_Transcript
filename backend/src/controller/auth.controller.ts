@@ -70,9 +70,9 @@ export const userLogin = asyncHandler(async (req, res) => {
   const ip = req.ip || req.socket.remoteAddress || "";
 
   try {
-    if (!email || !password || typeof password !== "string") {
-      throw new ApiError(401, "Invalid email or password");
-    }
+   if (typeof email !== "string" || typeof password !== "string" || !email.trim() || !password.trim()) {
+    throw new ApiError(400, "Invalid email or password");
+  }
 
     const user = await User.findOne({ email });
 
