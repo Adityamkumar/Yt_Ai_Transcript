@@ -59,12 +59,13 @@ export function HeroSection() {
 
     let charIndex = 0;
     const typingInterval = setInterval(() => {
-      setAiResponse((prev) => prev + answer.charAt(charIndex));
       charIndex++;
-      if (charIndex >= answer.length) {
+      if (charIndex > answer.length) {
         clearInterval(typingInterval);
         setIsTyping(false);
+        return;
       }
+      setAiResponse(answer.slice(0, charIndex));
     }, 15);
   };
 
