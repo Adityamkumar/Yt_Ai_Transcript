@@ -11,6 +11,7 @@ import pdfRouter from './routes/pdf.route.js'
 import searchRouter from './search/search.routes.js'
 import cookieParser from 'cookie-parser'
 import passport from "./config/passport.js";
+import { globalErrorHandler } from "./middleware/error.middleware.js";
 
 const app = express();
 app.set("trust proxy", true);
@@ -19,7 +20,7 @@ const allowedOrigins = [
   process.env.FRONTEND_URL,
   process.env.FRONTEND_PROD_URL,
   process.env.FRONTEND_CLOUDFLARE_URL
-];
+].filter(Boolean);
 
 const isLocalOrigin = (url: string): boolean => {
   try {
@@ -37,33 +38,32 @@ const isLocalOrigin = (url: string): boolean => {
   }
 };
 
-const isVercelOrigin = (url: string): boolean => {
-  try {
-    const parsed = new URL(url);
-    const hostname = parsed.hostname;
-    return hostname.endsWith('.vercel.app') && hostname.includes('echomind');
-  } catch {
-    return false;
-  }
-};
 
-app.use(cors({
-  origin: function (origin, callback) {
-    if (
-      !origin || 
-      allowedOrigins.indexOf(origin) !== -1 || 
-      isVercelOrigin(origin) ||
-      (process.env.NODE_ENV === 'development' && isLocalOrigin(origin))
-    ) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"]
-}));
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (
+        !origin ||
+        allowedOrigins.includes(origin) ||
+        (process.env.NODE_ENV === "development" &&
+          isLocalOrigin(origin))
+      ) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "X-Requested-With",
+      "Accept",
+    ],
+  })
+);
 
 app.use(express.json());
 app.use(cookieParser())
@@ -80,17 +80,7 @@ app.use("/api/v1/pdf", pdfRouter);
 app.use("/api/v1/search", searchRouter);
 
 
-app.use((err: any, req: any, res: any, next: any) => {
-  const statusCode = err.statusCode || 500;
-  const message = err.message || "Internal Server Error";
-  
-  return res.status(statusCode).json({
-    success: false,
-    statusCode,
-    message,
-    errors: err.errors || []
-  });
-});
+app.use(globalErrorHandler)
 
 app.get("/health", (_, res) => {
   res.status(200).json({
