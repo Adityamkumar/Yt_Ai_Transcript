@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import helmet from "helmet";
 import videoRouter from "./routes/video.route.js";
 import chatRouter from './routes/chat.route.js'
 import authRouter from './routes/auth.route.js'
@@ -66,6 +67,7 @@ app.use(cors({
 
 app.use(express.json());
 app.use(cookieParser())
+app.use(helmet())
 app.use(passport.initialize())
 
 app.use("/api/v1/video", videoRouter);
