@@ -1,4 +1,5 @@
 import React from 'react';
+import { useYouTubePlayer } from '@/store/YouTubePlayerContext';
 
 interface TimestampLinkProps {
   seconds: number;
@@ -7,9 +8,10 @@ interface TimestampLinkProps {
 }
 
 export function TimestampLink({ seconds, videoId, children }: TimestampLinkProps) {
+  const { openPlayer } = useYouTubePlayer();
+
   const handleClick = () => {
-    const url = `https://youtube.com/watch?v=${videoId}&t=${seconds}s`;
-    window.open(url, '_blank');
+    openPlayer(videoId, seconds);
   };
 
   return (

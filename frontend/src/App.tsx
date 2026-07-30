@@ -4,6 +4,8 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from '@/lib/queryClient';
 import { AuthProvider, useAuth } from '@/store/AuthContext';
 import { ThemeProvider } from '@/store/ThemeContext';
+import { YouTubePlayerProvider } from '@/store/YouTubePlayerContext';
+import { YouTubePlayerModal } from '@/components/YouTubePlayerModal';
 import { AppLayout } from '@/layouts/AppLayout';
 
 const LandingPage = lazy(() => import('@/pages/LandingPage'));
@@ -44,6 +46,7 @@ export default function App() {
       <QueryClientProvider client={queryClient}>
         <ThemeProvider>
           <AuthProvider>
+            <YouTubePlayerProvider>
             <Suspense fallback={<RouteLoading />}>
               <Routes>
                 <Route path="/" element={<LandingPage />} />
@@ -85,6 +88,8 @@ export default function App() {
                 />
               </Routes>
             </Suspense>
+            <YouTubePlayerModal />
+            </YouTubePlayerProvider>
           </AuthProvider>
         </ThemeProvider>
       </QueryClientProvider>
