@@ -282,7 +282,6 @@ p {
   border: 1px solid var(--border-soft);
   box-shadow: var(--shadow-lg);
   backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
 }
 
 .soft-card {
@@ -296,7 +295,6 @@ p {
   border: 1px solid var(--border-medium);
   box-shadow: var(--shadow-md);
   backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
 }
 
 .surface-floating {
@@ -304,7 +302,6 @@ p {
   border: 1px solid var(--border-medium);
   box-shadow: var(--shadow-xl);
   backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
 }
 
 /* ──────────────────────────────────────────
@@ -746,7 +743,6 @@ p {
   justify-content: center;
   background: rgba(0, 0, 0, 0.65);
   backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
   padding: 24px;
 }
 
@@ -908,7 +904,6 @@ p {
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(10, 10, 12, 0.88);
   backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
   box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.04),
     0 12px 40px -8px rgba(0, 0, 0, 0.6),
