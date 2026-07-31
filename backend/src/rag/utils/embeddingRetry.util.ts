@@ -1,5 +1,6 @@
 import { generateDocumentEmbedding } from "../../ai/embedding.service.js";
 import { RAG_CONFIG } from "../config/rag.config.js";
+import logger from "../../lib/logger.js";
 
 const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
@@ -24,8 +25,9 @@ export const generateDocumentEmbeddingWithRetry = async (
       }
 
       const delayMs = baseDelayMs * Math.pow(2, attempt - 1);
-      console.warn(
-        `[EmbeddingRetry] Attempt ${attempt}/${maxAttempts} failed. Retrying in ${delayMs}ms. Error: ${lastError.message}`,
+      logger.warn(
+        { error: lastError, attempt, maxAttempts, delayMs },
+        "[EmbeddingRetry] Attempt failed. Retrying."
       );
 
       await sleep(delayMs);

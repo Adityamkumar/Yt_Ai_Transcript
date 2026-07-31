@@ -12,6 +12,7 @@ import {
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import logger from "../lib/logger.js";
 
 type AskQuestionBody = {
   videoId?: string;
@@ -45,12 +46,12 @@ export const askQuestion = asyncHandler(async (req, res) => {
   let chunks = await TranscriptChunk.find({ videoDocumentId: video._id }).sort({ chunkIndex: 1 });
 
   if (chunks.length === 0) {
-    console.log(`Transcript chunks empty for video ${videoId}, attempting dynamic re-ingestion...`);
+    logger.info(`Transcript chunks empty for video ${videoId}, attempting dynamic re-ingestion...`);
     try {
       await ingestVideoForRag({ videoDocumentId: video._id });
       chunks = await TranscriptChunk.find({ videoDocumentId: video._id }).sort({ chunkIndex: 1 });
     } catch (err: any) {
-      console.error("[Chat] Failed to auto-ingest video transcript:", err.message);
+      logger.error({ err }, "[Chat] Failed to auto-ingest video transcript");
     }
   }
 

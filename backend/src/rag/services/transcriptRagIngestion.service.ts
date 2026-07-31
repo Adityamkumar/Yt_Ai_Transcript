@@ -4,6 +4,7 @@ import { TranscriptChunk } from "../../models/transcriptChunk.model.js";
 import { chunkTranscriptForRag } from "../chunking/transcriptChunking.service.js";
 import { generateDocumentEmbeddingWithRetry } from "../utils/embeddingRetry.util.js";
 import { getTranscriptFromYoutube } from "../../services/transcript.service.js";
+import logger from "../../lib/logger.js";
 
 export type IngestVideoForRagInput = {
   videoDocumentId: string | Types.ObjectId;
@@ -101,8 +102,9 @@ export const ingestVideoForRag = async ({
       totalChunks: embeddedChunks.length,
     });
 
-    console.info(
-      `[RAG] Video ingestion complete. videoDocumentId=${videoObjectId}, chunks=${embeddedChunks.length}`,
+    logger.info(
+      { videoDocumentId: videoObjectId, chunksCount: embeddedChunks.length },
+      "[RAG] Video ingestion complete"
     );
   } catch (error: any) {
     

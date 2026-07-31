@@ -1,4 +1,5 @@
 import type { ErrorRequestHandler } from "express";
+import logger from "../lib/logger.js";
 
 export const globalErrorHandler: ErrorRequestHandler = (
   err,
@@ -12,26 +13,18 @@ export const globalErrorHandler: ErrorRequestHandler = (
   const message =
     err instanceof Error ? err.message : "Internal Server Error";
 
-  console.error("\n================= ERROR =================");
-  console.error(`Time       : ${new Date().toISOString()}`);
-  console.error(`Method     : ${req.method}`);
-  console.error(`Route      : ${req.originalUrl}`);
-  console.error(`IP         : ${req.ip}`);
-  console.error(`User Agent : ${req.get("user-agent")}`);
-
-  if (req.user?._id) {
-    console.error(`User ID    : ${req.user._id}`);
-  }
-
-  console.error(`Status     : ${statusCode}`);
-  console.error(`Message    : ${message}`);
-
-  if (err.stack) {
-    console.error("\nStack Trace:");
-    console.error(err.stack);
-  }
-
-  console.error("=========================================\n");
+  logger.error(
+    {
+      err,
+      method: req.method,
+      path: req.originalUrl,
+      ip: req.ip,
+      userAgent: req.get("user-agent"),
+      userId: req.user?._id,
+      statusCode,
+    },
+    message
+  );
 
   res.status(statusCode).json({
     success: false,

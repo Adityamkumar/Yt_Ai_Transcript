@@ -7,6 +7,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { extractVideoId } from "../utils/extractVideoId.js";
 import { ingestVideoForRag } from "../rag/services/transcriptRagIngestion.service.js";
 import { TranscriptChunk } from "../models/transcriptChunk.model.js";
+import logger from "../lib/logger.js";
 
 const GENERIC_VIDEO_TITLES = new Set([
   "new conversation",
@@ -115,7 +116,7 @@ export const getTranscript = asyncHandler(async (req, res) => {
         ragStatus: "processing",
       });
       ingestVideoForRag({ videoDocumentId: videoExists._id }).catch((err) => {
-        console.error("[RAG] Background video ingestion failed:", err.message);
+        logger.error({ err }, "[RAG] Background video ingestion failed");
       });
     }
 
@@ -149,7 +150,7 @@ export const getTranscript = asyncHandler(async (req, res) => {
   });
 
   ingestVideoForRag({ videoDocumentId: video._id }).catch((err) => {
-    console.error("[RAG] Background video ingestion failed:", err.message);
+    logger.error({ err }, "[RAG] Background video ingestion failed");
   });
 
   res

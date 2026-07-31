@@ -5,6 +5,7 @@ import {
   normalizeTranscriptChunks,
   type SemanticTranscriptChunk,
 } from "../utils/chunkTranscript.js";
+import logger from "../lib/logger.js";
 
 const normalizeToSeconds = (value: number) => {
   if (!Number.isFinite(value) || value < 0) {
@@ -53,14 +54,14 @@ const fetchTranscriptFromFallbackApi = async (videoId: string) => {
 
     return parsed;
   } catch (err: any) {
-    console.error(`[Transcript Fallback] Failed to fetch from youtube-transcript.ai:`, err.message);
+    logger.error({ err }, "[Transcript Fallback] Failed to fetch from youtube-transcript.ai");
     throw err;
   }
 };
 
 export const getTranscriptFromYoutube = async (videoId: string) => {
   try {
-    console.log(`[Transcript] Fetching transcript via primary library for video: ${videoId}`);
+    logger.info(`[Transcript] Fetching transcript via primary library for video: ${videoId}`);
     const transcript = await YoutubeTranscript.fetchTranscript(videoId);
 
     const rawChunks = transcript.map(item => ({
@@ -71,7 +72,7 @@ export const getTranscriptFromYoutube = async (videoId: string) => {
 
     return chunkTranscript(rawChunks);
   } catch (error: any) {
-    console.warn(`[Transcript] Primary library failed for video: ${videoId}. Trying fallback API...`, error.message);
+    logger.warn({ error, videoId }, "[Transcript] Primary library failed for video. Trying fallback API...");
     try {
       const rawChunks = await fetchTranscriptFromFallbackApi(videoId);
       return chunkTranscript(rawChunks);

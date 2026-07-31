@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { configureDNS } from "../config/dns.js";
+import logger from "../lib/logger.js";
 
 configureDNS()
 const connectDB = async () => {
@@ -8,9 +9,9 @@ const connectDB = async () => {
   }
   try {
     const connection = await mongoose.connect(process.env.MONGODB_URI);
-    console.log(`MongoDB connected !! DB HOST: ${connection.connection.host}`);
+    logger.info(`MongoDB connected !! DB HOST: ${connection.connection.host}`);
   } catch (error) {
-    console.error("MONGODB connection error:", error);
+    logger.error({ error }, "MONGODB connection error");
     process.exit(1);
   }
 };

@@ -21,6 +21,7 @@ import {
   MAX_TOTAL_RETRIES,
 } from "../rag/services/pdfRagIngestion.service.js";
 import { deletePdfRagArtifacts } from "../rag/services/pdfRagCleanup.service.js";
+import logger from "../lib/logger.js";
 
 const GENERIC_PDF_TITLES = new Set([
   "new document",
@@ -151,9 +152,9 @@ export const uploadPdf = asyncHandler(async (req: any, res) => {
           fileId: existing.fileId,
           uploadedBy: req.user._id,
         }).catch((err: Error) => {
-          console.error(
-            "[RAG] Background re-ingestion (dedup case C) failed:",
-            err.message,
+          logger.error(
+            { err },
+            "[RAG] Background re-ingestion (dedup case C) failed"
           );
         });
       }
@@ -202,7 +203,7 @@ export const uploadPdf = asyncHandler(async (req: any, res) => {
     fileId: pdfDoc.fileId,
     uploadedBy: req.user._id,
   }).catch((err: Error) => {
-    console.error("[RAG] Background PDF ingestion failed:", err.message);
+    logger.error({ err }, "[RAG] Background PDF ingestion failed");
   });
 
   const conversation = await Conversation.create({
@@ -309,7 +310,7 @@ export const retryPdfIngestion = asyncHandler(async (req: any, res) => {
     fileId: pdfDoc.fileId,
     uploadedBy: req.user._id,
   }).catch((err: Error) => {
-    console.error("[RAG] Manual retry ingestion failed:", err.message);
+    logger.error({ err }, "[RAG] Manual retry ingestion failed");
   });
 
   return res.status(200).json(
@@ -420,17 +421,15 @@ export const deletePdfDocument = asyncHandler(async (req: any, res) => {
   try {
     await deletePdf(pdfDoc.fileId);
   } catch (err) {
-    console.error("Failed to delete PDF from ImageKit storage:", err);
+    logger.error({ err }, "Failed to delete PDF from ImageKit storage");
   }
 
   try {
     await deletePdfRagArtifacts(pdfDoc._id);
   } catch (err: any) {
-    console.error(
-      "[RAG Cleanup] Failed to delete RAG chunks for documentId=",
-      pdfDoc._id,
-      ":",
-      err?.message,
+    logger.error(
+      { err, documentId: pdfDoc._id },
+      "[RAG Cleanup] Failed to delete RAG chunks"
     );
   }
 

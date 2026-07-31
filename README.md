@@ -41,6 +41,7 @@ It has a responsive dark-mode interface, simple login/signup (including Google L
 ## ✨ Features
 
 - **📺 YouTube Transcript Chat:** Paste any YouTube link, download its transcript, and ask questions. The AI replies and links back to the specific timestamp of the video.
+- **▶️ In-App YouTube Player:** Watch the YouTube video directly alongside its transcript and your chat. Click on timestamp citations from the AI to jump straight to that moment in the video!
 - **📄 Interactive Three-Panel PDF Workspace:** Upload a PDF file, index it, and view it in a premium 3-panel workspace:
   - **Left Panel:** Collapsible chat sidebar/navigation history.
   - **Center Panel:** Chat interface with auto-parsed interactive page citations (`📄 Page X`).
@@ -54,6 +55,7 @@ It has a responsive dark-mode interface, simple login/signup (including Google L
 - **🔄 Auto-Retries & Cooldown:** If the AI embedding pipeline hits a rate limit, it automatically tries again in the background. If it fails 4 times, it locks for a 10-minute cooldown showing a countdown timer, then automatically unlocks so you can try again.
 - **🔒 Deduplication:** If you upload the same PDF twice, the app detects its MD5 hash, opens your existing chat, and avoids duplicate storage or processing.
 - **💬 Friendly Error Messages:** User messages are simple and friendly (no scary tech jargon or API error codes).
+- **📊 Production-Grade Logging:** Uses Pino for ultra-fast, structured JSON logging in production and colorized, human-readable formatting in development.
 
 ---
 
@@ -76,6 +78,7 @@ It has a responsive dark-mode interface, simple login/signup (including Google L
   - **Google GenAI SDK** (`@google/genai`) with Gemini models
 - **Parsing Pipelines:** `youtube-transcript` for video captions, `pdf-parse-new` for reading PDFs
 - **Cloud Storage:** ImageKit to host uploaded PDFs
+- **Logging:** Pino & Pino-Pretty (for structured, high-performance logging)
 
 ---
 

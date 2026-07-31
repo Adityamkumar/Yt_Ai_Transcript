@@ -1,5 +1,6 @@
 import { Types } from "mongoose";
 import { TranscriptChunk } from "../../models/transcriptChunk.model.js";
+import logger from "../../lib/logger.js";
 
 export type DeleteVideoRagArtifactsResult = {
   deletedChunkCount: number;
@@ -18,8 +19,9 @@ export const deleteVideoRagArtifacts = async (
 
   const deletedChunkCount = result.deletedCount ?? 0;
 
-  console.info(
-    `[RAG Cleanup] Deleted ${deletedChunkCount} chunk(s) for videoDocumentId=${videoObjectId}`,
+  logger.info(
+    { deletedChunkCount, videoDocumentId: videoObjectId },
+    "[RAG Cleanup] Deleted chunk(s)"
   );
 
   return { deletedChunkCount };

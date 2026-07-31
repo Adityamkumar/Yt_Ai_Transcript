@@ -1,5 +1,6 @@
 import { Types } from "mongoose";
 import { PdfChunk } from "../../models/pdfChunk.model.js";
+import logger from "../../lib/logger.js";
 
 export type DeletePdfRagArtifactsResult = {
   deletedChunkCount: number;
@@ -17,8 +18,9 @@ export const deletePdfRagArtifacts = async (
 
   const deletedChunkCount = result.deletedCount ?? 0;
 
-  console.info(
-    `[RAG Cleanup] Deleted ${deletedChunkCount} chunk(s) for documentId=${documentObjectId}`,
+  logger.info(
+    { deletedChunkCount, documentId: documentObjectId },
+    "[RAG Cleanup] Deleted chunk(s)"
   );
 
   return { deletedChunkCount };

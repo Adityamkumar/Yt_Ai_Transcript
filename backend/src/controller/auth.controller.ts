@@ -14,6 +14,7 @@ import crypto from "node:crypto";
 import { generateResetPasswordEmail } from "../utils/emailTemplates.js";
 import { googleClient } from "../config/googleAuth.js";
 import { authRateLimiterService } from "../services/authRateLimiter.service.js";
+import logger from "../lib/logger.js";
 
 export const userRegister = asyncHandler(async (req, res) => {
   try {
@@ -358,7 +359,7 @@ export const googleVerifyController = asyncHandler(async (req, res) => {
       }
     });
   } catch (error: any) {
-    console.error("Google authentication error:", error);
+    logger.error({ error }, "Google authentication error");
     if (error instanceof ApiError || (error && typeof error === "object" && "statusCode" in error)) {
       throw error;
     }

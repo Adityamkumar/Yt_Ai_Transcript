@@ -3,6 +3,7 @@ import { PdfDocument } from "../models/pdfDocument.model.js";
 import { extractPdfText } from "../utils/extractPdfText.js";
 import { uploadPdf } from "./imagekit.service.js";
 import { Types } from "mongoose";
+import logger from "../lib/logger.js";
 
 
 
@@ -27,7 +28,7 @@ export const processPdfUpload = async (
   try {
     textExtraction = await extractPdfText(fileBuffer);
   } catch (error: any) {
-    console.error("PDF text extraction failed:", error);
+    logger.error({ error }, "PDF text extraction failed");
     throw new Error("Failed to extract text from the PDF. Make sure it's a valid, text-based document.");
   }
 
@@ -35,7 +36,7 @@ export const processPdfUpload = async (
   try {
     uploadResult = await uploadPdf(fileBuffer, fileName, userObjectId.toString());
   } catch (error: any) {
-    console.error("ImageKit upload failed:", error);
+    logger.error({ error }, "ImageKit upload failed");
     throw new Error("Failed to upload the PDF file to storage.");
   }
 

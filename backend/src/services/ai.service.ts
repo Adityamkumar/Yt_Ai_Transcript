@@ -9,6 +9,7 @@ import {
   SUMMARY_SYSTEM_PROMPT,
 } from "./ai.prompts.js";
 import { aiProviderService, sanitizeModelOutput } from "./ai/providers/aiProvider.service.js";
+import logger from "../lib/logger.js";
 
 export type ConversationMessage = {
   role: "user" | "assistant";
@@ -322,9 +323,9 @@ const extractAndValidateJson = (rawText: string, validator: z.ZodSchema): boolea
     validator.parse(parsed);
     return true;
   } catch (err: any) {
-    console.error("[AI Validation Error]:", err.message || err);
+    logger.error({ err }, "[AI Validation Error]");
     if (err.errors) {
-      console.error("[AI Validation Zod Errors]:", JSON.stringify(err.errors, null, 2));
+      logger.error({ zodErrors: err.errors }, "[AI Validation Zod Errors]");
     }
     return false;
   }
@@ -377,7 +378,7 @@ export const askAiAboutTranscript = async (
         }
         return JSON.stringify(validated);
       } catch (parseError: any) {
-        console.error(`${type} JSON Error:`, parseError);
+        logger.error({ parseError, type }, "JSON Error");
         throw new Error(`Invalid ${type} structure`);
       }
     }
@@ -385,7 +386,7 @@ export const askAiAboutTranscript = async (
     const text = await aiProviderService.generateResponse(prompt);
     return type === "chat" ? stripTimestampMentions(text) : text;
   } catch (error: any) {
-    console.error("AI Service Error:", error);
+    logger.error({ error }, "AI Service Error");
     throw new Error(`Failed to generate AI response: ${error?.message || "Unknown error"}`);
   }
 };
@@ -431,7 +432,7 @@ export async function* streamAiAboutTranscript(
       }
     }
   } catch (error: any) {
-    console.error("Stream Error:", error);
+    logger.error({ error }, "Stream Error");
 
     const errorMessage =
       error?.message || "Unknown AI error";
@@ -567,7 +568,7 @@ export const askAiAboutPdf = async (
         }
         return JSON.stringify(validated);
       } catch (parseError: any) {
-        console.error(`${type} JSON Error:`, parseError);
+        logger.error({ parseError, type }, "JSON Error");
         throw new Error(`Invalid ${type} structure`);
       }
     }
@@ -575,7 +576,7 @@ export const askAiAboutPdf = async (
     const text = await aiProviderService.generateResponse(prompt);
     return text || "";
   } catch (error: any) {
-    console.error("AI Service Error:", error);
+    logger.error({ error }, "AI Service Error");
     throw new Error(`Failed to generate AI response: ${error?.message || "Unknown error"}`);
   }
 };
@@ -613,7 +614,7 @@ export async function* streamAiAboutPdf(
       }
     }
   } catch (error: any) {
-    console.error("Stream Error:", error);
+    logger.error({ error }, "Stream Error");
     const errorMessage = error?.message || "Unknown AI error";
     if (errorMessage.includes("503") || errorMessage.includes("overloaded")) {
       yield "EchoMind AI is currently busy 🚀 Please try again in a moment.";

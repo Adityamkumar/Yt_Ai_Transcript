@@ -8,6 +8,7 @@ import { TranscriptChunk } from "../models/transcriptChunk.model.js";
 import { PdfChunk } from "../models/pdfChunk.model.js";
 import { retrieveRelevantTranscriptChunks } from "../utils/retrieveRelevantTranscriptChunks.js";
 import { retrieveRelevantChunks } from "../utils/retrieveRelevantChunks.js";
+import logger from "../lib/logger.js";
 
 const GeminiFollowUpSchema = {
   type: "object",
@@ -99,7 +100,7 @@ export const generateFollowUp = asyncHandler(async (req, res) => {
         }
       }
     } catch (err) {
-      console.error("[FollowUp] Failed to fetch context chunks for grounding:", err);
+      logger.error({ err }, "[FollowUp] Failed to fetch context chunks for grounding");
     }
   }
 

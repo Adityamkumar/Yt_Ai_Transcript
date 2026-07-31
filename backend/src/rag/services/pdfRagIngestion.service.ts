@@ -5,6 +5,7 @@ import { PdfDocument } from "../../models/pdfDocument.model.js";
 import { extractPdfText } from "../../utils/extractPdfText.js";
 import { chunkPdfPagesForRag } from "../chunking/pdfChunking.service.js";
 import { generateDocumentEmbeddingWithRetry } from "../utils/embeddingRetry.util.js";
+import logger from "../../lib/logger.js";
 
 export type IngestPdfForRagInput = {
   pdfDocumentId: string | Types.ObjectId;
@@ -108,6 +109,8 @@ export const ingestPdfForRag = async ({
     
     await PdfChunk.deleteMany({ documentId: documentObjectId });
 
+    await PdfChunk.deleteMany({ documentId: documentObjectId });
+
     await PdfChunk.insertMany(
       embeddedChunks.map((chunk) => ({
         documentId: documentObjectId,
@@ -119,7 +122,6 @@ export const ingestPdfForRag = async ({
       })),
     );
 
-    
     await PdfDocument.findByIdAndUpdate(documentObjectId, {
       status: "ready",
       ragStatus: "ready",
@@ -128,11 +130,11 @@ export const ingestPdfForRag = async ({
       $unset: { cooldownUntil: "" },
     });
 
-    console.info(
-      `[RAG] PDF ingestion complete. documentId=${documentObjectId}, chunks=${embeddedChunks.length}`,
+    logger.info(
+      { documentId: documentObjectId, chunksCount: embeddedChunks.length },
+      "[RAG] PDF ingestion complete"
     );
   } catch (error: any) {
-    
     const updatedDoc = await PdfDocument.findByIdAndUpdate(
       documentObjectId,
       {
@@ -143,12 +145,11 @@ export const ingestPdfForRag = async ({
       { new: true }
     );
 
-    
     await PdfChunk.deleteMany({ documentId: documentObjectId });
 
     if (updatedDoc) {
       if (updatedDoc.retryCount < MAX_AUTO_RETRIES) {
-        console.info(`[RAG] Auto-retry ingestion (attempt ${updatedDoc.retryCount + 1}) for documentId=${documentObjectId}`);
+        logger.info({ documentId: documentObjectId, attempt: updatedDoc.retryCount + 1 }, "[RAG] Auto-retry ingestion");
         
         ingestPdfForRag({
           pdfDocumentId,
@@ -158,15 +159,14 @@ export const ingestPdfForRag = async ({
           fileId: _fileId,
           uploadedBy: _uploadedBy,
         }).catch((err: Error) => {
-          console.error(`[RAG] Background auto-retry ingestion failed:`, err.message);
+          logger.error({ err, documentId: documentObjectId }, "[RAG] Background auto-retry ingestion failed");
         });
       } else if (updatedDoc.retryCount >= MAX_TOTAL_RETRIES) {
-        
         const cooldownTime = new Date(Date.now() + 10 * 60 * 1000);
         await PdfDocument.findByIdAndUpdate(documentObjectId, {
           cooldownUntil: cooldownTime,
         });
-        console.info(`[RAG] Maximum retries reached for documentId=${documentObjectId}. Entering cooldown until ${cooldownTime.toISOString()}.`);
+        logger.warn({ documentId: documentObjectId, cooldownUntil: cooldownTime.toISOString() }, "[RAG] Maximum retries reached. Entering cooldown.");
       }
     }
 

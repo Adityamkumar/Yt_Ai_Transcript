@@ -1,4 +1,5 @@
 import { providerRegistry } from "./providerRegistry.js";
+import logger from "../../../lib/logger.js";
 
 export interface IAIProvider {
   readonly name: string;
@@ -132,7 +133,7 @@ export class AIProviderService {
     const nameLower = providerName.toLowerCase();
     const cooldownUntil = Date.now() + this.COOLDOWN_DURATION_MS;
     this.unhealthyCooldowns.set(nameLower, cooldownUntil);
-    console.warn(`[AI] Provider Health: Marked ${providerName} unhealthy. Skipping for 5 minutes.`);
+    logger.warn({ providerName }, "[AI] Provider Health: Marked unhealthy. Skipping for 5 minutes.");
   }
 
   private async executeWithFallback<T>(
@@ -160,7 +161,7 @@ export class AIProviderService {
         return result;
       } catch (error: any) {
         lastError = error;
-        console.warn(`[AI] ${provider.name} failed during ${actionName}: ${error.message || error}`);
+        logger.warn({ error, providerName: provider.name, actionName }, "[AI] Provider failed during action");
         this.markUnhealthy(provider.name);
 
         const nextProvider = providers[i + 1];
@@ -170,7 +171,7 @@ export class AIProviderService {
       }
     }
 
-    console.error(`[AI] All providers failed during ${actionName}. Last error:`, lastError);
+    logger.error({ lastError, actionName }, "[AI] All providers failed during action");
     throw new Error("Response generation temporarily unavailable.");
   }
 
@@ -228,10 +229,10 @@ export class AIProviderService {
         return;
       } catch (error: any) {
         lastError = error;
-        console.warn(`[AI] ${provider.name} failed during generateStream: ${error.message || error}`);
+        logger.warn({ error, providerName: provider.name }, "[AI] Provider failed during generateStream");
         
         if (yieldedAny) {
-          console.error(`[AI] Stream failed mid-generation on ${provider.name}. Cannot fall back.`);
+          logger.error({ providerName: provider.name }, "[AI] Stream failed mid-generation on provider. Cannot fall back.");
           throw error;
         }
 
@@ -244,7 +245,7 @@ export class AIProviderService {
       }
     }
 
-    console.error(`[AI] All providers failed during generateStream. Last error:`, lastError);
+    logger.error({ lastError }, "[AI] All providers failed during generateStream");
     throw new Error("Response generation temporarily unavailable.");
   }
 }

@@ -9,6 +9,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import mongoose from "mongoose";
+import logger from "../lib/logger.js";
 
 export const conversation = asyncHandler(async (req: any, res) => {
   const { videoId, pdfDocumentId, type = "video", title } = req.body;
@@ -101,12 +102,12 @@ export const deleteConversation = asyncHandler(async (req: any, res) => {
       try {
         await deletePdf(pdfDoc.fileId);
       } catch (err) {
-        console.error("Failed to delete PDF from ImageKit storage during conversation deletion:", err);
+        logger.error({ err }, "Failed to delete PDF from ImageKit storage during conversation deletion");
       }
       try {
         await deletePdfRagArtifacts(pdfDoc._id);
       } catch (err: any) {
-        console.error("[RAG Cleanup] Failed to delete RAG chunks for documentId=", pdfDoc._id, ":", err?.message);
+        logger.error({ err, documentId: pdfDoc._id }, "[RAG Cleanup] Failed to delete RAG chunks");
       }
       await PdfDocument.findByIdAndDelete(pdfDocumentId);
     }
@@ -116,7 +117,7 @@ export const deleteConversation = asyncHandler(async (req: any, res) => {
       try {
         await deleteVideoRagArtifacts(videoId);
       } catch (err: any) {
-        console.error("[RAG Cleanup] Failed to delete RAG chunks for videoId=", videoId, ":", err?.message);
+        logger.error({ err, videoId }, "[RAG Cleanup] Failed to delete RAG chunks");
       }
       await Video.findByIdAndDelete(videoId);
     }
