@@ -1,1 +1,1 @@
-export { RAG_CONFIG } from "./config/rag.config.js";
+export { RAG_CONFIG } from "./RagConfig/rag.config.js";

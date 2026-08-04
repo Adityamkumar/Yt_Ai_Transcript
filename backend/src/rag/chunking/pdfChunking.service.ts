@@ -1,4 +1,4 @@
-import { RAG_CONFIG } from "../config/rag.config.js";
+import { RAG_CONFIG } from "../RagConfig/rag.config.js";
 import type { PageText } from "../../utils/extractPdfText.js";
 
 export type PdfRagChunkInput = {

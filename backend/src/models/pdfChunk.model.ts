@@ -1,5 +1,5 @@
 import mongoose, { Document, Schema } from "mongoose";
-import { RAG_CONFIG } from "../rag/config/rag.config.js";
+import { RAG_CONFIG } from "../rag/RagConfig/rag.config.js";
 import type { PdfChunkFields } from "../types/ragChunk.types.js";
 
 export interface IPdfChunk extends PdfChunkFields, Document {}

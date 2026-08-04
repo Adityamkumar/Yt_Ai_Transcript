@@ -23,7 +23,7 @@ export function TimestampSummaryCard({
   videoId,
 }: TimestampSummaryCardProps) {
   return (
-    <div className="group relative p-5 rounded-2xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] hover:border-white/10 transition-all">
+    <div className="group relative p-5 rounded-2xl border border-white/5 bg-white/2 hover:bg-white/4 hover:border-white/10 transition-all">
       <div className="mb-3">
         <h4 className="text-lg font-bold text-white group-hover:text-purple-300 transition-colors">
           {heading}

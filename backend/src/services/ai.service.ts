@@ -1,15 +1,22 @@
 import { z } from "zod";
-import type{ ITranscriptChunk } from "../models/VideoUrl.model.js";
+import type { ITranscriptChunk } from "../models/VideoUrl.model.js";
 import { formatTimestamp } from "../utils/formatTimestamp.js";
+import { CHAT_SYSTEM_PROMPT } from "../rag/prompts/chat.prompt.js";
+import { NOTES_SYSTEM_PROMPT } from "../rag/prompts/notes.prompt.js";
+import { PDF_CHAT_SYSTEM_PROMPT } from "../rag/prompts/pdf.prompt.js";
+import { PDF_NOTES_SYSTEM_PROMPT } from "../rag/prompts/pdf_notes.prompt.js";
+import { SUMMARY_SYSTEM_PROMPT } from "../rag/prompts/summary.prompt.js";
 import {
-  CHAT_SYSTEM_PROMPT,
-  NOTES_SYSTEM_PROMPT,
-  PDF_CHAT_SYSTEM_PROMPT,
-  PDF_NOTES_SYSTEM_PROMPT,
-  SUMMARY_SYSTEM_PROMPT,
-} from "./ai.prompts.js";
-import { aiProviderService, sanitizeModelOutput } from "./ai/providers/aiProvider.service.js";
+  aiProviderService,
+  sanitizeModelOutput,
+} from "./ai/providers/aiProvider.service.js";
 import logger from "../lib/logger.js";
+import { INTERMEDIATE_SUMMARY_SYSTEM_PROMPT } from "../rag/prompts/intermediate_summary.prompt.js";
+import {
+  buildLanguageInstruction,
+  type SummaryLanguage,
+} from "../rag/utils/languagePrompt.util.js";
+import { FINAL_SUMMARY_SYSTEM_PROMPT } from "../rag/prompts/final_summary.prompt.js";
 
 export type ConversationMessage = {
   role: "user" | "assistant";
@@ -94,7 +101,6 @@ export const formatConversationHistory = (
     .join("\n\n");
 };
 
-
 export const formatTranscriptWithTimestamps = (chunks: ITranscriptChunk[]) => {
   return chunks
     .map((chunk) => {
@@ -112,10 +118,12 @@ export const buildContextPrompt = (
   durationSeconds?: number,
 ) => {
   let formattedTranscript = "";
-  
+
   const minutes = durationSeconds ? Math.floor(durationSeconds / 60) : 0;
   const seconds = durationSeconds ? Math.floor(durationSeconds % 60) : 0;
-  const durationStr = durationSeconds ? `${minutes}:${seconds.toString().padStart(2, "0")}` : "Unknown";
+  const durationStr = durationSeconds
+    ? `${minutes}:${seconds.toString().padStart(2, "0")}`
+    : "Unknown";
 
   if (Array.isArray(transcript)) {
     if (transcript.length === 0) {
@@ -124,14 +132,19 @@ export const buildContextPrompt = (
       if (type === "summary") {
         formattedTranscript = formatTranscriptWithTimestamps(transcript);
       } else {
-        formattedTranscript = transcript.map(c => c.text).join(" ");
+        formattedTranscript = transcript.map((c) => c.text).join(" ");
       }
     }
   } else {
     formattedTranscript = transcript || "";
   }
 
-  const systemPrompt = type === "notes" ? NOTES_SYSTEM_PROMPT : type === "summary" ? SUMMARY_SYSTEM_PROMPT : CHAT_SYSTEM_PROMPT;
+  const systemPrompt =
+    type === "notes"
+      ? NOTES_SYSTEM_PROMPT
+      : type === "summary"
+        ? SUMMARY_SYSTEM_PROMPT
+        : CHAT_SYSTEM_PROMPT;
 
   return `
 ${systemPrompt}
@@ -149,8 +162,8 @@ ${
   type === "notes"
     ? "Generate structured educational revision notes for quick study and revision. Do not include any timestamps."
     : type === "summary"
-    ? "Provide a lightweight conversational summary of this video with key highlights."
-    : question
+      ? "Provide a lightweight conversational summary of this video with key highlights."
+      : question
 }
 `;
 };
@@ -169,17 +182,25 @@ const GeminiNotesSchema = {
           heading: { type: "string" },
           points: {
             type: "array",
-            items: { type: "string" }
-          }
+            items: { type: "string" },
+          },
         },
-        required: ["heading", "points"]
-      }
+        required: ["heading", "points"],
+      },
     },
     keyInsights: { type: "array", items: { type: "string" } },
     actionableTakeaways: { type: "array", items: { type: "string" } },
-    examples: { type: "array", items: { type: "string" } }
+    examples: { type: "array", items: { type: "string" } },
   },
-  required: ["title", "subtitle", "overview", "mainConcepts", "keyInsights", "actionableTakeaways", "examples"]
+  required: [
+    "title",
+    "subtitle",
+    "overview",
+    "mainConcepts",
+    "keyInsights",
+    "actionableTakeaways",
+    "examples",
+  ],
 };
 
 const GeminiSummarySchema = {
@@ -192,16 +213,19 @@ const GeminiSummarySchema = {
         properties: {
           text: { type: "string" },
           timestamp: { type: "number" },
-          endTimestamp: { type: "number" }
+          endTimestamp: { type: "number" },
         },
-        required: ["text", "timestamp"]
-      }
-    }
+        required: ["text", "timestamp"],
+      },
+    },
   },
-  required: ["summary"]
+  required: ["summary"],
 };
 
-const toNearestTranscriptStart = (timestamp: number, chunks: ITranscriptChunk[]) => {
+const toNearestTranscriptStart = (
+  timestamp: number,
+  chunks: ITranscriptChunk[],
+) => {
   if (chunks.length === 0) {
     return Math.max(0, Math.floor(timestamp));
   }
@@ -271,7 +295,10 @@ const normalizeSummaryTimeline = (
 
   const remainingTail = totalDurationSeconds - last.timestamp;
   if (remainingTail > 75 && chunks.length > 0) {
-    const tailStartTarget = Math.max(0, totalDurationSeconds - Math.min(120, remainingTail));
+    const tailStartTarget = Math.max(
+      0,
+      totalDurationSeconds - Math.min(120, remainingTail),
+    );
     const tailStart = toNearestTranscriptStart(tailStartTarget, chunks);
 
     withRanges.push({
@@ -303,20 +330,25 @@ const extractJsonString = (rawText: string): string => {
   if (sanitized.startsWith("[") && sanitized.endsWith("]")) {
     return sanitized;
   }
-  
-  const jsonMatch = sanitized.match(/```json\s?([\s\S]*?)\s?```/) || sanitized.match(/```\s?([\s\S]*?)\s?```/);
+
+  const jsonMatch =
+    sanitized.match(/```json\s?([\s\S]*?)\s?```/) ||
+    sanitized.match(/```\s?([\s\S]*?)\s?```/);
   if (jsonMatch) {
     return jsonMatch[1]!.trim();
   }
-  const firstBrace = sanitized.indexOf('{');
-  const lastBrace = sanitized.lastIndexOf('}');
+  const firstBrace = sanitized.indexOf("{");
+  const lastBrace = sanitized.lastIndexOf("}");
   if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
     return sanitized.substring(firstBrace, lastBrace + 1).trim();
   }
   return sanitized;
 };
 
-const extractAndValidateJson = (rawText: string, validator: z.ZodSchema): boolean => {
+const extractAndValidateJson = (
+  rawText: string,
+  validator: z.ZodSchema,
+): boolean => {
   try {
     const jsonStr = extractJsonString(rawText);
     const parsed = JSON.parse(jsonStr);
@@ -335,7 +367,7 @@ export const askAiAboutTranscript = async (
   transcript: string | ITranscriptChunk[],
   question: string,
   recentMessages: ConversationMessage[] = [],
-  type: "chat" | "notes" | "summary" = "chat",
+  type: "chat" | "notes" = "chat",
 ) => {
   try {
     const totalDurationSeconds =
@@ -343,18 +375,23 @@ export const askAiAboutTranscript = async (
         ? getTranscriptDurationSeconds(transcript)
         : 0;
 
-    const prompt = buildContextPrompt(transcript, question, recentMessages, type, totalDurationSeconds);
+    const prompt = buildContextPrompt(
+      transcript,
+      question,
+      recentMessages,
+      type,
+      totalDurationSeconds,
+    );
 
-    if (type === "notes" || type === "summary") {
+    if (type === "notes") {
       const schema = type === "notes" ? GeminiNotesSchema : GeminiSummarySchema;
       const validator = type === "notes" ? NotesSchema : SummarySchema;
-
 
       const rawText = await aiProviderService.generateStructuredResponse(
         prompt,
         schema,
         undefined,
-        (text) => extractAndValidateJson(text, validator)
+        (text) => extractAndValidateJson(text, validator),
       );
       if (!rawText) throw new Error(`Empty ${type} response received`);
 
@@ -363,18 +400,10 @@ export const askAiAboutTranscript = async (
       try {
         const parsed = JSON.parse(jsonStr);
         const validated = validator.parse(parsed);
-        if (type === "summary" && Array.isArray(transcript)) {
-          const normalizedSummary: SummaryResponse = {
-            summary: normalizeSummaryTimeline(
-              (validated as SummaryResponse).summary,
-              transcript,
-              totalDurationSeconds,
-            ),
-          };
-          return JSON.stringify(normalizedSummary);
-        }
         if (type === "notes") {
-          return JSON.stringify(sanitizeNotesResponse(validated as NotesResponse));
+          return JSON.stringify(
+            sanitizeNotesResponse(validated as NotesResponse),
+          );
         }
         return JSON.stringify(validated);
       } catch (parseError: any) {
@@ -387,7 +416,80 @@ export const askAiAboutTranscript = async (
     return type === "chat" ? stripTimestampMentions(text) : text;
   } catch (error: any) {
     logger.error({ error }, "AI Service Error");
-    throw new Error(`Failed to generate AI response: ${error?.message || "Unknown error"}`);
+    throw new Error(
+      `Failed to generate AI response: ${error?.message || "Unknown error"}`,
+    );
+  }
+};
+
+export const generateIntermediateSummary = async (
+  transcript: string,
+  language: SummaryLanguage,
+  startTimestamp: string,
+  endTimestamp: string,
+): Promise<string> => {
+  try {
+    const prompt = `
+${INTERMEDIATE_SUMMARY_SYSTEM_PROMPT}
+${buildLanguageInstruction(language)}
+
+Timestamp:
+
+${startTimestamp} - ${endTimestamp}
+
+Transcript:
+
+${transcript}
+`;
+
+    const summary = await aiProviderService.generateResponse(prompt);
+
+    return summary.trim();
+  } catch (error: any) {
+    logger.error({ error }, "[AI] Failed to generate intermediate summary");
+
+    throw new Error(
+      `Failed to generate intermediate summary: ${
+        error?.message ?? "Unknown error"
+      }`,
+    );
+  }
+};
+
+export const generateFinalSummary = async (
+  summaries: string,
+  language: SummaryLanguage,
+): Promise<string> => {
+  try {
+    const prompt = `
+${FINAL_SUMMARY_SYSTEM_PROMPT}
+${buildLanguageInstruction(language)}
+
+Intermediate Summaries:
+
+${summaries}
+`;
+
+    const rawText = await aiProviderService.generateStructuredResponse(
+      prompt,
+      GeminiSummarySchema,
+      undefined,
+      (text) => extractAndValidateJson(text, SummarySchema),
+    );
+
+    const jsonStr = extractJsonString(rawText);
+
+    const parsed = JSON.parse(jsonStr);
+
+    const validated = SummarySchema.parse(parsed);
+
+    return JSON.stringify(validated);
+  } catch (error: any) {
+    logger.error({ error }, "[AI] Failed to generate final summary");
+
+    throw new Error(
+      `Failed to generate final summary: ${error?.message ?? "Unknown error"}`,
+    );
   }
 };
 
@@ -395,10 +497,10 @@ export async function* streamAiAboutTranscript(
   transcript: string | ITranscriptChunk[],
   question: string,
   recentMessages: ConversationMessage[] = [],
-  type: "chat" | "notes" | "summary" = "chat",
+  type: "chat" | "notes" = "chat",
 ) {
   try {
-    if (type === "notes" || type === "summary") {
+    if (type === "notes") {
       const result = await askAiAboutTranscript(
         transcript,
         question,
@@ -421,7 +523,7 @@ export async function* streamAiAboutTranscript(
       question,
       recentMessages,
       type,
-      totalDurationSeconds
+      totalDurationSeconds,
     );
 
     const stream = aiProviderService.generateStream(prompt);
@@ -434,13 +536,9 @@ export async function* streamAiAboutTranscript(
   } catch (error: any) {
     logger.error({ error }, "Stream Error");
 
-    const errorMessage =
-      error?.message || "Unknown AI error";
+    const errorMessage = error?.message || "Unknown AI error";
 
-    if (
-      errorMessage.includes("503") ||
-      errorMessage.includes("overloaded")
-    ) {
+    if (errorMessage.includes("503") || errorMessage.includes("overloaded")) {
       yield "EchoMind AI is currently busy 🚀 Please try again in a moment.";
     } else {
       yield "Something went wrong while generating the response.";
@@ -448,25 +546,26 @@ export async function* streamAiAboutTranscript(
   }
 }
 
-export const generateVideoTitle = async (transcript: string | ITranscriptChunk[]) => {
+export const generateVideoTitle = async (
+  transcript: string | ITranscriptChunk[],
+) => {
   try {
     let transcriptSample = "";
 
     if (typeof transcript === "string") {
-      
       const stripped = transcript.slice(500);
       transcriptSample = stripped.slice(0, 4000);
     } else if (transcript.length > 0) {
-      
-      
       const skip = Math.min(10, Math.floor(transcript.length * 0.08));
       const total = transcript.length;
 
-      const startChunks = transcript.slice(skip, skip + 20).map(c => c.text);
+      const startChunks = transcript.slice(skip, skip + 20).map((c) => c.text);
       const midStart = Math.floor(total * 0.35);
-      const midChunks = transcript.slice(midStart, midStart + 20).map(c => c.text);
+      const midChunks = transcript
+        .slice(midStart, midStart + 20)
+        .map((c) => c.text);
       const endStart = Math.max(0, total - 20);
-      const endChunks = transcript.slice(endStart).map(c => c.text);
+      const endChunks = transcript.slice(endStart).map((c) => c.text);
 
       transcriptSample = [
         "--- Beginning of video ---",
@@ -475,7 +574,9 @@ export const generateVideoTitle = async (transcript: string | ITranscriptChunk[]
         midChunks.join(" "),
         "--- End of video ---",
         endChunks.join(" "),
-      ].join("\n\n").slice(0, 5000);
+      ]
+        .join("\n\n")
+        .slice(0, 5000);
     }
 
     const prompt = `You are a video title generator. Analyze the transcript sample below and generate a single, meaningful, topic-focused title for this video.
@@ -501,12 +602,15 @@ ${transcriptSample}
 `;
 
     const text = await aiProviderService.generateResponse(prompt);
-    return text.trim().replace(/[\"'`*#]/g, "").replace(/\s+/g, " ").trim();
+    return text
+      .trim()
+      .replace(/[\"'`*#]/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
   } catch {
     return "New Conversation";
   }
 };
-
 
 export const buildPdfContextPrompt = (
   context: string,
@@ -514,7 +618,12 @@ export const buildPdfContextPrompt = (
   recentMessages: ConversationMessage[] = [],
   type: "chat" | "notes" | "summary" = "chat",
 ) => {
-  const systemPrompt = type === "notes" ? PDF_NOTES_SYSTEM_PROMPT : type === "summary" ? SUMMARY_SYSTEM_PROMPT : PDF_CHAT_SYSTEM_PROMPT;
+  const systemPrompt =
+    type === "notes"
+      ? PDF_NOTES_SYSTEM_PROMPT
+      : type === "summary"
+        ? SUMMARY_SYSTEM_PROMPT
+        : PDF_CHAT_SYSTEM_PROMPT;
 
   return `
 ${systemPrompt}
@@ -530,8 +639,8 @@ ${
   type === "notes"
     ? "Generate structured educational revision notes for quick study and revision based on the document context."
     : type === "summary"
-    ? "Provide a lightweight conversational summary of this document with key highlights."
-    : question
+      ? "Provide a lightweight conversational summary of this document with key highlights."
+      : question
 }
 `;
 };
@@ -543,18 +652,22 @@ export const askAiAboutPdf = async (
   type: "chat" | "notes" | "summary" = "chat",
 ) => {
   try {
-    const prompt = buildPdfContextPrompt(context, question, recentMessages, type);
+    const prompt = buildPdfContextPrompt(
+      context,
+      question,
+      recentMessages,
+      type,
+    );
 
     if (type === "notes" || type === "summary") {
       const schema = type === "notes" ? GeminiNotesSchema : GeminiSummarySchema;
       const validator = type === "notes" ? NotesSchema : SummarySchema;
 
-
       const rawText = await aiProviderService.generateStructuredResponse(
         prompt,
         schema,
         undefined,
-        (text) => extractAndValidateJson(text, validator)
+        (text) => extractAndValidateJson(text, validator),
       );
       if (!rawText) throw new Error(`Empty ${type} response received`);
 
@@ -564,7 +677,9 @@ export const askAiAboutPdf = async (
         const parsed = JSON.parse(jsonStr);
         const validated = validator.parse(parsed);
         if (type === "notes") {
-          return JSON.stringify(sanitizeNotesResponse(validated as NotesResponse));
+          return JSON.stringify(
+            sanitizeNotesResponse(validated as NotesResponse),
+          );
         }
         return JSON.stringify(validated);
       } catch (parseError: any) {
@@ -577,7 +692,9 @@ export const askAiAboutPdf = async (
     return text || "";
   } catch (error: any) {
     logger.error({ error }, "AI Service Error");
-    throw new Error(`Failed to generate AI response: ${error?.message || "Unknown error"}`);
+    throw new Error(
+      `Failed to generate AI response: ${error?.message || "Unknown error"}`,
+    );
   }
 };
 
@@ -671,4 +788,3 @@ Generate Title:`;
     return "New Document";
   }
 };
-

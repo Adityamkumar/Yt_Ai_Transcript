@@ -4,8 +4,9 @@ import { PdfChunk } from "../../models/pdfChunk.model.js";
 import { PdfDocument } from "../../models/pdfDocument.model.js";
 import { extractPdfText } from "../../utils/extractPdfText.js";
 import { chunkPdfPagesForRag } from "../chunking/pdfChunking.service.js";
-import { generateDocumentEmbeddingWithRetry } from "../utils/embeddingRetry.util.js";
+import { generateDocumentEmbeddings } from "../../ai/embedding.service.js";
 import logger from "../../lib/logger.js";
+import { RAG_CONFIG } from "../RagConfig/rag.config.js";
 
 export type IngestPdfForRagInput = {
   pdfDocumentId: string | Types.ObjectId;
@@ -16,14 +17,15 @@ export type IngestPdfForRagInput = {
   uploadedBy: string | Types.ObjectId;
 };
 
-/** Maximum number of automatic ingestion attempts before requiring manual intervention. */
-export const MAX_AUTO_RETRIES = 2;
+/** Number of automatic retries before requiring user intervention. */
+export const MAX_AUTO_RETRIES = RAG_CONFIG.retries.MAX_AUTO_RETRIES;
 
-/** Maximum number of manual retries a user can trigger (on top of auto retries). */
-export const MAX_MANUAL_RETRIES = 2;
+/** Number of manual retries the user can trigger. */
+export const MAX_MANUAL_RETRIES = RAG_CONFIG.retries.MAX_MANUAL_RETRIES;
 
-/** Total maximum ingestion attempts across both auto and manual retries. */
-export const MAX_TOTAL_RETRIES = MAX_AUTO_RETRIES + MAX_MANUAL_RETRIES;
+/** Total retry budget (automatic + manual). Does not include the initial attempt. */
+export const MAX_RETRY_COUNT =
+  MAX_AUTO_RETRIES + MAX_MANUAL_RETRIES;
 
 const toObjectId = (value: string | Types.ObjectId): Types.ObjectId =>
   typeof value === "string" ? new Types.ObjectId(value) : value;
@@ -35,41 +37,61 @@ const fetchPdfBufferFromUrl = async (fileUrl: string): Promise<Buffer> => {
   return Buffer.from(response.data);
 };
 
-const EMBEDDING_BATCH_SIZE = 5;
-const EMBEDDING_BATCH_DELAY_MS = 200;
+const EMBEDDING_BATCH_SIZE = RAG_CONFIG.embeddings.batchSize;
 
-const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
 const generateEmbeddingsForChunks = async (
-  chunks: Array<{ text: string; chunkIndex: number; page: number; wordCount: number }>,
+  chunks: Array<{
+    text: string;
+    chunkIndex: number;
+    page: number;
+    wordCount: number;
+  }>,
   title: string,
-): Promise<Array<{ text: string; chunkIndex: number; page: number; wordCount: number; embedding: number[] }>> => {
-  const result: Array<{ text: string; chunkIndex: number; page: number; wordCount: number; embedding: number[] }> = [];
+): Promise<
+  Array<{
+    text: string;
+    chunkIndex: number;
+    page: number;
+    wordCount: number;
+    embedding: number[];
+  }>
+> => {
+  const result: Array<{
+    text: string;
+    chunkIndex: number;
+    page: number;
+    wordCount: number;
+    embedding: number[];
+  }> = [];
 
   for (let i = 0; i < chunks.length; i += EMBEDDING_BATCH_SIZE) {
     const batch = chunks.slice(i, i + EMBEDDING_BATCH_SIZE);
 
-    const batchResults = await Promise.all(
-      batch.map(async (chunk) => {
-        const embedding = await generateDocumentEmbeddingWithRetry(chunk.text, title);
-        return { ...chunk, embedding };
-      }),
-    );
+    const texts = batch.map((chunk) => chunk.text);
+
+    const embeddings = await generateDocumentEmbeddings(texts, title);
+
+    const batchResults = batch.map((chunk, index) => {
+      const embedding = embeddings[index];
+
+      if (!embedding) {
+        throw new Error(
+          `Missing embedding for PDF chunk ${chunk.chunkIndex}`,
+        );
+      }
+
+      return {
+        ...chunk,
+        embedding,
+      };
+    });
 
     result.push(...batchResults);
-
-    const isLastBatch = i + EMBEDDING_BATCH_SIZE >= chunks.length;
-    if (!isLastBatch) {
-      await sleep(EMBEDDING_BATCH_DELAY_MS);
-    }
   }
 
   return result;
 };
-
-
-
-
 
 
 
@@ -106,10 +128,6 @@ export const ingestPdfForRag = async ({
 
     const embeddedChunks = await generateEmbeddingsForChunks(chunks, title);
 
-    
-    await PdfChunk.deleteMany({ documentId: documentObjectId });
-
-    await PdfChunk.deleteMany({ documentId: documentObjectId });
 
     await PdfChunk.insertMany(
       embeddedChunks.map((chunk) => ({
@@ -142,7 +160,7 @@ export const ingestPdfForRag = async ({
         ragStatus: "failed",
         $inc: { retryCount: 1 },
       },
-      { new: true }
+      { returnDocument: 'after' }
     );
 
     await PdfChunk.deleteMany({ documentId: documentObjectId });
@@ -161,7 +179,7 @@ export const ingestPdfForRag = async ({
         }).catch((err: Error) => {
           logger.error({ err, documentId: documentObjectId }, "[RAG] Background auto-retry ingestion failed");
         });
-      } else if (updatedDoc.retryCount >= MAX_TOTAL_RETRIES) {
+      } else if (updatedDoc.retryCount >= MAX_RETRY_COUNT) {
         const cooldownTime = new Date(Date.now() + 10 * 60 * 1000);
         await PdfDocument.findByIdAndUpdate(documentObjectId, {
           cooldownUntil: cooldownTime,

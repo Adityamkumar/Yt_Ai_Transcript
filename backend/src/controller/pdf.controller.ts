@@ -18,7 +18,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import {
   ingestPdfForRag,
   MAX_AUTO_RETRIES,
-  MAX_TOTAL_RETRIES,
+  MAX_RETRY_COUNT,
 } from "../rag/services/pdfRagIngestion.service.js";
 import { deletePdfRagArtifacts } from "../rag/services/pdfRagCleanup.service.js";
 import logger from "../lib/logger.js";
@@ -243,7 +243,7 @@ export const getPdfStatus = asyncHandler(async (req, res) => {
         ragStatus: pdfDoc.ragStatus ?? pdfDoc.status,
         totalChunks: pdfDoc.totalChunks,
         retryCount: pdfDoc.retryCount,
-        maxRetries: MAX_TOTAL_RETRIES,
+        maxRetries: MAX_RETRY_COUNT,
         cooldownUntil: pdfDoc.cooldownUntil,
       },
       "Status fetched successfully",
@@ -286,7 +286,7 @@ export const retryPdfIngestion = asyncHandler(async (req: any, res) => {
       retryCount: 0,
       $unset: { cooldownUntil: "" },
     });
-  } else if (pdfDoc.retryCount >= MAX_TOTAL_RETRIES) {
+  } else if (pdfDoc.retryCount >= MAX_RETRY_COUNT) {
     const cooldownTime = new Date(Date.now() + 10 * 60 * 1000);
     await PdfDocument.findByIdAndUpdate(pdfDoc._id, {
       cooldownUntil: cooldownTime,
@@ -319,7 +319,7 @@ export const retryPdfIngestion = asyncHandler(async (req: any, res) => {
       {
         ragStatus: "processing",
         retryCount: nextRetryCount,
-        maxRetries: MAX_TOTAL_RETRIES,
+        maxRetries: MAX_RETRY_COUNT,
         cooldownUntil: undefined,
       },
       "Re-indexing started successfully",

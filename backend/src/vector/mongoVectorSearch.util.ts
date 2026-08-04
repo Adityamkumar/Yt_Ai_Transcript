@@ -1,5 +1,5 @@
 import type { PipelineStage } from "mongoose";
-import { RAG_CONFIG } from "../rag/config/rag.config.js";
+import { RAG_CONFIG } from "../rag/RagConfig/rag.config.js";
 import type {
   VectorSearchAggregateSource,
   VectorSearchPipelineOptions,
@@ -65,14 +65,13 @@ export const executeVectorSearch = async <TResult>(
   return source.aggregate<TResult>(pipeline).exec();
 };
 
-export const filterBySimilarityThreshold = <TResult extends Record<string, unknown>>(
+export const filterBySimilarityThreshold = <
+  TResult extends { score: number }
+>(
   results: TResult[],
-  scoreField = RAG_CONFIG.retrieval.scoreField,
   minSimilarityScore = RAG_CONFIG.retrieval.minSimilarityScore,
 ) => {
-  return results.filter((result) => {
-    const score = result[scoreField];
-
-    return typeof score === "number" && score >= minSimilarityScore;
-  });
+  return results.filter(
+    (result) => result.score >= minSimilarityScore
+  );
 };

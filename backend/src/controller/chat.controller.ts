@@ -13,7 +13,8 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import logger from "../lib/logger.js";
-
+import { generateHierarchicalSummary } from "../rag/services/summarization.service.js";
+import { detectSummaryLanguage } from "../rag/utils/languagePrompt.util.js";
 type AskQuestionBody = {
   videoId?: string;
   question?: string;
@@ -44,7 +45,6 @@ export const askQuestion = asyncHandler(async (req, res) => {
   }
 
   let chunks = await TranscriptChunk.find({ videoDocumentId: video._id }).sort({ chunkIndex: 1 });
-
   if (chunks.length === 0) {
     logger.info(`Transcript chunks empty for video ${videoId}, attempting dynamic re-ingestion...`);
     try {
@@ -68,15 +68,32 @@ export const askQuestion = asyncHandler(async (req, res) => {
     }
   }
 
-  const contextMessages = getRecentMessages(recentMessages, 10);
+ const contextMessages = getRecentMessages(recentMessages, 10);
+ const language = detectSummaryLanguage(question!);
+if (type === "summary") {
+  const summary = await generateHierarchicalSummary(chunks, language);
 
-  if (type === "notes" || !isStreamingRequest(req.body as AskQuestionBody, req.headers.accept)) {
-    const answer = await askAiAboutTranscript(relevantChunks, question || "", contextMessages, type);
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      summary,
+      "Summary generated successfully",
+    ),
+  );
+}
 
-    return res
-      .status(200)
-      .json(new ApiResponse(200, answer, "answer generated successfully"));
-  }
+if (type === "notes" || !isStreamingRequest(req.body as AskQuestionBody, req.headers.accept)) {
+  const answer = await askAiAboutTranscript(
+    relevantChunks,
+    question || "",
+    contextMessages,
+    type,
+  );
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, answer, "answer generated successfully"));
+}
 
   res.status(200);
   res.setHeader("Content-Type", "text/plain; charset=utf-8");
