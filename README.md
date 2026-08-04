@@ -1,6 +1,6 @@
 <div align="center">
   <h1>🧠 YouTube & PDF AI Assistant</h1>
-  <p><strong>Ask questions, get summaries, and study YouTube transcripts or PDF documents using AI</strong></p>
+  <p><strong>A production-oriented Retrieval-Augmented Generation (RAG) application for chatting with YouTube videos and PDF documents, featuring semantic search, hierarchical summarization, multi-model failover, and interactive citations.</strong></p>
   
   ![React](https://img.shields.io/badge/React_19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
   ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
@@ -34,6 +34,8 @@ It has a responsive dark-mode interface, simple login/signup (including Google L
 - [🔄 Retries & Cooldown System](#-retries--cooldown-system)
 - [🚀 Getting Started](#-getting-started)
 - [🛡️ Security & Account Settings](#️-security--account-settings)
+- [🧠 Hierarchical Summarization Architecture](#-hierarchical-summarization-architecture)
+- [🧩 Prompt Architecture](#-prompt-architecture)
 - [📄 License](#-license)
 
 ---
@@ -49,7 +51,10 @@ It has a responsive dark-mode interface, simple login/signup (including Google L
   - **Animations & Easing:** Dynamic spring-loaded transitions (powered by Framer Motion) that slide left/right matching the navigation direction.
   - **Responsive Layout:** Automatically scales the PDF canvas without blinking, and collapses into a bottom-sheet drawer on mobile viewports.
 - **🤖 Multi-Model Fallback Architecture:** Never worry about rate limits or outages. The backend automatically cascades through multiple AI model providers (Groq ➔ OpenRouter ➔ Gemini) to guarantee seamless responses.
-- **📝 Study Notes & Summaries:** Automatically turn transcripts or PDFs into bullet points, key takeaways, and neat revision sheets.
+- **📝 AI Study Notes & Hierarchical Summaries:** Generate structured study notes and scalable summaries for YouTube videos and PDFs. Long videos are summarized       using a hierarchical multi-stage pipeline that overcomes LLM context window limitations while preserving chronological flow and interactive timestamps.
+- **🧠 Hierarchical Summarization Pipeline:** Transcript chunks are grouped into configurable batches, summarized independently, and merged into a final structured summary. This architecture enables reliable summarization of significantly longer videos.
+- **🌍 Language-Aware Summaries:** Summaries automatically adapt to the user's requested language. English is used by default, while Hindi or Hinglish summaries are generated only when explicitly requested.
+- **🧩 Modular Prompt Architecture:** Separate prompt templates are maintained for Chat, Notes, PDF Notes, Intermediate Summaries, and Final Summaries, making the AI pipeline easier to maintain and extend.
 - **🔐 Google & Local Login:** Log in using your email/password or use Google Sign-in. The app automatically links them if they share the same email.
 - **🔖 Saved Bookmarks:** Bookmark specific AI answers or notes to find them later easily.
 - **🔄 Auto-Retries & Cooldown:** If the AI embedding pipeline hits a rate limit, it automatically tries again in the background. If it fails 4 times, it locks for a 10-minute cooldown showing a countdown timer, then automatically unlocks so you can try again.
@@ -72,10 +77,9 @@ It has a responsive dark-mode interface, simple login/signup (including Google L
 - **Server:** Node.js + Express.js (TypeScript)
 - **Database:** MongoDB + Mongoose ORM
 - **Auth:** Passport.js (Google OAuth 2.0), JWT (JSON Web Tokens) in HttpOnly cookies, and bcrypt for passwords
-- **AI Services & Fallback:**
-  - **Groq SDK** (Llama 3 models)
-  - **OpenRouter SDK**
-  - **Google GenAI SDK** (`@google/genai`) with Gemini models
+- **AI Services & Fallback:** - **Groq SDK** (Llama 3 models)
+- **OpenRouter SDK**
+- **Google GenAI SDK** (`@google/genai`) with Gemini models
 - **Parsing Pipelines:** `youtube-transcript` for video captions, `pdf-parse-new` for reading PDFs
 - **Cloud Storage:** ImageKit to host uploaded PDFs
 - **Logging:** Pino & Pino-Pretty (for structured, high-performance logging)
@@ -162,7 +166,110 @@ When you ask a question about an indexed document or video transcript:
 - **LLM Context Injection:** These relevant text chunks are formatted, combined with the recent chat history, and injected directly into the system prompt.
 - **Cascading Generation:** The structured prompt is sent to the active LLM. If the primary provider fails, it seamlessly cascades through the fallback chain (**Groq ➔ OpenRouter ➔ Gemini**) to guarantee a response.
 
+#### 3. Hierarchical Summarization Pipeline
+Summary generation follows an independent AI pipeline separate from conversational retrieval.
+1. Transcript chunks are grouped into configurable batches.
+2. Each batch is summarized independently.
+3. Intermediate summaries are generated in chronological order.
+4. A second summarization stage merges all intermediate summaries.
+5. The final response is returned as structured JSON while preserving interactive timestamps and frontend compatibility.
+
 ---
+
+## 🧠 Hierarchical Summarization Architecture
+
+Large Language Models have limited context windows, making it difficult to summarize long-form transcripts in a single request.
+
+To overcome this limitation, EchoMind implements a **Hierarchical Summarization Pipeline**, allowing the application to summarize significantly longer YouTube videos while maintaining structured outputs and interactive timestamps.
+
+### Architecture Flow
+
+```mermaid
+flowchart LR
+
+A[Transcript Chunks]
+
+--> B[Batch 1]
+
+A --> C[Batch 2]
+
+A --> D[Batch 3]
+
+B --> E[Intermediate Summary]
+
+C --> F[Intermediate Summary]
+
+D --> G[Intermediate Summary]
+
+E --> H[Final Merge]
+
+F --> H
+
+G --> H
+
+H --> I[Structured JSON Summary]
+
+I --> J[Interactive Timestamp UI]
+```
+
+### Step 1 — Batch Formation
+
+After transcript chunking, the chunks are grouped into configurable batches instead of sending the entire transcript to the LLM in one request.
+
+Example:
+
+```text
+80 Transcript Chunks
+
+↓
+
+Batch 1 → Chunks 1–20
+
+Batch 2 → Chunks 21–40
+
+Batch 3 → Chunks 41–60
+
+Batch 4 → Chunks 61–80
+```
+
+Each batch stays safely within the model's context window.
+
+---
+
+### Step 2 — Intermediate Summaries
+
+Each batch is summarized independently.
+
+The intermediate summaries preserve:
+
+- chronological order
+- technical concepts
+- timestamp ranges
+- contextual flow
+
+---
+
+### Step 3 — Final Merge
+
+Instead of merging raw transcript chunks again, the application merges the intermediate summaries into one final structured response.
+
+The final output preserves:
+
+- interactive timestamps
+- section headings
+- chronological timeline
+- frontend JSON compatibility
+
+---
+
+### Benefits
+
+- Supports significantly longer YouTube videos.
+- Prevents context window overflow.
+- Produces cleaner and more structured summaries.
+- Easily configurable through batch size settings.
+- Future-ready architecture for larger documents and knowledge bases.
+
 
 ## 🤖 Multi-Model Fallback Architecture
 
@@ -171,6 +278,25 @@ To ensure high availability, the backend employs a fallback model chain:
 2. **Health Monitoring:** If a provider fails (due to rate limits, API timeout, or authorization errors), it is dynamically marked **unhealthy** and placed on a **5-minute cooldown**.
 3. **Seamless Handover:** The request is immediately passed to the next provider in the chain without failing the user's chat session.
 4. **Reasoning Sanitization:** Automatically parses and strips out thinking/reasoning tags (`<think>`, `<thinking>`, and `<reasoning>`) from both text outputs and streaming responses to keep the chat interface clean and distraction-free.
+5. **Shared AI Infrastructure:** The fallback architecture is shared across chat, notes, document analysis, and hierarchical summarization workflows, providing consistent reliability throughout the application.
+
+---
+
+## 🧩 Prompt Architecture
+
+EchoMind uses a modular prompt architecture instead of maintaining a single monolithic prompt.
+
+Dedicated prompt templates are maintained for:
+
+- Chat
+- Notes
+- PDF Notes
+- Intermediate Summaries
+- Final Summaries
+
+Language instructions are dynamically injected into every AI workflow, allowing the application to generate responses in English by default while supporting Hindi and Hinglish when explicitly requested.
+
+This modular design improves maintainability and allows individual AI workflows to evolve independently without affecting the rest of the system.
 
 ---
 
