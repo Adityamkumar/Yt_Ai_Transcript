@@ -126,7 +126,7 @@ export function HeroSection() {
       className="section-shell relative min-h-[105dvh] flex flex-col justify-center pt-24 pb-20 overflow-hidden"
     >
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-        <ShootingStarsGrid className="absolute inset-0" gridSize={48} />
+        <ShootingStarsGrid className="absolute inset-0" gridSize={48} shootingStarCount={7} />
         <div 
           className="absolute inset-0 z-[1] pointer-events-none" 
           style={{

@@ -65,10 +65,10 @@ function createShootingStars(count: number): ShootingStar[] {
       line: lines[index % lines.length],
       start: direction === 1 ? '-18%' : '112%',
       end: direction === 1 ? '112%' : '-18%',
-      length: 86 + seeded(index, 15) * 132,
+      length: 124 + seeded(index, 15) * 154,
       delay: seeded(index, 16) * 7 + index * 0.65,
-      duration: 1.65 + seeded(index, 17) * 1.6,
-      repeatDelay: 4.8 + seeded(index, 18) * 6.2,
+      duration: 2.1 + seeded(index, 17) * 1.4,
+      repeatDelay: 1.8 + seeded(index, 18) * 3.2,
       direction,
     };
   });
@@ -76,7 +76,7 @@ function createShootingStars(count: number): ShootingStar[] {
 
 export function ShootingStarsGrid({
   starCount = 40,
-  shootingStarCount = 5,
+  shootingStarCount = 7,
   gridSize = 46,
   speed = 'normal',
   className,
@@ -131,11 +131,11 @@ export function ShootingStarsGrid({
               top: horizontal ? linePosition : star.start,
               width: horizontal ? star.length : 1,
               height: horizontal ? 1 : star.length,
-              background: `linear-gradient(${gradient}, transparent 0%, rgba(8,145,178,0.14) 18%, rgba(103,232,249,0.92) 52%, rgba(255,255,255,0.96) 58%, transparent 100%)`,
-              boxShadow: '0 0 16px rgba(6,182,212,0.46), 0 0 28px rgba(148,163,184,0.18)',
+              background: `linear-gradient(${gradient}, transparent 0%, rgba(131,164,255,0.18) 18%, rgba(164,191,255,0.96) 52%, rgba(255,255,255,0.98) 58%, transparent 100%)`,
+              boxShadow: '0 0 18px rgba(128,162,255,0.72), 0 0 34px rgba(170,184,255,0.28)',
             }}
             initial={false}
-            animate={reduceMotion ? { opacity: 0 } : {
+            animate={reduceMotion ? { opacity: 0.45 } : {
               left: horizontal ? [star.start, star.end] : linePosition,
               top: horizontal ? linePosition : [star.start, star.end],
               opacity: [0, 1, 1, 0],
