@@ -17,14 +17,6 @@ It has a responsive dark-mode interface, simple login/signup (including Google L
 
 ---
 
-## 📸 Screenshots
-
-| Dashboard | AI Chat Interface | PDF Citation Workspace |
-| :---: | :---: | :---: |
-| ![Landing Page](./frontend/public/landing.png) | ![Chat Interface](./frontend/public/dashboard.png) | ![PDF Citation Workspace](./frontend/public/workspace.png) |
-
----
-
 ## 📑 Table of Contents
 - [✨ Features](#-features)
 - [🛠️ Tech Stack](#️-tech-stack)
