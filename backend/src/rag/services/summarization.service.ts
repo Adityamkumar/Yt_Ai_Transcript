@@ -38,14 +38,6 @@ export const generateIntermediateSummaries = async (
       end,
       summary,
     });
-    logger.info(
-      {
-        start,
-        end,
-        summaryLength: summary.length,
-      },
-      "[Summary] Intermediate summary generated",
-    );
   }
 
   return summaries;

@@ -123,18 +123,18 @@ export function HeroSection() {
   return (
     <section
       id="hero"
-      className="relative min-h-[105dvh] flex flex-col justify-center pt-24 pb-20 overflow-hidden"
+      className="section-shell relative min-h-[105dvh] flex flex-col justify-center pt-24 pb-20 overflow-hidden"
     >
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-        <Silk speed={6} scale={1} color="#2b00ff" noiseIntensity={2.3} rotation={0} />
-        {/* Dark radial overlay to ensure readability */}
+        <Silk speed={6} scale={1} color="#5b5df2" noiseIntensity={2.1} rotation={0} />
+        <div className="hero-glow" />
+        <div className="hero-glow alt" />
         <div 
-          className="absolute inset-0 z-1 pointer-events-none" 
+          className="absolute inset-0 z-[1] pointer-events-none" 
           style={{
-            background: 'radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0.15) 0%, rgba(10, 10, 10, 0.65) 100%)',
+            background: 'radial-gradient(circle at 50% 45%, rgba(0, 0, 0, 0.08) 0%, rgba(6, 8, 12, 0.7) 100%)',
           }}
         />
-        {/* Bottom fade block to blend background seamlessly into black mode */}
         <div
           className="absolute bottom-0 left-0 right-0 h-32 pointer-events-none"
           style={{
@@ -155,10 +155,10 @@ export function HeroSection() {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[var(--border-medium)] bg-[var(--surface-3)] backdrop-blur-sm mb-6"
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[rgba(157,165,255,0.18)] bg-[rgba(255,255,255,0.04)] backdrop-blur-md shadow-[0_10px_30px_rgba(0,0,0,0.18)] mb-6"
             >
               <Sparkles size={12} className="text-[var(--accent)]" />
-              <span className="text-[10px] font-mono tracking-widest text-[var(--accent)] uppercase font-semibold">
+              <span className="text-[10px] font-mono tracking-[0.28em] text-[var(--accent)] uppercase font-semibold">
                 AI-Native Media Workspace
               </span>
             </motion.div>
@@ -167,7 +167,7 @@ export function HeroSection() {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
-              className="text-3xl sm:text-4xl lg:text-4xl xl:text-5xl font-semibold tracking-tight text-[var(--text-primary)] leading-snug mb-4 font-sans"
+              className="text-3xl sm:text-4xl lg:text-4xl xl:text-5xl font-semibold tracking-tight text-[var(--text-primary)] leading-[1.08] mb-4 font-sans"
             >
               Turn YouTube videos and documents into{' '}
               <Cover>intelligent conversations</Cover>
@@ -194,7 +194,7 @@ export function HeroSection() {
               <Link
                 to="/signup"
                 id="hero-cta-primary"
-                className="w-full sm:w-auto px-6 py-3 rounded-xl bg-white hover:bg-neutral-200 text-neutral-900 text-xs font-semibold flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-md shadow-black/30"
+                className="w-full sm:w-auto px-6 py-3 rounded-xl bg-[linear-gradient(135deg,#dfe3ff_0%,#b9c1ff_48%,#87b8ff_100%)] hover:brightness-110 text-neutral-950 text-xs font-semibold flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-[0_18px_40px_rgba(110,127,255,0.22)]"
               >
                 <span>Create Account</span>
                 <ArrowRight size={13} />
@@ -204,7 +204,7 @@ export function HeroSection() {
                 target="_blank"
                 rel="noopener noreferrer"
                 id="hero-cta-github"
-                className="w-full sm:w-auto px-6 py-3 rounded-xl border border-[var(--border-medium)] hover:border-[var(--border-strong)] bg-[var(--surface-3)] hover:bg-[var(--surface-hover)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] text-xs font-medium flex items-center justify-center gap-2 transition-all"
+                className="w-full sm:w-auto px-6 py-3 rounded-xl border border-[rgba(255,255,255,0.1)] hover:border-[rgba(157,165,255,0.22)] bg-[rgba(255,255,255,0.035)] hover:bg-[rgba(255,255,255,0.06)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] text-xs font-medium flex items-center justify-center gap-2 transition-all backdrop-blur-sm"
               >
                 <Github size={13} />
                 <span>View Code</span>
@@ -218,9 +218,9 @@ export function HeroSection() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
-              className="w-full rounded-2xl border border-[var(--border-medium)] bg-[var(--surface-2)] p-4 sm:p-5 shadow-lg relative overflow-hidden backdrop-blur-md"
+              className="premium-panel premium-card-hover w-full rounded-[1.5rem] p-4 sm:p-5 relative overflow-hidden"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-[var(--accent-subtle)] via-transparent to-transparent opacity-20 pointer-events-none" />
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_15%,rgba(157,165,255,0.12),transparent_28%),radial-gradient(circle_at_85%_0%,rgba(77,162,255,0.1),transparent_24%)] opacity-80 pointer-events-none" />
 
               {/* SIMULATION STATE: IDLE */}
               {simState === 'idle' && (
@@ -231,12 +231,12 @@ export function HeroSection() {
                       <span>workspace_ingestion_sandbox</span>
                     </div>
                     {/* Sandbox source tabs */}
-                    <div className="flex gap-1.5 bg-[var(--surface-3)] p-0.5 rounded-lg border border-[var(--border-soft)] w-full sm:w-auto justify-center">
+                    <div className="flex gap-1.5 bg-[rgba(255,255,255,0.04)] p-0.5 rounded-lg border border-[rgba(255,255,255,0.08)] w-full sm:w-auto justify-center">
                       <button
                         onClick={() => { setSourceType('youtube'); setInputUrl(''); }}
                         className={`px-2.5 py-1 rounded-md text-[10px] font-semibold transition-all flex items-center justify-center flex-1 sm:flex-none gap-1.5 ${
                           sourceType === 'youtube'
-                            ? 'bg-[var(--accent)] text-neutral-950 shadow-sm'
+                            ? 'bg-[linear-gradient(135deg,#dfe3ff_0%,#87b8ff_100%)] text-neutral-950 shadow-sm'
                             : 'text-[var(--text-secondary)] hover:text-white'
                         }`}
                       >
@@ -247,7 +247,7 @@ export function HeroSection() {
                         onClick={() => { setSourceType('pdf'); setInputUrl(''); }}
                         className={`px-2.5 py-1 rounded-md text-[10px] font-semibold transition-all flex items-center justify-center flex-1 sm:flex-none gap-1.5 ${
                           sourceType === 'pdf'
-                            ? 'bg-[var(--accent)] text-neutral-950 shadow-sm'
+                            ? 'bg-[linear-gradient(135deg,#dfe3ff_0%,#87b8ff_100%)] text-neutral-950 shadow-sm'
                             : 'text-[var(--text-secondary)] hover:text-white'
                         }`}
                       >
@@ -273,7 +273,7 @@ export function HeroSection() {
                         </div>
                         <button
                           onClick={startSimulation}
-                          className="w-full sm:w-auto px-5 py-3 rounded-xl bg-[var(--accent)] hover:bg-[var(--accent-strong)] text-neutral-950 text-xs font-semibold flex items-center justify-center gap-2 shadow-md hover:shadow-[0_0_16px_rgba(139,156,247,0.3)] transition-all active:scale-[0.98]"
+                        className="w-full sm:w-auto px-5 py-3 rounded-xl bg-[linear-gradient(135deg,#dfe3ff_0%,#87b8ff_100%)] hover:brightness-110 text-neutral-950 text-xs font-semibold flex items-center justify-center gap-2 shadow-[0_18px_40px_rgba(110,127,255,0.18)] transition-all active:scale-[0.98]"
                         >
                           <Sparkles size={13} />
                           <span>Index</span>
@@ -303,7 +303,7 @@ export function HeroSection() {
                           setInputUrl(demoData.pdf.url);
                           startSimulation();
                         }}
-                        className="border border-dashed border-[var(--border-strong)] bg-[var(--surface-3)] hover:bg-[var(--surface-hover)] rounded-xl p-6 flex flex-col items-center justify-center text-center cursor-pointer transition-all hover:border-[var(--accent)] group"
+                        className="border border-dashed border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.03)] hover:bg-[rgba(255,255,255,0.06)] rounded-xl p-6 flex flex-col items-center justify-center text-center cursor-pointer transition-all hover:border-[rgba(157,165,255,0.35)] group"
                       >
                         <UploadCloud size={24} className="text-[var(--text-muted)] group-hover:text-[var(--accent)] transition-colors mb-2" />
                         <span className="text-xs text-[var(--text-secondary)] font-medium group-hover:text-[var(--text-primary)] transition-colors">
@@ -322,7 +322,7 @@ export function HeroSection() {
                             setInputUrl(demoData.pdf.url);
                             startSimulation();
                           }}
-                          className="text-[11px] font-medium text-[var(--accent)] hover:underline flex items-center gap-1 w-fit"
+                          className="text-[11px] font-medium text-[var(--accent)] hover:text-[var(--accent-strong)] hover:underline flex items-center gap-1 w-fit"
                         >
                           <span>Load sample benchmark PDF</span>
                           <ArrowRight size={10} />
@@ -433,8 +433,8 @@ export function HeroSection() {
                           onClick={() => handleAskQuestion(item.q, item.a)}
                           className={`text-left p-2.5 rounded-xl border text-[10.5px] font-medium leading-normal transition-all duration-200 ${
                             selectedQuestion === item.q
-                              ? 'bg-[var(--accent-subtle)] border-[var(--accent)] text-[var(--text-primary)]'
-                              : 'bg-[var(--surface-3)] border-[var(--border-soft)] hover:border-[var(--border-medium)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                          ? 'bg-[rgba(157,165,255,0.12)] border-[rgba(157,165,255,0.35)] text-[var(--text-primary)] shadow-[0_10px_30px_rgba(157,165,255,0.08)]'
+                          : 'bg-[rgba(255,255,255,0.035)] border-[var(--border-soft)] hover:border-[var(--border-medium)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
                           }`}
                         >
                           {item.q}
@@ -447,7 +447,7 @@ export function HeroSection() {
                       <motion.div
                         initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="border border-[var(--border-soft)] bg-[var(--surface-3)] rounded-xl p-3 space-y-2 mt-2"
+                        className="border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.035)] rounded-xl p-3 space-y-2 mt-2 backdrop-blur-sm"
                       >
                         <div className="flex justify-between items-center border-b border-[var(--border-soft)] pb-1.5 mb-1.5">
                           <span className="text-[9px] font-mono text-[var(--text-muted)] uppercase">ai_assistant</span>

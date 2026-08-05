@@ -9,10 +9,7 @@ export default function LandingPage() {
   useAuthRedirect();
 
   return (
-    <div
-      className="min-h-screen text-[#F5F7FF] overflow-x-hidden"
-      style={{ background: 'var(--canvas)' }}
-    >
+    <div className="min-h-screen overflow-x-hidden text-[#F5F7FF]">
       <Navbar />
       <main>
         <HeroSection />

@@ -53,8 +53,8 @@ export function ChatInput({ onSend, onStop, disabled, isPending, placeholder }: 
       <div className="chat-container pointer-events-auto">
         <div
           className={cn(
-            'glass-surface rounded-[var(--radius-2xl)] p-2 transition-all duration-200',
-            'focus-within:border-[rgba(139,156,247,0.28)] focus-within:shadow-[0_16px_60px_rgba(0,0,0,0.32),0_0_0_1px_rgba(139,156,247,0.06)]'
+            'premium-panel rounded-[var(--radius-2xl)] p-2 transition-all duration-200',
+            'focus-within:border-[rgba(157,165,255,0.28)] focus-within:shadow-[0_20px_70px_rgba(0,0,0,0.34),0_0_0_1px_rgba(157,165,255,0.06)]'
           )}
         >
           <div className="flex items-end gap-2">
@@ -76,8 +76,8 @@ export function ChatInput({ onSend, onStop, disabled, isPending, placeholder }: 
               className={cn(
                 'mb-1 grid h-10 w-10 shrink-0 place-items-center rounded-2xl transition-all',
                 canSend || canStop
-                  ? 'bg-[var(--text-primary)] text-[var(--canvas)] hover:scale-[1.03] hover:opacity-90'
-                  : 'cursor-not-allowed bg-[var(--surface-3)] text-[var(--text-muted)]'
+                  ? 'bg-[linear-gradient(135deg,#dfe3ff_0%,#87b8ff_100%)] text-[var(--canvas)] hover:scale-[1.03] hover:opacity-95 shadow-[0_14px_28px_rgba(110,127,255,0.18)]'
+                  : 'cursor-not-allowed bg-[rgba(255,255,255,0.04)] text-[var(--text-muted)]'
               )}
             >
               {isPending ? <Square size={14} fill="currentColor" /> : <ArrowUp size={18} />}

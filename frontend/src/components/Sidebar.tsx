@@ -87,16 +87,16 @@ export function Sidebar({ onNewChat }: SidebarProps) {
         variants={sidebarVariants}
         initial={false}
         animate={sidebarOpen ? 'open' : 'closed'}
-        className="fixed inset-y-0 left-0 z-50 flex shrink-0 overflow-hidden border-r border-[var(--border-soft)] bg-[var(--canvas-subtle)]/90 shadow-xl shadow-black/20 backdrop-blur-2xl lg:relative lg:z-30"
+        className="fixed inset-y-0 left-0 z-50 flex shrink-0 overflow-hidden border-r border-[var(--border-soft)] bg-[rgba(8,9,12,0.88)] shadow-xl shadow-black/20 backdrop-blur-2xl lg:relative lg:z-30"
       >
         <div className="flex h-full w-[var(--sidebar-width)] flex-col">
           {/* ── Brand ── */}
-          <div className="flex h-[var(--header-height)] items-center justify-between border-b border-[var(--border-soft)] px-4">
+          <div className="flex h-[var(--header-height)] items-center justify-between border-b border-[var(--border-soft)] px-4 bg-[rgba(255,255,255,0.015)]">
             <button
               onClick={() => navigate('/app')}
               className="flex min-w-0 items-center gap-3 rounded-xl pr-2 text-left transition-colors hover:opacity-90"
             >
-              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-[var(--border-medium)] bg-[var(--accent-subtle)] text-[var(--accent)]">
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-[rgba(157,165,255,0.2)] bg-[rgba(157,165,255,0.12)] text-[var(--accent)] shadow-[0_10px_24px_rgba(157,165,255,0.08)]">
                 <Sparkles size={16} />
               </span>
               <span className="min-w-0">
@@ -118,9 +118,9 @@ export function Sidebar({ onNewChat }: SidebarProps) {
           <div className="p-3.5">
             <button
               onClick={onNewChat}
-              className="group flex w-full items-center gap-3 rounded-2xl border border-[var(--border-medium)] bg-[var(--surface-3)] px-3.5 py-2.5 text-left transition-all hover:border-[var(--border-strong)] hover:bg-[var(--surface-hover)]"
+              className="group flex w-full items-center gap-3 rounded-2xl border border-[rgba(157,165,255,0.16)] bg-[rgba(255,255,255,0.04)] px-3.5 py-2.5 text-left transition-all hover:border-[rgba(157,165,255,0.28)] hover:bg-[rgba(255,255,255,0.065)]"
             >
-              <span className="grid h-8 w-8 place-items-center rounded-xl bg-[var(--text-primary)] text-[var(--canvas)] transition-transform group-hover:scale-[1.04]">
+              <span className="grid h-8 w-8 place-items-center rounded-xl bg-[linear-gradient(135deg,#dfe3ff_0%,#87b8ff_100%)] text-[var(--canvas)] transition-transform group-hover:scale-[1.04] shadow-[0_10px_24px_rgba(110,127,255,0.18)]">
                 <Plus size={16} strokeWidth={2.5} />
               </span>
               <span className="min-w-0 flex-1">
@@ -138,8 +138,8 @@ export function Sidebar({ onNewChat }: SidebarProps) {
               className={cn(
                 "flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-colors",
                 !location.pathname.includes('/bookmarks') && !conversationId
-                  ? "bg-[var(--surface-active)] text-[var(--text-primary)]"
-                  : "text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+                  ? "bg-[rgba(157,165,255,0.12)] text-[var(--text-primary)]"
+                  : "text-[var(--text-muted)] hover:bg-[rgba(255,255,255,0.045)] hover:text-[var(--text-primary)]"
               )}
             >
               <LayoutDashboard
@@ -153,8 +153,8 @@ export function Sidebar({ onNewChat }: SidebarProps) {
               className={cn(
                 "flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-colors",
                 location.pathname === '/bookmarks'
-                  ? "bg-[var(--surface-active)] text-[var(--text-primary)]"
-                  : "text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+                  ? "bg-[rgba(157,165,255,0.12)] text-[var(--text-primary)]"
+                  : "text-[var(--text-muted)] hover:bg-[rgba(255,255,255,0.045)] hover:text-[var(--text-primary)]"
               )}
             >
               <Bookmark
@@ -163,7 +163,7 @@ export function Sidebar({ onNewChat }: SidebarProps) {
               />
               <span className="flex-1">Bookmarks</span>
               {bookmarks.length > 0 && (
-                <span className="rounded-full bg-[var(--surface-3)] px-2 py-0.5 text-[10px] font-medium text-[var(--text-muted)]">
+                <span className="rounded-full bg-[rgba(255,255,255,0.04)] px-2 py-0.5 text-[10px] font-medium text-[var(--text-muted)]">
                   {bookmarks.length}
                 </span>
               )}
@@ -189,7 +189,7 @@ export function Sidebar({ onNewChat }: SidebarProps) {
                   ))}
                 </div>
               ) : conversations.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-[var(--border-soft)] px-4 py-6 text-center">
+                <div className="rounded-2xl border border-dashed border-[var(--border-soft)] px-4 py-6 text-center bg-[rgba(255,255,255,0.02)]">
                   <MessageSquare size={17} className="mx-auto mb-2 text-[var(--text-muted)]" />
                   <p className="text-sm font-medium text-[var(--text-primary)]">No chats yet</p>
                   <p className="mt-1 text-xs text-[var(--text-muted)]">Your indexed sources appear here.</p>
@@ -212,16 +212,16 @@ export function Sidebar({ onNewChat }: SidebarProps) {
                           className={cn(
                             'flex w-full items-start gap-3 rounded-xl px-3 py-2.5 text-left transition-colors',
                             isActive
-                              ? 'bg-[var(--surface-active)] text-[var(--text-primary)]'
-                              : 'text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]'
+                              ? 'bg-[rgba(157,165,255,0.12)] text-[var(--text-primary)]'
+                              : 'text-[var(--text-secondary)] hover:bg-[rgba(255,255,255,0.045)] hover:text-[var(--text-primary)]'
                           )}
                         >
                           <span
                             className={cn(
                               'mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg border',
-                              isActive
-                                ? 'border-[rgba(139,156,247,0.25)] bg-[var(--accent-subtle)] text-[var(--accent)]'
-                                : 'border-[var(--border-soft)] bg-[var(--surface-3)] text-[var(--text-muted)]'
+                            isActive
+                                ? 'border-[rgba(157,165,255,0.22)] bg-[rgba(157,165,255,0.12)] text-[var(--accent)]'
+                                : 'border-[var(--border-soft)] bg-[rgba(255,255,255,0.035)] text-[var(--text-muted)]'
                             )}
                           >
                             {isPdf ? <FileText size={13} /> : <MessageSquare size={13} />}
@@ -256,8 +256,8 @@ export function Sidebar({ onNewChat }: SidebarProps) {
           </div>
 
           {/* ── User Footer ── */}
-          <div className="border-t border-[var(--border-soft)] p-3 space-y-1">
-            <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-[var(--surface-3)]">
+          <div className="border-t border-[var(--border-soft)] p-3 space-y-1 bg-[rgba(255,255,255,0.012)]">
+            <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-[rgba(255,255,255,0.04)] backdrop-blur-sm">
               <UserAvatar name={user?.name || 'Guest'} avatar={user?.avatar} size={34} />
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-sm font-medium text-[var(--text-primary)]">{user?.name || 'Guest'}</span>
@@ -273,7 +273,7 @@ export function Sidebar({ onNewChat }: SidebarProps) {
             </div>
             <button
               onClick={() => setSettingsOpen(true)}
-              className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition-colors hover:bg-[var(--surface-hover)] text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+              className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition-colors hover:bg-[rgba(255,255,255,0.045)] text-[var(--text-muted)] hover:text-[var(--text-primary)]"
             >
               <Settings size={14} />
               <span className="text-xs font-medium">Settings</span>

@@ -45,10 +45,11 @@ export function AuthInput({
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
           disabled={disabled}
-          className="w-full px-3.5 py-2.5 rounded-xl text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] transition-all duration-200 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full px-3.5 py-2.5 rounded-xl text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] transition-all duration-200 outline-none disabled:opacity-50 disabled:cursor-not-allowed backdrop-blur-sm"
           style={{
-            background: "var(--surface-3)",
-            border: hasError ? "1px solid rgba(248, 113, 113, 0.45)" : "1px solid var(--border-soft)",
+            background: "rgba(255,255,255,0.035)",
+            border: hasError ? "1px solid rgba(248, 113, 113, 0.5)" : "1px solid rgba(255,255,255,0.08)",
+            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.03)",
           }}
         />
         {rightSlot}

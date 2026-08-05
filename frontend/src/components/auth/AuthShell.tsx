@@ -17,7 +17,9 @@ export function AuthShell({
   maxWidthClass = "max-w-[430px]",
 }: AuthShellProps) {
   return (
-    <div className="relative min-h-screen flex items-center justify-center overflow-hidden px-4" style={{ background: "var(--canvas)" }}>
+    <div className="premium-shell relative min-h-screen flex items-center justify-center overflow-hidden px-4" style={{ background: "linear-gradient(180deg, rgba(7,8,11,1), rgba(9,10,14,1))" }}>
+      <div className="hero-glow" />
+      <div className="hero-glow alt" />
 
 
       <motion.div
@@ -27,17 +29,14 @@ export function AuthShell({
         className={`relative z-10 w-full ${maxWidthClass}`}
       >
         <div
-          className="rounded-2xl p-8 sm:p-9"
+          className="premium-panel rounded-[1.6rem] p-8 sm:p-9"
           style={{
-            background: "var(--surface-1)",
-            border: "1px solid var(--border-medium)",
-            boxShadow: "0 32px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(139,156,247,0.04)",
-            backdropFilter: "blur(24px)",
+            boxShadow: "0 32px 84px rgba(0,0,0,0.5), 0 0 0 1px rgba(157,165,255,0.05)",
           }}
         >
           <div className="flex flex-col items-center mb-7">
             <Link to="/" className="flex items-center gap-2 mb-6 group">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[var(--accent)] to-[#6B9EF7] flex items-center justify-center shadow-[0_0_20px_rgba(139,156,247,0.4)]">
+              <div className="w-9 h-9 rounded-xl bg-[linear-gradient(135deg,#dfe3ff_0%,#87b8ff_100%)] flex items-center justify-center shadow-[0_0_24px_rgba(157,165,255,0.35)]">
                 <Zap size={18} className="text-white" fill="white" />
               </div>
               <span className="text-[var(--text-primary)] font-semibold text-base">
@@ -45,8 +44,8 @@ export function AuthShell({
               </span>
             </Link>
 
-            <h1 className="text-xl font-bold text-[var(--text-primary)] mb-1.5 text-center">{title}</h1>
-            <p className="text-sm text-[var(--text-secondary)] text-center">{subtitle}</p>
+            <h1 className="text-2xl font-semibold text-[var(--text-primary)] mb-2 text-center tracking-tight">{title}</h1>
+            <p className="text-sm text-[var(--text-secondary)] text-center max-w-sm">{subtitle}</p>
           </div>
 
           {children}

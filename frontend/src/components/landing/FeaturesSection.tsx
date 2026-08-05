@@ -58,8 +58,8 @@ export function FeaturesSection() {
   return (
     <section
       id="features"
-      className="relative py-24 sm:py-32 overflow-hidden border-t border-[var(--border-soft)]"
-      style={{ background: 'var(--canvas)' }}
+      className="section-shell relative py-24 sm:py-32 overflow-hidden border-t border-[var(--border-soft)]"
+      style={{ background: 'linear-gradient(180deg, rgba(8, 9, 12, 0.96), rgba(6, 7, 10, 1))' }}
     >
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
@@ -70,10 +70,10 @@ export function FeaturesSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[var(--border-medium)] bg-[var(--surface-3)] mb-6"
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[rgba(157,165,255,0.18)] bg-[rgba(255,255,255,0.04)] mb-6 backdrop-blur-md"
           >
             <IconSparkles size={11} className="text-[var(--accent)]" />
-            <span className="text-[10px] font-mono tracking-widest text-[var(--accent)] uppercase font-semibold">
+            <span className="text-[10px] font-mono tracking-[0.26em] text-[var(--accent)] uppercase font-semibold">
               Capabilities Map
             </span>
           </motion.div>
@@ -83,7 +83,7 @@ export function FeaturesSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.05 }}
-            className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[var(--text-primary)] tracking-tight leading-[1.2] mb-6"
+            className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-[var(--text-primary)] tracking-tight leading-[1.08] mb-6"
           >
             A calm structure for your files{" "}
             <span className="font-serif italic font-normal text-[var(--accent)] leading-[1.2]">
@@ -133,22 +133,22 @@ const Feature = ({
   return (
     <div
       className={cn(
-        "flex flex-col lg:border-r py-10 relative group/feature border-[var(--border-soft)]",
+        "flex flex-col lg:border-r py-10 relative group/feature border-[var(--border-soft)] premium-card-hover",
         (index === 0 || index === 4) && "lg:border-l border-[var(--border-soft)]",
         index < 4 && "lg:border-b border-[var(--border-soft)]"
       )}
     >
       {index < 4 && (
-        <div className="opacity-0 group-hover/feature:opacity-100 transition duration-200 absolute inset-0 h-full w-full bg-gradient-to-t from-[var(--surface-3)] to-transparent pointer-events-none" />
+        <div className="opacity-0 group-hover/feature:opacity-100 transition duration-200 absolute inset-0 h-full w-full bg-gradient-to-t from-[rgba(157,165,255,0.08)] to-transparent pointer-events-none" />
       )}
       {index >= 4 && (
-        <div className="opacity-0 group-hover/feature:opacity-100 transition duration-200 absolute inset-0 h-full w-full bg-gradient-to-b from-[var(--surface-3)] to-transparent pointer-events-none" />
+        <div className="opacity-0 group-hover/feature:opacity-100 transition duration-200 absolute inset-0 h-full w-full bg-gradient-to-b from-[rgba(157,165,255,0.08)] to-transparent pointer-events-none" />
       )}
       <div className="mb-4 relative z-10 px-10 text-[var(--text-secondary)]">
         {icon}
       </div>
       <div className="text-lg font-bold mb-2 relative z-10 px-10">
-        <div className="absolute left-0 inset-y-0 h-6 group-hover/feature:h-8 w-1 rounded-tr-full rounded-br-full bg-[var(--border-strong)] group-hover/feature:bg-[var(--accent-strong)] transition-all duration-200 origin-center" />
+        <div className="absolute left-0 inset-y-0 h-6 group-hover/feature:h-8 w-1 rounded-tr-full rounded-br-full bg-[var(--border-strong)] group-hover/feature:bg-[var(--accent)] transition-all duration-200 origin-center" />
         <span className="group-hover/feature:translate-x-2 transition duration-200 inline-block text-[var(--text-primary)]">
           {title}
         </span>

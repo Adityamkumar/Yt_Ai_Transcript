@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion';
 import { CheckCircle2, ExternalLink, FileText, Youtube } from 'lucide-react';
 import { cn } from '@/utils/cn';
 
@@ -11,11 +12,55 @@ interface VideoCardProps {
 export function VideoCard({ videoId, youtubeUrl, transcript, isLoading = false }: VideoCardProps) {
   const thumbnailUrl = videoId !== 'loading' ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : null;
 
+  if (isLoading) {
+    return (
+      <div className="premium-card premium-card-hover relative overflow-hidden rounded-2xl border border-[rgba(157,165,255,0.14)] bg-[rgba(255,255,255,0.03)] p-3.5 backdrop-blur-xl">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(157,165,255,0.08),transparent_32%),radial-gradient(circle_at_80%_0%,rgba(77,162,255,0.06),transparent_26%)] pointer-events-none" />
+        <div className="relative grid gap-3 sm:grid-cols-[120px_minmax(0,1fr)] sm:items-center">
+          <div className="relative aspect-video overflow-hidden rounded-xl border border-[rgba(255,255,255,0.06)] bg-[linear-gradient(160deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))]">
+            <div className="absolute inset-0 shimmer-loader opacity-50" />
+            <div className="absolute inset-0 grid place-items-center">
+              <div className="grid h-11 w-11 place-items-center rounded-xl border border-[rgba(157,165,255,0.16)] bg-[rgba(8,9,12,0.55)]">
+                <Youtube size={20} className="text-[var(--accent)]" />
+              </div>
+            </div>
+          </div>
+
+          <div className="min-w-0">
+            <div className="mb-2 flex items-center gap-2">
+              <span className="rounded-full border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)] px-2 py-0.5 text-[10px] font-medium text-[var(--text-secondary)]">
+                Source
+              </span>
+              <span className="inline-flex items-center gap-1 rounded-full bg-[rgba(157,165,255,0.1)] px-2 py-0.5 text-[10px] font-medium text-[var(--accent)]">
+                <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)] animate-pulse" />
+                Processing
+              </span>
+            </div>
+
+            <h3 className="text-sm font-semibold text-[var(--text-primary)]">
+              Extracting transcript and preparing context
+            </h3>
+            <p className="mt-1 text-xs text-[var(--text-muted)]">
+              We’re converting the video into a grounded workspace.
+            </p>
+
+            <div className="mt-3 h-2 overflow-hidden rounded-full bg-[rgba(255,255,255,0.06)]">
+              <motion.div
+                className="h-full w-1/2 rounded-full bg-[linear-gradient(90deg,rgba(157,165,255,0.7),rgba(77,162,255,0.95),rgba(157,165,255,0.7))]"
+                animate={{ x: ['-30%', '110%'] }}
+                transition={{ repeat: Infinity, duration: 1.8, ease: 'easeInOut' }}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className={cn(
-        'overflow-hidden rounded-2xl border border-[var(--border-soft)] bg-[var(--surface-3)] backdrop-blur-lg transition-colors hover:border-[var(--border-medium)]',
-        isLoading && 'shimmer-loader'
+        'overflow-hidden rounded-2xl border border-[var(--border-soft)] bg-[var(--surface-3)] backdrop-blur-lg transition-colors hover:border-[var(--border-medium)]'
       )}
     >
       <div className="grid gap-4 p-3 sm:grid-cols-[144px_minmax(0,1fr)] sm:p-4">
