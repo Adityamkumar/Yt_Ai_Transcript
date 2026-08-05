@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 
 import { Cover } from '@/components/ui/cover';
-import Silk from '@/components/background/Silk';
+import { ShootingStarsGrid } from '@/components/ui/shooting-stars-grid';
 
 
 
@@ -126,13 +126,11 @@ export function HeroSection() {
       className="section-shell relative min-h-[105dvh] flex flex-col justify-center pt-24 pb-20 overflow-hidden"
     >
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-        <Silk speed={6} scale={1} color="#5b5df2" noiseIntensity={2.1} rotation={0} />
-        <div className="hero-glow" />
-        <div className="hero-glow alt" />
+        <ShootingStarsGrid className="absolute inset-0" gridSize={48} />
         <div 
           className="absolute inset-0 z-[1] pointer-events-none" 
           style={{
-            background: 'radial-gradient(circle at 50% 45%, rgba(0, 0, 0, 0.08) 0%, rgba(6, 8, 12, 0.7) 100%)',
+            background: 'radial-gradient(circle at 50% 45%, rgba(6, 8, 12, 0.06) 0%, rgba(6, 8, 12, 0.58) 100%)',
           }}
         />
         <div

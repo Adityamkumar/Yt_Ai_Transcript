@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Zap } from "lucide-react";
+import { ShootingStarsGrid } from "@/components/ui/shooting-stars-grid";
 
 
 interface AuthShellProps {
@@ -17,9 +18,15 @@ export function AuthShell({
   maxWidthClass = "max-w-[430px]",
 }: AuthShellProps) {
   return (
-    <div className="premium-shell relative min-h-screen flex items-center justify-center overflow-hidden px-4" style={{ background: "linear-gradient(180deg, rgba(7,8,11,1), rgba(9,10,14,1))" }}>
-      <div className="hero-glow" />
-      <div className="hero-glow alt" />
+    <div className="premium-shell relative min-h-screen flex items-center justify-center overflow-hidden px-4">
+      <ShootingStarsGrid
+        className="absolute inset-0"
+        starCount={28}
+        shootingStarCount={4}
+        gridSize={52}
+        speed="slow"
+      />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(7,9,15,0.05),rgba(7,9,15,0.46)_72%,rgba(7,9,15,0.72))]" />
 
 
       <motion.div
