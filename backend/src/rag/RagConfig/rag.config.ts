@@ -29,7 +29,8 @@ export const RAG_CONFIG = {
     MAX_MANUAL_RETRIES: 2,
   },
   summarization:{
-    batch_size:5
+    batch_size:5,
+     concurrency: 3,
   }
 
 } as const;
