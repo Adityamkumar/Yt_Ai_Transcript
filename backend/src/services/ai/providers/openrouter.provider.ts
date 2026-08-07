@@ -13,8 +13,8 @@ const getOpenRouterClient = (): OpenAI => {
       baseURL: "https://openrouter.ai/api/v1",
       apiKey,
       defaultHeaders: {
-        "HTTP-Referer": "https://echomind.ai",
-        "X-Title": "EchoMind AI",
+        "HTTP-Referer": "https://lumora.ai",
+        "X-Title": "Lumora",
       },
     });
   }

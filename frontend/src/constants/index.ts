@@ -5,7 +5,7 @@ export const API_ENDPOINTS = {
   CHAT_ASK: `${API_BASE_URL}/chat/ask`,
 } as const;
 
-export const APP_NAME = 'EchoMind AI';
+export const APP_NAME = 'Lumora';
 export const APP_TAGLINE = 'Turn any YouTube video into a focused, searchable AI conversation.';
 export const APP_DESCRIPTION =
   'Paste a YouTube link, index the transcript, and ask precise questions about the content.';
@@ -40,8 +40,8 @@ export const SIDEBAR_WIDTH = 280;
 export const SIDEBAR_COLLAPSED_WIDTH = 0;
 
 export const STORAGE_KEYS = {
-  SESSIONS: 'echomind_sessions',
-  ACTIVE_SESSION: 'echomind_active_session',
-  SIDEBAR_OPEN: 'echomind_sidebar_open',
+  SESSIONS: 'lumora_sessions',
+  ACTIVE_SESSION: 'lumora_active_session',
+  SIDEBAR_OPEN: 'lumora_sidebar_open',
 } as const;
 

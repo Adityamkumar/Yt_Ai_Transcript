@@ -16,7 +16,7 @@ export function ShowcaseSection() {
             className="mb-6 inline-flex items-center gap-2 rounded-full border border-[rgba(157,165,255,0.18)] bg-[rgba(255,255,255,0.04)] px-3.5 py-1.5 backdrop-blur-md"
           >
             <Sparkles size={12} className="text-[var(--accent)]" />
-            <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.25em] text-[var(--accent)]">How EchoMind works</span>
+            <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.25em] text-[var(--accent)]">How Lumora works</span>
           </motion.div>
           <motion.h2
             initial={{ opacity: 0, y: 18 }}
@@ -35,7 +35,7 @@ export function ShowcaseSection() {
             transition={{ duration: 0.55, delay: 0.12 }}
             className="mx-auto mt-5 max-w-2xl text-sm leading-relaxed text-[var(--text-secondary)] sm:text-base"
           >
-            EchoMind extracts your YouTube transcripts and PDFs, organizes them into meaningful context, and uses retrieval to keep every answer tied to the source.
+            Lumora extracts your YouTube transcripts and PDFs, organizes them into meaningful context, and uses retrieval to keep every answer tied to the source.
           </motion.p>
         </div>
 

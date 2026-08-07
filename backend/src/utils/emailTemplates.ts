@@ -10,14 +10,14 @@ export const generateResetPasswordEmail = (
   const resetLinkWithoutProtocol = resetLink.replace(/^https?:\/\//, "");
 
   return {
-    subject: "Reset your EchoMind AI password",
+    subject: "Reset your Lumora password",
     html: `
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Reset Password - EchoMind AI</title>
+  <title>Reset Password - Lumora</title>
 </head>
 <body style="margin: 0; padding: 0; background-color: #050816; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
   <div style="width: 100%; background-color: #050816; padding: 28px 12px;">
@@ -29,7 +29,7 @@ export const generateResetPasswordEmail = (
               <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" fill="#ffffff"/>
             </svg>
           </div>
-          <p style="margin: 12px 0 0; color: #f5f7ff; font-size: 22px; font-weight: 700;">EchoMind AI</p>
+          <p style="margin: 12px 0 0; color: #f5f7ff; font-size: 22px; font-weight: 700;">Lumora</p>
         </td>
       </tr>
       <tr>
@@ -37,7 +37,7 @@ export const generateResetPasswordEmail = (
           <h1 style="margin: 0 0 8px; color: #f5f7ff; font-size: 24px; line-height: 1.3;">Reset your password</h1>
           <p style="margin: 0 0 12px; color: #94a3b8; font-size: 14px; line-height: 1.7;">Hi ${userName || "there"},</p>
           <p style="margin: 0 0 24px; color: #94a3b8; font-size: 14px; line-height: 1.7;">
-            We received a request to reset your EchoMind AI password. Use the button below to continue. This link expires in
+            We received a request to reset your Lumora password. Use the button below to continue. This link expires in
             <strong style="color: #f5f7ff;"> 5 minutes</strong>.
           </p>
           <div style="text-align: center; margin: 0 0 24px;">
@@ -64,9 +64,9 @@ export const generateResetPasswordEmail = (
       <tr>
         <td style="padding: 20px 4px 6px; text-align: center;">
           <p style="margin: 0 0 8px; color: #94a3b8; font-size: 12px;">
-            Need help? Contact our support team at <a href="mailto:support@echomind.ai" style="color: #7c5cff; text-decoration: none;">support@echomind.ai</a>
+            Need help? Contact our support team at <a href="mailto:support@lumora.ai" style="color: #7c5cff; text-decoration: none;">support@lumora.ai</a>
           </p>
-          <p style="margin: 0; color: #94a3b8; font-size: 11px;">Copyright 2026 EchoMind AI. All rights reserved.</p>
+          <p style="margin: 0; color: #94a3b8; font-size: 11px;">Copyright 2026 Lumora. All rights reserved.</p>
         </td>
       </tr>
     </table>

@@ -108,7 +108,7 @@ export function LogoutModal({ isOpen, onClose, onConfirm }: LogoutModalProps) {
             {/* Content */}
             <div className="px-6 py-5">
               <p className="text-sm leading-relaxed text-[var(--text-secondary)]">
-                Are you sure you want to sign out of your EchoMind AI account? You will need to log back in to access your workspace conversations and bookmarks.
+                Are you sure you want to sign out of your Lumora account? You will need to log back in to access your workspace conversations and bookmarks.
               </p>
             </div>
 

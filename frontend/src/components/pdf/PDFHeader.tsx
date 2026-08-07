@@ -16,7 +16,7 @@ export function PDFHeader({ title, subtitle }: Props) {
 
   return (
     <View style={styles.headerWrapper} wrap={false}>
-      <Text style={styles.headerMeta}>EchoMind AI · Study Notes</Text>
+      <Text style={styles.headerMeta}>Lumora · Study Notes</Text>
       <Text style={styles.title}>{cleanTitle}</Text>
       {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
       <Text style={styles.headerDate}>{dateStr}</Text>

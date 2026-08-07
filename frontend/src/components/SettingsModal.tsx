@@ -343,7 +343,7 @@ export function SettingsModal({ isOpen, onClose }: Props) {
               {}
               <div className="border-t border-[var(--border-soft)] px-6 py-3">
                 <p className="text-center text-[11px] text-[var(--text-muted)]">
-                  EchoMind AI · v1.0
+                  Lumora · v1.0
                 </p>
               </div>
             </motion.div>

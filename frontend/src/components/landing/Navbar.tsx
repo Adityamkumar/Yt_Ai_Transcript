@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Zap, Github, LayoutDashboard, LogOut, ChevronDown } from 'lucide-react';
+import { Menu, X, Github, LayoutDashboard, LogOut, ChevronDown } from 'lucide-react';
 import { useAuth } from '@/store/AuthContext';
 import { UserAvatar } from '@/components/auth/UserAvatar';
 import { LogoutModal } from '@/components/LogoutModal';
+import { LumoraLogo } from '@/components/ui/LumoraLogo';
 
 const navLinks = [
   { label: 'Features', href: '#features' },
@@ -128,13 +129,8 @@ export function Navbar() {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 sm:h-18">
-            <Link to="/" onClick={handleLogoClick} className="flex items-center gap-2.5 group flex-shrink-0">
-              <div className="relative w-8 h-8 rounded-lg bg-gradient-to-br from-[#7C5CFF] to-[#4DA2FF] flex items-center justify-center shadow-[0_0_16px_rgba(124,92,255,0.4)] group-hover:shadow-[0_0_24px_rgba(124,92,255,0.6)] transition-shadow duration-300">
-                <Zap size={16} className="text-white" fill="white" />
-              </div>
-              <span className="text-[var(--text-primary)] font-semibold text-base tracking-tight">
-                EchoMind <span className="text-[var(--accent)]">AI</span>
-              </span>
+            <Link to="/" onClick={handleLogoClick} className="flex items-center flex-shrink-0">
+              <LumoraLogo size="md" />
             </Link>
 
             <nav className="hidden md:flex items-center gap-1">
@@ -259,7 +255,7 @@ export function Navbar() {
             >
               <div className="flex items-center justify-between px-5 h-16 border-b border-[var(--border-soft)]">
                 <span className="text-[var(--text-primary)] font-semibold text-sm">
-                  EchoMind <span className="text-[var(--accent)]">AI</span>
+                  <LumoraLogo size="sm" />
                 </span>
                 <div className="flex items-center gap-2">
                   <button onClick={() => setMobileOpen(false)} className="p-2 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--surface-3)] transition-colors">

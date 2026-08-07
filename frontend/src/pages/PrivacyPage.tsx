@@ -34,7 +34,7 @@ export default function PrivacyPage() {
           <section className="bg-[rgba(255,255,255,0.01)] border border-[var(--border-soft)] rounded-2xl p-6 md:p-8 backdrop-blur-xl">
             <h2 className="text-lg font-semibold text-white mb-3">1. Introduction</h2>
             <p>
-              Welcome to EchoMind AI ("we," "our," or "us"). We are committed to protecting your personal information and your right to privacy. This Privacy Policy explains how we collect, use, and safeguard your data when you use our YouTube transcript extractor and learning assistant platform.
+              Welcome to Lumora ("we," "our," or "us"). We are committed to protecting your personal information and your right to privacy. This Privacy Policy explains how we collect, use, and safeguard your data when you use our YouTube transcript extractor and learning assistant platform.
             </p>
           </section>
 
@@ -66,7 +66,7 @@ export default function PrivacyPage() {
           <section className="bg-[rgba(255,255,255,0.01)] border border-[var(--border-soft)] rounded-2xl p-6 md:p-8 backdrop-blur-xl">
             <h2 className="text-lg font-semibold text-white mb-3">4. Sharing and Disclosure</h2>
             <p>
-              EchoMind AI does not sell, lease, or trade your personal data. We only pass relevant text chunks to third-party generative AI models (such as Gemini) to fulfill your query requests. We ensure no proprietary or sensitive configuration settings are exposed to external entities.
+              Lumora does not sell, lease, or trade your personal data. We only pass relevant text chunks to third-party generative AI models (such as Gemini) to fulfill your query requests. We ensure no proprietary or sensitive configuration settings are exposed to external entities.
             </p>
           </section>
 

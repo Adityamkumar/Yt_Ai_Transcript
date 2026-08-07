@@ -29,7 +29,7 @@ export function TypingIndicator() {
         transition={{ duration: 2.2, repeat: Infinity }}
         className="text-[12px] font-medium tracking-tight text-[var(--text-muted)]"
       >
-        EchoMind is thinking...
+        Lumora is thinking...
       </motion.span>
     </div>
   );

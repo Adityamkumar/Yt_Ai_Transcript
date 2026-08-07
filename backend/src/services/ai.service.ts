@@ -539,7 +539,7 @@ export async function* streamAiAboutTranscript(
     const errorMessage = error?.message || "Unknown AI error";
 
     if (errorMessage.includes("503") || errorMessage.includes("overloaded")) {
-      yield "EchoMind AI is currently busy 🚀 Please try again in a moment.";
+      yield "Lumora is currently busy 🚀 Please try again in a moment.";
     } else {
       yield "Something went wrong while generating the response.";
     }
@@ -734,7 +734,7 @@ export async function* streamAiAboutPdf(
     logger.error({ error }, "Stream Error");
     const errorMessage = error?.message || "Unknown AI error";
     if (errorMessage.includes("503") || errorMessage.includes("overloaded")) {
-      yield "EchoMind AI is currently busy 🚀 Please try again in a moment.";
+      yield "Lumora is currently busy 🚀 Please try again in a moment.";
     } else {
       yield "Something went wrong while generating the response.";
     }

@@ -98,7 +98,7 @@ export function FeaturesSection() {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="text-sm sm:text-base text-[var(--text-secondary)] leading-relaxed"
           >
-            EchoMind streamlines material ingestion, analysis, and grounding. Experience the AI-native workspace architecture and real-time citation synchronization.
+            Lumora streamlines material ingestion, analysis, and grounding. Experience the AI-native workspace architecture and real-time citation synchronization.
           </motion.p>
         </div>
 

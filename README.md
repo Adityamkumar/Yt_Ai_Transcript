@@ -1,5 +1,5 @@
 <div align="center">
-  <h1>🧠 YouTube & PDF AI Assistant</h1>
+  <h1>✨ Lumora — AI Knowledge Assistant</h1>
   <p><strong>A production-oriented Retrieval-Augmented Generation (RAG) application for chatting with YouTube videos and PDF documents, featuring semantic search, hierarchical summarization, multi-model failover, and interactive citations.</strong></p>
   
   ![React](https://img.shields.io/badge/React_19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)

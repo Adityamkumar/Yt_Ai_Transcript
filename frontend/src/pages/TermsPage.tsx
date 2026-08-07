@@ -34,14 +34,14 @@ export default function TermsPage() {
           <section className="bg-[rgba(255,255,255,0.01)] border border-[var(--border-soft)] rounded-2xl p-6 md:p-8 backdrop-blur-xl">
             <h2 className="text-lg font-semibold text-white mb-3">1. Acceptance of Terms</h2>
             <p>
-              By accessing and using EchoMind AI ("Service"), you agree to be bound by these Terms of Service. If you do not agree to all of these terms, please do not access or use the Service.
+              By accessing and using Lumora ("Service"), you agree to be bound by these Terms of Service. If you do not agree to all of these terms, please do not access or use the Service.
             </p>
           </section>
 
           <section className="bg-[rgba(255,255,255,0.01)] border border-[var(--border-soft)] rounded-2xl p-6 md:p-8 backdrop-blur-xl">
             <h2 className="text-lg font-semibold text-white mb-3">2. Description of Service</h2>
             <p>
-              EchoMind AI is a learning workspace tool that allows users to fetch and store YouTube transcripts, parse PDF documents, index content for vector search, and run semantic queries using generative AI models.
+              Lumora is a learning workspace tool that allows users to fetch and store YouTube transcripts, parse PDF documents, index content for vector search, and run semantic queries using generative AI models.
             </p>
           </section>
 
@@ -60,7 +60,7 @@ export default function TermsPage() {
           <section className="bg-[rgba(255,255,255,0.01)] border border-[var(--border-soft)] rounded-2xl p-6 md:p-8 backdrop-blur-xl">
             <h2 className="text-lg font-semibold text-white mb-3">4. Intellectual Property</h2>
             <p>
-              All core platform designs, systems, codebase, trademarks, and brand assets of EchoMind AI are the intellectual property of EchoMind AI. User-supplied documents, transcripts, and chat conversation logs remain the property of the respective user.
+              All core platform designs, systems, codebase, trademarks, and brand assets of Lumora are the intellectual property of Lumora. User-supplied documents, transcripts, and chat conversation logs remain the property of the respective user.
             </p>
           </section>
 
@@ -74,7 +74,7 @@ export default function TermsPage() {
           <section className="bg-[rgba(255,255,255,0.01)] border border-[var(--border-soft)] rounded-2xl p-6 md:p-8 backdrop-blur-xl">
             <h2 className="text-lg font-semibold text-white mb-3">6. Limitation of Liability</h2>
             <p>
-              Under no circumstances shall EchoMind AI or its developers be liable for any indirect, incidental, special, or consequential damages arising out of the use or inability to use the Service.
+              Under no circumstances shall Lumora or its developers be liable for any indirect, incidental, special, or consequential damages arising out of the use or inability to use the Service.
             </p>
           </section>
 

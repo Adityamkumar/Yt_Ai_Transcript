@@ -207,7 +207,7 @@ export default function LoginPage() {
 
       <div className="flex items-center gap-3 my-6">
         <div className="flex-1 h-px" style={{ background: "var(--border-soft)" }} />
-        <span className="text-xs text-[var(--text-muted)]">New to EchoMind?</span>
+        <span className="text-xs text-[var(--text-muted)]">New to Lumora?</span>
         <div className="flex-1 h-px" style={{ background: "var(--border-soft)" }} />
       </div>
 

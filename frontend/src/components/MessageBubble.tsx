@@ -256,7 +256,7 @@ export function MessageBubble({
           <div className={cn(isUser ? 'w-fit max-w-[90%] sm:max-w-[75%] md:max-w-[65%]' : 'w-full')}>
             {/* Meta */}
             <div className={cn('mb-2.5 flex items-center gap-2 px-1', isUser && 'justify-end')}>
-              <span className="text-[13px] font-semibold text-[var(--text-primary)]/85">{isUser ? 'You' : 'EchoMind AI'}</span>
+              <span className="text-[13px] font-semibold text-[var(--text-primary)]/85">{isUser ? 'You' : 'Lumora'}</span>
               <span className="text-[11px] text-[var(--text-muted)]">
                 {formatRelativeTime(message.createdAt)}
               </span>

@@ -26,7 +26,7 @@ export const sendEmail = async ({
     });
 
   await transporter.sendMail({
-    from: `"EchoMind AI" <${process.env.EMAIL_USER}>`,
+    from: `"Lumora" <${process.env.EMAIL_USER}>`,
     to,
     subject,
     html,

@@ -6,7 +6,7 @@ const messages = [
   'Extracting transcript and clean document text.',
   'Chunking content into search-ready passages.',
   'Semantic retrieval found grounded source context.',
-  'EchoMind is composing an answer with citations.',
+  'Lumora is composing an answer with citations.',
   'Workspace ready for your next question.',
 ];
 
@@ -75,7 +75,7 @@ export function AIAgentPipeline() {
       <div className="relative overflow-hidden px-2 py-5 sm:px-5 sm:py-7">
         <div className="pointer-events-none absolute inset-0 opacity-40 [background-image:linear-gradient(rgba(157,165,255,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(157,165,255,0.045)_1px,transparent_1px)] [background-size:28px_28px]" />
         <div className="pointer-events-none absolute left-1/2 top-1/2 h-52 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(113,135,255,0.18),transparent_70%)] blur-2xl" />
-        <svg viewBox="0 0 680 204" className="relative block w-full min-w-[620px]" role="img" aria-label="EchoMind retrieval augmented generation pipeline">
+        <svg viewBox="0 0 680 204" className="relative block w-full min-w-[620px]" role="img" aria-label="Lumora retrieval augmented generation pipeline">
           <defs>
             <marker id="pipeline-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto">
               <path d="M2 1.5L7.5 5L2 8.5" fill="none" stroke="rgba(157,165,255,0.5)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
@@ -104,7 +104,7 @@ export function AIAgentPipeline() {
 
           <rect x="370" y="62" width="130" height="80" rx="12" fill="#0d1228" stroke="rgba(157,165,255,0.9)" strokeWidth="1.2" />
           <rect x="385" y="62.5" width="100" height="1" rx="0.5" fill="rgba(180,192,255,0.85)" />
-          <text x="435" y="90" textAnchor="middle" fontSize="9" fill="rgba(157,165,255,0.8)" fontFamily="monospace" letterSpacing="1">ECHOMIND AI</text>
+          <text x="435" y="90" textAnchor="middle" fontSize="9" fill="rgba(157,165,255,0.8)" fontFamily="monospace" letterSpacing="1">LUMORA</text>
           <text x="435" y="111" textAnchor="middle" fontSize="14" fill="#fff" fontFamily="system-ui" fontWeight="600">Retrieving context</text>
           <Pulse cx={423} cy={126} />
           <Pulse cx={435} cy={126} delay={0.4} />

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
-import { Github, Zap } from 'lucide-react';
+import { Github } from 'lucide-react';
+import { LumoraLogo } from '@/components/ui/LumoraLogo';
 
 export function Footer() {
   return (
@@ -15,13 +16,8 @@ export function Footer() {
           
           {/* Brand Left Column */}
           <div className="md:col-span-6 flex flex-col items-start gap-3.5">
-            <Link to="/" className="flex items-center gap-2.5 group">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#7C5CFF] to-[#4DA2FF] flex items-center justify-center shadow-[0_0_12px_rgba(124,92,255,0.4)] group-hover:shadow-[0_0_20px_rgba(124,92,255,0.6)] transition-shadow duration-300">
-                <Zap size={14} className="text-white" fill="white" />
-              </div>
-              <span className="text-[#F5F7FF] font-semibold text-sm tracking-tight">
-                EchoMind <span className="text-[#7C5CFF]">AI</span>
-              </span>
+            <Link to="/" className="flex items-center">
+              <LumoraLogo size="sm" />
             </Link>
             <p className="text-xs text-[var(--text-secondary)] max-w-sm leading-relaxed">
               A minimalist, AI-powered knowledge operating system. Extract, map, and converse with video and document databases.
@@ -74,7 +70,7 @@ export function Footer() {
           className="mt-12 pt-6 text-left flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] font-mono text-[var(--text-muted)]"
           style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}
         >
-          <span>&copy; {new Date().getFullYear()} EchoMind AI. Crafted for learning.</span>
+          <span>&copy; {new Date().getFullYear()} Lumora. Crafted for learning.</span>
           <div className="flex gap-4">
             <Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
             <Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link>

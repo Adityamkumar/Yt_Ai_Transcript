@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Zap } from "lucide-react";
 import { ShootingStarsGrid } from "@/components/ui/shooting-stars-grid";
+import { LumoraLogo } from "@/components/ui/LumoraLogo";
 
 
 interface AuthShellProps {
@@ -42,13 +42,8 @@ export function AuthShell({
           }}
         >
           <div className="flex flex-col items-center mb-7">
-            <Link to="/" className="flex items-center gap-2 mb-6 group">
-              <div className="w-9 h-9 rounded-xl bg-[linear-gradient(135deg,#dfe3ff_0%,#87b8ff_100%)] flex items-center justify-center shadow-[0_0_24px_rgba(157,165,255,0.35)]">
-                <Zap size={18} className="text-white" fill="white" />
-              </div>
-              <span className="text-[var(--text-primary)] font-semibold text-base">
-                EchoMind <span className="text-[var(--accent)]">AI</span>
-              </span>
+            <Link to="/" className="flex items-center mb-6">
+              <LumoraLogo size="md" />
             </Link>
 
             <h1 className="text-2xl font-semibold text-[var(--text-primary)] mb-2 text-center tracking-tight">{title}</h1>

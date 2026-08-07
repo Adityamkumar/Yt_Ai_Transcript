@@ -15,7 +15,7 @@ export const useUIStore = create<UIState>()(
       toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
     }),
     {
-      name: 'echomind-ui-storage',
+      name: 'lumora-ui-storage',
     }
   )
 );
