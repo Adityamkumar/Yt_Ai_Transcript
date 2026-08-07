@@ -172,7 +172,7 @@ Summary generation follows an independent AI pipeline separate from conversation
 
 Large Language Models have limited context windows, making it difficult to summarize long-form transcripts in a single request.
 
-To overcome this limitation, EchoMind implements a **Hierarchical Summarization Pipeline**, allowing the application to summarize significantly longer YouTube videos while maintaining structured outputs and interactive timestamps.
+To overcome this limitation, Lumora implements a **Hierarchical Summarization Pipeline**, allowing the application to summarize significantly longer YouTube videos while maintaining structured outputs and interactive timestamps.
 
 ### Architecture Flow
 
@@ -276,7 +276,7 @@ To ensure high availability, the backend employs a fallback model chain:
 
 ## 🧩 Prompt Architecture
 
-EchoMind uses a modular prompt architecture instead of maintaining a single monolithic prompt.
+Lumora uses a modular prompt architecture instead of maintaining a single monolithic prompt.
 
 Dedicated prompt templates are maintained for:
 
@@ -398,13 +398,13 @@ The backend includes a production-ready multi-stage Docker configuration.
 
 ```bash
 cd backend
-docker build -t echomind-backend:1.0 .
+docker build -t lumora-backend:1.0 .
 ```
 
 ### Run the container
 
 ```bash
-docker run -p 8000:8000 --env-file .env echomind-backend:1.0
+docker run -p 8000:8000 --env-file .env lumora-backend:1.0
 ```
 
 The backend will be available at:
