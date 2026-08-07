@@ -390,6 +390,31 @@ To handle API failures or rate limits without breaking the app:
 5. **Open App**
    Open `http://localhost:5173` in your browser to start using the app.
 
+## 🐳 Docker (Production)
+
+The backend includes a production-ready multi-stage Docker configuration.
+
+### Build the Docker image
+
+```bash
+cd backend
+docker build -t echomind-backend:1.0 .
+```
+
+### Run the container
+
+```bash
+docker run -p 8000:8000 --env-file .env echomind-backend:1.0
+```
+
+The backend will be available at:
+
+```text
+http://localhost:8000
+```
+
+> **Note:** Make sure the `.env` file is present inside the `backend` directory before running the container.
+
 ---
 
 ## 🛡️ Security & Account Settings
