@@ -4,20 +4,12 @@ import { motion } from "framer-motion";
 import { ArrowRight, AlertCircle } from "lucide-react";
 import { useAuth } from "@/store/AuthContext";
 import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton";
-import { AuthShell } from "@/components/auth/AuthShell";
-import { AuthInput, AuthPasswordInput } from "@/components/auth/AuthInput";
-import { AuthPrimaryButton } from "@/components/auth/AuthPrimaryButton";
+import { AuthSplitLayout, Input, PasswordInput, Button, Label } from "@/components/ui/auth-ui";
 import { useAuthRedirect } from "@/hooks/useAuthRedirect";
-
-const getErrorMessage = (error: unknown, fallback: string) => {
-  if (error instanceof Error && error.message) return error.message;
-  return fallback;
-};
 
 export default function LoginPage() {
   useAuthRedirect();
   const { login, user, loading } = useAuth();
-  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({ email: "", password: "" });
@@ -130,95 +122,88 @@ export default function LoginPage() {
   };
 
   return (
-    <AuthShell
-      title="Welcome back"
-      subtitle="Sign in to your account to continue"
-      maxWidthClass="max-w-[420px]"
+    <AuthSplitLayout
+      imageSrc="https://i.ibb.co/XrkdGrrv/original-ccdd6d6195fff2386a31b684b7abdd2e-removebg-preview.png"
+      quoteText="Welcome Back! The journey continues."
+      quoteAuthor="Lumora AI"
     >
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+        <div className="flex flex-col items-center gap-1 text-center mb-1">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Sign in to your account</h1>
+          <p className="text-sm text-muted-foreground">Enter your email and password below to sign in</p>
+        </div>
+
         {error && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center gap-2 text-red-400 text-xs"
+            className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center gap-2.5 text-red-400 text-xs font-medium"
           >
-            <AlertCircle size={14} />
-            {error}
+            <AlertCircle size={15} className="shrink-0" />
+            <span>{error}</span>
           </motion.div>
         )}
 
-        <AuthInput
-          id="login-email"
-          label="Email"
-          type="email"
-          autoComplete="email"
-          required
-          value={form.email}
-          onChange={(value) => setForm((prev) => ({ ...prev, email: value }))}
-          placeholder="you@example.com"
-          disabled={isLocked}
-        />
-
-        <div className="space-y-1.5">
-          <div className="flex items-center justify-between">
-            <label htmlFor="login-password" className="text-xs font-medium text-[var(--text-secondary)]">
-              Password
-            </label>
-            <Link
-              to="/forgot-password"
-              id="forgot-password-link"
-              className="text-xs text-[var(--accent)] hover:text-[var(--accent-strong)] transition-colors duration-200"
-            >
-              Forgot password?
-            </Link>
+        <div className="grid gap-4">
+          <div className="grid gap-1.5">
+            <Label htmlFor="login-email">Email</Label>
+            <Input
+              id="login-email"
+              type="email"
+              placeholder="you@example.com"
+              required
+              autoComplete="email"
+              value={form.email}
+              onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
+              disabled={isLocked}
+            />
           </div>
 
-          <AuthPasswordInput
-            id="login-password"
-            label=""
-            autoComplete="current-password"
-            required
-            value={form.password}
-            onChange={(value) => setForm((prev) => ({ ...prev, password: value }))}
-            placeholder="Enter your password"
-            visible={showPassword}
-            onToggleVisible={() => setShowPassword((prev) => !prev)}
-            disabled={isLocked}
-          />
-        </div>
+          <div className="grid gap-1.5">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="login-password">Password</Label>
+              <Link
+                to="/forgot-password"
+                id="forgot-password-link"
+                className="text-xs font-medium text-indigo-400 hover:text-indigo-300 transition-colors"
+              >
+                Forgot password?
+              </Link>
+            </div>
+            <PasswordInput
+              id="login-password"
+              placeholder="Enter your password"
+              required
+              autoComplete="current-password"
+              value={form.password}
+              onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
+              disabled={isLocked}
+            />
+          </div>
 
-        <AuthPrimaryButton
-          type="submit"
-          isLoading={isLoading}
-          loadingText="Signing in..."
-          text={isLocked ? `Try again in ${formatTime(remainingTime)}` : "Sign In"}
-          icon={!isLocked && <ArrowRight size={15} />}
-          disabled={isLocked || isLoading}
-        />
+          <Button
+            type="submit"
+            disabled={isLocked || isLoading}
+            className="mt-1 w-full bg-white text-black font-semibold hover:bg-neutral-200"
+          >
+            {isLoading ? "Signing in..." : isLocked ? `Try again in ${formatTime(remainingTime)}` : "Sign In"}
+            {!isLocked && !isLoading && <ArrowRight size={15} />}
+          </Button>
+        </div>
       </form>
 
-      <div className="flex items-center gap-3 mt-5 mb-4">
-        <div className="flex-1 h-px" style={{ background: "var(--border-soft)" }} />
-        <span className="text-xs text-[var(--text-muted)]">or</span>
-        <div className="flex-1 h-px" style={{ background: "var(--border-soft)" }} />
+      <div className="relative text-center text-xs my-2 after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-white/10">
+        <span className="relative z-10 bg-[#08090c] px-3 text-muted-foreground">Or continue with</span>
       </div>
 
       <GoogleAuthButton />
 
-      <div className="flex items-center gap-3 my-6">
-        <div className="flex-1 h-px" style={{ background: "var(--border-soft)" }} />
-        <span className="text-xs text-[var(--text-muted)]">New to Lumora?</span>
-        <div className="flex-1 h-px" style={{ background: "var(--border-soft)" }} />
+      <div className="text-center text-xs text-muted-foreground pt-2">
+        Don't have an account?{" "}
+        <Link to="/signup" id="go-to-signup" className="font-semibold text-foreground underline underline-offset-4 hover:text-indigo-300 transition-colors">
+          Sign up
+        </Link>
       </div>
-
-      <Link
-        to="/signup"
-        id="go-to-signup"
-        className="flex items-center justify-center gap-1.5 w-full py-2.5 rounded-xl text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border-soft)] hover:border-[var(--border-medium)] bg-[var(--surface-3)] hover:bg-[var(--surface-hover)] transition-all duration-200"
-      >
-        Create your free account
-      </Link>
-    </AuthShell>
+    </AuthSplitLayout>
   );
 }
-

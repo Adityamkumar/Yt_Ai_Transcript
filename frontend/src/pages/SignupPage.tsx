@@ -1,12 +1,10 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, Check, AlertCircle } from "lucide-react";
+import { ArrowRight, AlertCircle } from "lucide-react";
 import { useAuth } from "@/store/AuthContext";
 import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton";
-import { AuthShell } from "@/components/auth/AuthShell";
-import { AuthInput, AuthPasswordInput } from "@/components/auth/AuthInput";
-import { AuthPrimaryButton } from "@/components/auth/AuthPrimaryButton";
+import { AuthSplitLayout, Input, PasswordInput, Button, Label } from "@/components/ui/auth-ui";
 import { useAuthRedirect } from "@/hooks/useAuthRedirect";
 
 const passwordStrengthLabel = (pw: string): { label: string; color: string; width: string } => {
@@ -25,11 +23,9 @@ const getErrorMessage = (error: unknown, fallback: string) => {
 export default function SignupPage() {
   useAuthRedirect();
   const { register, user, loading } = useAuth();
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [form, setForm] = useState({ name: "", email: "", password: "", confirm: "" });
+  const [form, setForm] = useState({ name: "", email: "", password: "" });
 
   const isOAuthReturn = sessionStorage.getItem("oauth_pending") === "true";
 
@@ -42,13 +38,9 @@ export default function SignupPage() {
   }
 
   const strength = passwordStrengthLabel(form.password);
-  const passwordsMatch = Boolean(form.password && form.confirm && form.password === form.confirm);
-  const passwordMismatch = Boolean(form.confirm && form.password !== form.confirm);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (passwordMismatch) return;
-
     setIsLoading(true);
     setError(null);
     try {
@@ -61,143 +53,115 @@ export default function SignupPage() {
   };
 
   return (
-    <AuthShell
-      title="Create your account"
-      subtitle="Start analyzing videos in seconds, free forever"
-      maxWidthClass="max-w-[440px]"
+    <AuthSplitLayout
+      imageSrc="https://i.ibb.co/HTZ6DPsS/original-33b8479c324a5448d6145b3cad7c51e7-removebg-preview.png"
+      quoteText="Create an account. A new chapter awaits."
+      quoteAuthor="Lumora AI"
     >
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+        <div className="flex flex-col items-center gap-1 text-center mb-1">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Create an account</h1>
+          <p className="text-sm text-muted-foreground">Enter your details below to sign up</p>
+        </div>
+
         {error && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center gap-2 text-red-400 text-xs"
+            className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center gap-2.5 text-red-400 text-xs font-medium"
           >
-            <AlertCircle size={14} />
-            {error}
+            <AlertCircle size={15} className="shrink-0" />
+            <span>{error}</span>
           </motion.div>
         )}
 
-        <AuthInput
-          id="signup-name"
-          label="Full name"
-          type="text"
-          autoComplete="name"
-          required
-          value={form.name}
-          onChange={(value) => setForm((prev) => ({ ...prev, name: value }))}
-          placeholder="Alex Chen"
-        />
+        <div className="grid gap-3.5">
+          <div className="grid gap-1.5">
+            <Label htmlFor="signup-name">Full Name</Label>
+            <Input
+              id="signup-name"
+              type="text"
+              placeholder="John Doe"
+              required
+              autoComplete="name"
+              value={form.name}
+              onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
+            />
+          </div>
 
-        <AuthInput
-          id="signup-email"
-          label="Email"
-          type="email"
-          autoComplete="email"
-          required
-          value={form.email}
-          onChange={(value) => setForm((prev) => ({ ...prev, email: value }))}
-          placeholder="you@example.com"
-        />
+          <div className="grid gap-1.5">
+            <Label htmlFor="signup-email">Email</Label>
+            <Input
+              id="signup-email"
+              type="email"
+              placeholder="m@example.com"
+              required
+              autoComplete="email"
+              value={form.email}
+              onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
+            />
+          </div>
 
-        <div className="space-y-1.5">
-          <AuthPasswordInput
-            id="signup-password"
-            label="Password"
-            autoComplete="new-password"
-            required
-            value={form.password}
-            onChange={(value) => setForm((prev) => ({ ...prev, password: value }))}
-            placeholder="Create a strong password"
-            visible={showPassword}
-            onToggleVisible={() => setShowPassword((prev) => !prev)}
-          />
+          <div className="grid gap-1.5">
+            <Label htmlFor="signup-password">Password</Label>
+            <PasswordInput
+              id="signup-password"
+              placeholder="Create a password"
+              required
+              autoComplete="new-password"
+              value={form.password}
+              onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
+            />
 
-          {form.password.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              className="space-y-1"
-            >
-              <div className="h-1 rounded-full overflow-hidden" style={{ background: "var(--border-soft)" }}>
-                <motion.div
-                  className="h-full rounded-full"
-                  initial={{ width: 0 }}
-                  animate={{ width: strength.width }}
-                  transition={{ duration: 0.3 }}
-                  style={{ background: strength.color }}
-                />
-              </div>
-              <span className="text-xs" style={{ color: strength.color }}>
-                {strength.label}
-              </span>
-            </motion.div>
-          )}
+            {form.password.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                className="space-y-1 mt-1"
+              >
+                <div className="h-1 rounded-full overflow-hidden bg-white/10">
+                  <motion.div
+                    className="h-full rounded-full"
+                    initial={{ width: 0 }}
+                    animate={{ width: strength.width }}
+                    transition={{ duration: 0.3 }}
+                    style={{ background: strength.color }}
+                  />
+                </div>
+                <span className="text-[11px] font-medium" style={{ color: strength.color }}>
+                  {strength.label}
+                </span>
+              </motion.div>
+            )}
+          </div>
+
+          <Button
+            type="submit"
+            disabled={isLoading}
+            className="mt-2 w-full bg-white text-black font-semibold hover:bg-neutral-200"
+          >
+            {isLoading ? "Creating account..." : "Sign Up"}
+            {!isLoading && <ArrowRight size={15} />}
+          </Button>
+
+          <p className="text-[10px] text-muted-foreground text-center leading-relaxed mt-1">
+            By creating an account, you agree to our Terms of Service and Privacy Policy.
+          </p>
         </div>
-
-        <div>
-          <AuthPasswordInput
-            id="signup-confirm"
-            label="Confirm password"
-            autoComplete="new-password"
-            required
-            value={form.confirm}
-            onChange={(value) => setForm((prev) => ({ ...prev, confirm: value }))}
-            placeholder="Re-enter your password"
-            visible={showConfirm}
-            onToggleVisible={() => setShowConfirm((prev) => !prev)}
-            hasError={passwordMismatch}
-          />
-
-          {passwordMismatch && (
-            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-xs text-red-400 mt-1.5">
-              Passwords do not match
-            </motion.p>
-          )}
-          {passwordsMatch && (
-            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-xs text-green-400 flex items-center gap-1 mt-1.5">
-              <Check size={11} />
-              Passwords match
-            </motion.p>
-          )}
-        </div>
-
-        <AuthPrimaryButton
-          type="submit"
-          disabled={passwordMismatch}
-          isLoading={isLoading}
-          loadingText="Creating account..."
-          text="Create Account"
-          icon={<ArrowRight size={15} />}
-        />
-
-        <p className="text-[10px] text-[var(--text-muted)] text-center leading-relaxed">
-          By creating an account, you agree to our Terms of Service and Privacy Policy.
-        </p>
       </form>
 
-      <div className="flex items-center gap-3 mt-5 mb-4">
-        <div className="flex-1 h-px" style={{ background: "var(--border-soft)" }} />
-        <span className="text-xs text-[var(--text-muted)]">or</span>
-        <div className="flex-1 h-px" style={{ background: "var(--border-soft)" }} />
+      <div className="relative text-center text-xs my-2 after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-white/10">
+        <span className="relative z-10 bg-[#08090c] px-3 text-muted-foreground">Or continue with</span>
       </div>
 
-      <GoogleAuthButton label="Sign up with Google" />
+      <GoogleAuthButton label="Continue with Google" />
 
-      <div className="flex items-center gap-3 my-5">
-        <div className="flex-1 h-px" style={{ background: "var(--border-soft)" }} />
-        <span className="text-xs text-[var(--text-muted)]">Already have an account?</span>
-        <div className="flex-1 h-px" style={{ background: "var(--border-soft)" }} />
+      <div className="text-center text-xs text-muted-foreground pt-2">
+        Already have an account?{" "}
+        <Link to="/login" id="go-to-login" className="font-semibold text-foreground underline underline-offset-4 hover:text-indigo-300 transition-colors">
+          Sign in
+        </Link>
       </div>
-
-      <Link
-        to="/login"
-        id="go-to-login"
-        className="flex items-center justify-center gap-1.5 w-full py-2.5 rounded-xl text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border-soft)] hover:border-[var(--border-medium)] bg-[var(--surface-3)] hover:bg-[var(--surface-hover)] transition-all duration-200"
-      >
-        Sign in instead
-      </Link>
-    </AuthShell>
+    </AuthSplitLayout>
   );
 }
-
