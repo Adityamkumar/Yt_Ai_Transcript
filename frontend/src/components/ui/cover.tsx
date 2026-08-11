@@ -20,18 +20,39 @@ export const Cover = ({
   const [beamPositions, setBeamPositions] = useState<number[]>([]);
 
   useEffect(() => {
-    if (ref.current) {
-      setContainerWidth(ref.current?.clientWidth ?? 0);
+    const measure = () => {
+      if (!ref.current) return;
 
-      const height = ref.current?.clientHeight ?? 0;
-      const numberOfBeams = Math.floor(height / 10); // Adjust the divisor to control the spacing
+      const rect = ref.current.getBoundingClientRect();
+      const width = Math.max(1, Math.floor(rect.width));
+      const height = Math.max(1, Math.floor(rect.height));
+      setContainerWidth(width);
+
+      const numberOfBeams = Math.max(1, Math.floor(height / 10));
       const positions = Array.from(
         { length: numberOfBeams },
         (_, i) => (i + 1) * (height / (numberOfBeams + 1))
       );
       setBeamPositions(positions);
+    };
+
+    measure();
+
+    const observer = new ResizeObserver(() => {
+      measure();
+    });
+
+    if (ref.current) {
+      observer.observe(ref.current);
     }
-  }, [ref.current]);
+
+    window.addEventListener("resize", measure);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", measure);
+    };
+  }, []);
 
   return (
     <div
