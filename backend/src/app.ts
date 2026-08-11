@@ -85,7 +85,7 @@ app.use(globalErrorHandler)
 app.get("/health", (_, res) => {
   res.status(200).json({
     status: "ok",
-    message: "Lumora backend running"
+    message: "Lumora backend is running✅"
   });
 });
 
