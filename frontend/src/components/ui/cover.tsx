@@ -16,7 +16,7 @@ export const Cover = ({
 
   const ref = useRef<HTMLDivElement>(null);
 
-  const [containerWidth, setContainerWidth] = useState(0);
+  const [containerWidth, setContainerWidth] = useState(600);
   const [beamPositions, setBeamPositions] = useState<number[]>([]);
 
   useEffect(() => {
@@ -24,16 +24,21 @@ export const Cover = ({
       if (!ref.current) return;
 
       const rect = ref.current.getBoundingClientRect();
-      const width = Math.max(1, Math.floor(rect.width));
-      const height = Math.max(1, Math.floor(rect.height));
-      setContainerWidth(width);
+      const width = Math.floor(rect.width);
+      const height = Math.floor(rect.height);
 
-      const numberOfBeams = Math.max(1, Math.floor(height / 10));
-      const positions = Array.from(
-        { length: numberOfBeams },
-        (_, i) => (i + 1) * (height / (numberOfBeams + 1))
-      );
-      setBeamPositions(positions);
+      if (width > 0) {
+        setContainerWidth(width);
+      }
+
+      if (height > 0) {
+        const numberOfBeams = Math.max(1, Math.floor(height / 10));
+        const positions = Array.from(
+          { length: numberOfBeams },
+          (_, i) => (i + 1) * (height / (numberOfBeams + 1))
+        );
+        setBeamPositions(positions);
+      }
     };
 
     measure();
@@ -182,11 +187,13 @@ export const Beam = ({
 } & React.ComponentProps<typeof motion.svg>) => {
   const id = useId();
 
+  const effectiveWidth = width > 0 ? width : 600;
+
   return (
     <motion.svg
-      width={width ?? "600"}
+      width={effectiveWidth}
       height="1"
-      viewBox={`0 0 ${width ?? "600"} 1`}
+      viewBox={`0 0 ${effectiveWidth} 1`}
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className={cn("absolute inset-x-0 w-full", className)}
