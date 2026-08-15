@@ -7,6 +7,8 @@ import { ThemeProvider } from '@/store/ThemeContext';
 import { YouTubePlayerProvider } from '@/store/YouTubePlayerContext';
 import { YouTubePlayerModal } from '@/components/YouTubePlayerModal';
 import { AppLayout } from '@/layouts/AppLayout';
+import { AuthLoadingScreen } from '@/components/auth/AuthLoadingScreen';
+import { AuthErrorScreen } from '@/components/auth/AuthErrorScreen';
 
 const LandingPage = lazy(() => import('@/pages/LandingPage'));
 const LoginPage = lazy(() => import('@/pages/LoginPage'));
@@ -27,17 +29,76 @@ function RouteLoading() {
 }
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user, authStatus } = useAuth();
 
-  if (loading) {
-    return <RouteLoading />;
+  if (authStatus === 'checking') {
+    return <AuthLoadingScreen />;
   }
 
-  if (!user) {
+  if (!user || authStatus === 'unauthenticated') {
     return <Navigate to="/login" replace />;
   }
 
   return <>{children}</>;
+}
+
+function AppRouter() {
+  const { authStatus, refreshUser } = useAuth();
+
+  if (authStatus === 'checking') {
+    return <AuthLoadingScreen />;
+  }
+
+  if (authStatus === 'error') {
+    return <AuthErrorScreen onRetry={refreshUser} />;
+  }
+
+  return (
+    <>
+      <Suspense fallback={<RouteLoading />}>
+        <Routes>
+          <Route path="/" element={authStatus === 'authenticated' ? <Navigate to="/app" replace /> : <LandingPage />} />
+          <Route path="/login" element={authStatus === 'authenticated' ? <Navigate to="/app" replace /> : <LoginPage />} />
+          <Route path="/signup" element={authStatus === 'authenticated' ? <Navigate to="/app" replace /> : <SignupPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/terms" element={<TermsPage />} />
+          <Route
+            path="/app"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <HomePage />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/workspace/:conversationId"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <HomePage />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/bookmarks"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <BookmarksPage />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </Suspense>
+      <YouTubePlayerModal />
+    </>
+  );
 }
 
 export default function App() {
@@ -47,48 +108,7 @@ export default function App() {
         <ThemeProvider>
           <AuthProvider>
             <YouTubePlayerProvider>
-            <Suspense fallback={<RouteLoading />}>
-              <Routes>
-                <Route path="/" element={<LandingPage />} />
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/signup" element={<SignupPage />} />
-                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-                <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
-                <Route path="/privacy" element={<PrivacyPage />} />
-                <Route path="/terms" element={<TermsPage />} />
-                <Route
-                  path="/app"
-                  element={
-                    <ProtectedRoute>
-                      <AppLayout>
-                        <HomePage />
-                      </AppLayout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/workspace/:conversationId"
-                  element={
-                    <ProtectedRoute>
-                      <AppLayout>
-                        <HomePage />
-                      </AppLayout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/bookmarks"
-                  element={
-                    <ProtectedRoute>
-                      <AppLayout>
-                        <BookmarksPage />
-                      </AppLayout>
-                    </ProtectedRoute>
-                  }
-                />
-              </Routes>
-            </Suspense>
-            <YouTubePlayerModal />
+              <AppRouter />
             </YouTubePlayerProvider>
           </AuthProvider>
         </ThemeProvider>

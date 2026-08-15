@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/store/AuthContext';
 
 export function useAuthRedirect() {
-  const { user, loading, refreshUser } = useAuth();
+  const { user, authStatus, refreshUser } = useAuth();
   const navigate = useNavigate();
   const hasAttempted = useRef(false);
 
@@ -12,7 +12,7 @@ export function useAuthRedirect() {
     const isOAuthReturn = sessionStorage.getItem('oauth_pending') === 'true';
 
     if (!isOAuthReturn) return;
-    if (loading || user || hasAttempted.current) return;
+    if (authStatus === 'checking' || user || hasAttempted.current) return;
 
     hasAttempted.current = true;
     sessionStorage.removeItem('oauth_pending');
@@ -22,15 +22,15 @@ export function useAuthRedirect() {
         navigate('/app', { replace: true });
       }
     });
-  }, [loading, user, refreshUser, navigate]);
+  }, [authStatus, user, refreshUser, navigate]);
 
   // Handle auto-redirect if already authenticated
   useEffect(() => {
-    if (!loading && user && localStorage.getItem('isAuthenticated') === 'true') {
+    if (authStatus === 'authenticated' && user && localStorage.getItem('isAuthenticated') === 'true') {
       const isOAuthReturn = sessionStorage.getItem('oauth_pending') === 'true';
       if (!isOAuthReturn) {
         navigate('/app', { replace: true });
       }
     }
-  }, [loading, user, navigate]);
+  }, [authStatus, user, navigate]);
 }

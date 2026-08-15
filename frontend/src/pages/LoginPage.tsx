@@ -9,7 +9,7 @@ import { useAuthRedirect } from "@/hooks/useAuthRedirect";
 
 export default function LoginPage() {
   useAuthRedirect();
-  const { login, user, loading } = useAuth();
+  const { login, user, authStatus } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({ email: "", password: "" });
@@ -89,7 +89,7 @@ export default function LoginPage() {
 
   const isOAuthReturn = sessionStorage.getItem("oauth_pending") === "true";
 
-  if (user || isOAuthReturn || (loading && localStorage.getItem("isAuthenticated") === "true")) {
+  if (user || isOAuthReturn || (authStatus === 'checking' && localStorage.getItem("isAuthenticated") === "true")) {
     return (
       <div className="min-h-screen bg-[var(--canvas)] flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-[#7C5CFF] border-t-transparent rounded-full animate-spin" />

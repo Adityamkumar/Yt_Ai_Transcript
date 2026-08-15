@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import type { CustomJwtPayload } from "../types/jwt.types.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import User from "../models/user.model.js";
+import { ApiError } from "../utils/ApiError.js";
 
 
 
@@ -13,9 +14,7 @@ export const authMiddleware = asyncHandler(
       req.header("Authorization")?.replace("Bearer ", "");
 
     if (!token) {
-      return res.status(401).json({
-        message: "Unauthorized access",
-      });
+     throw new ApiError(401, "Unauthorized access")
     }
 
     try {
@@ -27,9 +26,7 @@ export const authMiddleware = asyncHandler(
       const user = await User.findById(decoded._id).select("-password");
   
       if (!user) {
-        return res.status(401).json({
-          message: "Invalid token",
-        });
+        throw new ApiError(401, "Invalid token")
       }
   
       req.user = user;

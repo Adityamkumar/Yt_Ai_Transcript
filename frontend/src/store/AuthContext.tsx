@@ -18,9 +18,11 @@ interface User {
   hasPassword?: boolean;
 }
 
+export type AuthStatus = "checking" | "authenticated" | "unauthenticated" | "error";
+
 interface AuthContextType {
   user: User | null;
-  loading: boolean;
+  authStatus: AuthStatus;
   login: (email: string, password: string) => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -33,7 +35,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [authStatus, setAuthStatus] = useState<AuthStatus>("checking");
   const navigate = useNavigate();
   const refreshUser = useCallback(async () => {
     try {
@@ -47,18 +49,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         hasPassword: userData.hasPassword,
       });
       localStorage.setItem("isAuthenticated", "true");
-    } catch {
+      setAuthStatus("authenticated");
+    } catch (err: any) {
       setUser(null);
       localStorage.removeItem("isAuthenticated");
-    } finally {
-      setLoading(false);
+      if (err?.response?.status === 401) {
+        setAuthStatus("unauthenticated");
+      } else {
+        setAuthStatus("error");
+      }
     }
   }, []);
   useEffect(() => {
     if (localStorage.getItem("isAuthenticated") === "true") {
       refreshUser();
     } else {
-      setLoading(false);
+      setAuthStatus("unauthenticated");
     }
   }, [refreshUser]);
 
@@ -77,6 +83,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       hasPassword: userData.hasPassword,
     });
     localStorage.setItem("isAuthenticated", "true");
+    setAuthStatus("authenticated");
     navigate("/app");
   };
 
@@ -95,6 +102,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       hasPassword: userData.hasPassword,
     });
     localStorage.setItem("isAuthenticated", "true");
+    setAuthStatus("authenticated");
     navigate("/app");
   };
 
@@ -109,6 +117,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       hasPassword: userData.hasPassword,
     });
     localStorage.setItem("isAuthenticated", "true");
+    setAuthStatus("authenticated");
     navigate("/app");
   }, [navigate]);
 
@@ -118,6 +127,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setUser(null);
       localStorage.removeItem("isAuthenticated");
+      setAuthStatus("unauthenticated");
       navigate("/");
     }
   };
@@ -129,6 +139,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
     setUser(null);
     localStorage.removeItem("isAuthenticated");
+    setAuthStatus("unauthenticated");
     navigate("/");
   };
 
@@ -136,7 +147,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     <AuthContext.Provider
       value={{
         user,
-        loading,
+        authStatus,
         login,
         register,
         logout,

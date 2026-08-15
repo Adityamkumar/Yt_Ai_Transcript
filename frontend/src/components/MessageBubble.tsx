@@ -13,7 +13,7 @@ import {
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { chatBubbleVariants } from '@/animations/variants';
-import { TypingIndicator } from './TypingIndicator';
+import AITextLoading from './ui/ai-text-loading';
 import type { ChatMessage } from '@/types';
 import { formatRelativeTime } from '@/utils';
 import { cn } from '@/utils/cn';
@@ -270,7 +270,7 @@ export function MessageBubble({
                   ? isEditing
                     ? 'bg-[var(--surface-3)] border border-[var(--border-medium)] p-1.5 w-full sm:min-w-[450px] lg:min-w-[550px]'
                     : 'bg-[var(--text-primary)] px-4 py-3 sm:px-5 sm:py-4 shadow-md w-full'
-                  : 'border border-[var(--border-soft)] bg-[var(--surface-3)] px-4 py-3 sm:px-6 sm:py-4 text-[var(--text-primary)]/95 backdrop-blur-md'
+                  : 'px-1 py-1 text-[var(--text-primary)]/95'
               )}
             >
               {isEditing ? (
@@ -293,11 +293,11 @@ export function MessageBubble({
                     </button>
                     <button
                       onClick={handleSave}
-                      disabled={!editValue.trim() || editValue === message.content}
+                      disabled={!editValue.trim()}
                       className="inline-flex h-9 items-center gap-2 rounded-xl bg-[var(--text-primary)] px-4 text-sm font-semibold text-[var(--canvas)] transition-all hover:opacity-90 disabled:opacity-40"
                     >
                       <SendHorizontal size={15} />
-                      Save & Send
+                      Save
                     </button>
                   </div>
                 </div>
@@ -314,10 +314,12 @@ export function MessageBubble({
                           urlTransform={urlTransform}
                           children={renderCitations(fixInlineLists(message.content))}
                         />
+                        
                         <span className="streaming-cursor" />
+                        
                       </div>
                     ) : (
-                      <TypingIndicator />
+                      <AITextLoading />
                     )
                   ) : isUser ? (
                     <p className="whitespace-pre-wrap text-[16px] !text-[#111827] font-medium opacity-100">
@@ -332,6 +334,7 @@ export function MessageBubble({
                         children={renderCitations(fixInlineLists(message.content))}
                       />
                     </div>
+                    
                   )}
                 </>
               )}
