@@ -414,7 +414,7 @@ export const forgetPassword = asyncHandler(async (req, res) => {
     validateBeforeSave: false,
   });
 
-  const clientUrl = process.env.CLIENT_URL || "http://localhost:5173";
+  const clientUrl = process.env.FRONTEND_CLOUDFLARE_URL || "http://localhost:5173";
   const resetLink = `${clientUrl}/reset-password/${resetToken}`;
   const template = generateResetPasswordEmail(resetLink, user.name);
 
