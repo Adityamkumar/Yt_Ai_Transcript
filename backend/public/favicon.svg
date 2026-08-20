@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <defs>
+    <linearGradient id="lumoraBg" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#1B153D" />
+      <stop offset="50%" stop-color="#120D2C" />
+      <stop offset="100%" stop-color="#0A071B" />
+    </linearGradient>
+    <linearGradient id="lumoraArc" x1="15" y1="20" x2="85" y2="85" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#A5B4FC" />
+      <stop offset="35%" stop-color="#818CF8" />
+      <stop offset="70%" stop-color="#C084FC" />
+      <stop offset="100%" stop-color="#60A5FA" />
+    </linearGradient>
+  </defs>
+  <rect width="100" height="100" rx="26" fill="url(#lumoraBg)" />
+  <path d="M 58 24 C 30 26 19 46 19 64 C 19 81 35 91 66 85 C 73 83.5 77 81 77 81" stroke="url(#lumoraArc)" stroke-width="4.5" stroke-linecap="round" />
+  <path d="M 66 12 Q 66 24 78 24 Q 66 24 66 36 Q 66 24 54 24 Q 66 24 66 12 Z" fill="#FFFFFF" />
+  <path d="M 38 40 V 66 H 58" stroke="#FFFFFF" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" />
+</svg>

@@ -15,6 +15,7 @@ import { generateResetPasswordEmail } from "../utils/emailTemplates.js";
 import { googleClient } from "../config/googleAuth.js";
 import { authRateLimiterService } from "../services/authRateLimiter.service.js";
 import logger from "../lib/logger.js";
+import { userEvent } from "../events/user.events.js";
 
 export const userRegister = asyncHandler(async (req, res) => {
   try {
@@ -49,6 +50,12 @@ export const userRegister = asyncHandler(async (req, res) => {
     res.cookie("accessToken", accessToken, accessCookieOptions);
     res.cookie("refreshToken", refreshToken, refreshCookieOptions);
 
+    userEvent.emit("user.created", {
+      userId: user._id,
+      name: user.name,
+      email: user.email,
+    });
+
     res.status(201).json({
       message: "User register successfully",
       user: {
@@ -59,7 +66,10 @@ export const userRegister = asyncHandler(async (req, res) => {
       },
     });
   } catch (error) {
-    if (error instanceof ApiError || (error && typeof error === "object" && "statusCode" in error)) {
+    if (
+      error instanceof ApiError ||
+      (error && typeof error === "object" && "statusCode" in error)
+    ) {
       throw error;
     }
     throw new ApiError(500, "Internal server error!");
@@ -71,9 +81,14 @@ export const userLogin = asyncHandler(async (req, res) => {
   const ip = req.ip || req.socket.remoteAddress || "";
 
   try {
-   if (typeof email !== "string" || typeof password !== "string" || !email.trim() || !password.trim()) {
-    throw new ApiError(400, "Invalid email or password");
-  }
+    if (
+      typeof email !== "string" ||
+      typeof password !== "string" ||
+      !email.trim() ||
+      !password.trim()
+    ) {
+      throw new ApiError(400, "Invalid email or password");
+    }
 
     const user = await User.findOne({ email });
 
@@ -127,7 +142,10 @@ export const userLogin = asyncHandler(async (req, res) => {
       },
     });
   } catch (error) {
-    if (error instanceof ApiError || (error && typeof error === "object" && "statusCode" in error)) {
+    if (
+      error instanceof ApiError ||
+      (error && typeof error === "object" && "statusCode" in error)
+    ) {
       throw error;
     }
     throw new ApiError(500, "Internal server error");
@@ -247,49 +265,9 @@ export const deleteUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, "Account deleted successfully"));
 });
 
-export const googleCallbackController = asyncHandler(async (req, res) => {
-  const profile: any = req.user;
-  const googleId = profile.id;
-  const name = profile.displayName;
-  const email = profile.emails?.[0]?.value;
-  const avatar = profile.photos?.[0]?.value;
-  let user = await User.findOne({ email });
-
-  if (!user) {
-    user = await User.create({
-      name,
-      email,
-      avatar,
-      googleId,
-      provider: "google",
-    });
-  }
-  if (user.provider === "local" && !user.googleId) {
-    user.googleId = googleId;
-
-    user.avatar = avatar;
-
-    user.provider = "google";
-
-    await user.save();
-  }
-
-  const { accessToken, refreshToken } =
-    await generateAccessTokenAndRefreshToken(user._id);
-
-  res.cookie("accessToken", accessToken, accessCookieOptions);
-  res.cookie("refreshToken", refreshToken, refreshCookieOptions);
-
-  const frontendUrl = process.env.NODE_ENV === "production"
-    ? (process.env.FRONTEND_PROD_URL || "https://echomindai63.vercel.app")
-    : "http://localhost:5173";
-
-  return res.redirect(`${frontendUrl}/app`);
-});
-
 export const googleVerifyController = asyncHandler(async (req, res) => {
   const { code } = req.body;
-  
+
   if (!code) {
     throw new ApiError(400, "Authorization code is required");
   }
@@ -297,7 +275,7 @@ export const googleVerifyController = asyncHandler(async (req, res) => {
   try {
     // Exchange authorization code for tokens
     const { tokens } = await googleClient.getToken(code);
-    
+
     if (!tokens.id_token) {
       throw new ApiError(400, "Failed to retrieve id_token from Google");
     }
@@ -318,7 +296,7 @@ export const googleVerifyController = asyncHandler(async (req, res) => {
     const email = payload.email;
     const avatar = payload.picture;
 
-    if (!email) {
+    if (!email || !payload.email_verified) {
       throw new ApiError(400, "Google account does not have an email address");
     }
 
@@ -332,6 +310,19 @@ export const googleVerifyController = asyncHandler(async (req, res) => {
         googleId,
         provider: "google",
       });
+
+      userEvent.emit("user.created", {
+        userId: user._id,
+        name: user.name,
+        email: user.email,
+      });
+    } else {
+      if (user.googleId && user.googleId !== googleId) {
+        throw new ApiError(
+          401,
+          "This email is linked to a different Google account",
+        );
+      }
     }
 
     if (user.provider === "local" && !user.googleId) {
@@ -339,11 +330,11 @@ export const googleVerifyController = asyncHandler(async (req, res) => {
       if (avatar) {
         user.avatar = avatar;
       }
-      user.provider = "google";
       await user.save();
     }
 
-    const { accessToken, refreshToken } = await generateAccessTokenAndRefreshToken(user._id);
+    const { accessToken, refreshToken } =
+      await generateAccessTokenAndRefreshToken(user._id);
 
     res.cookie("accessToken", accessToken, accessCookieOptions);
     res.cookie("refreshToken", refreshToken, refreshCookieOptions);
@@ -356,11 +347,14 @@ export const googleVerifyController = asyncHandler(async (req, res) => {
         avatar: user.avatar,
         provider: user.provider,
         hasPassword: !!user.password,
-      }
+      },
     });
   } catch (error: any) {
     logger.error({ error }, "Google authentication error");
-    if (error instanceof ApiError || (error && typeof error === "object" && "statusCode" in error)) {
+    if (
+      error instanceof ApiError ||
+      (error && typeof error === "object" && "statusCode" in error)
+    ) {
       throw error;
     }
     throw new ApiError(401, error.message || "Google authentication failed");
@@ -414,7 +408,8 @@ export const forgetPassword = asyncHandler(async (req, res) => {
     validateBeforeSave: false,
   });
 
-  const clientUrl = process.env.FRONTEND_CLOUDFLARE_URL || "http://localhost:5173";
+  const clientUrl =
+    process.env.FRONTEND_CLOUDFLARE_URL || "http://localhost:5173";
   const resetLink = `${clientUrl}/reset-password/${resetToken}`;
   const template = generateResetPasswordEmail(resetLink, user.name);
 

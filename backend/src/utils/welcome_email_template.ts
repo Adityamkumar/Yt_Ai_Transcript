@@ -1,34 +1,27 @@
-interface EmailTemplate {
-	subject: string;
-	html: string;
-}
-
 const escapeHtml = (value: string): string =>
-	value
-		.replace(/&/g, "&amp;")
-		.replace(/</g, "&lt;")
-		.replace(/>/g, "&gt;")
-		.replace(/"/g, "&quot;")
-		.replace(/'/g, "&#39;");
+    value
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
 
 // Hosted on ImageKit. ?tr=w-128,h-128,f-png requests a crisp 2x (128px)
 // render for retina screens and forces PNG so older mail clients that
 // choke on WebP/AVIF still get something they can display.
-const DEFAULT_LOGO_URL = "https://ik.imagekit.io/qx2pw2swx/lumora-logo.png?tr=w-128,h-128,f-png";
+const DEFAULT_LOGO_URL =
+    "https://ik.imagekit.io/qx2pw2swx/lumora-logo.png?tr=w-128,h-128,f-png";
 
-// Keep this in sync with the actual expiry set on the backend.
-const LINK_EXPIRY_MINUTES = 15;
+export const welcomeEmailTemplate = (
+    name: string,
+    appUrl: string,
+    logoUrl: string = DEFAULT_LOGO_URL,
+): string => {
+    const safeName = escapeHtml(name.trim() || "there");
+    const safeAppUrl = escapeHtml(appUrl.replace(/\/$/, ""));
+    const safeLogoUrl = escapeHtml(logoUrl);
 
-export const generateResetPasswordEmail = (
-	resetLink: string,
-	userName: string,
-	logoUrl: string = DEFAULT_LOGO_URL,
-): EmailTemplate => {
-	const safeName = escapeHtml(userName.trim() || "there");
-	const safeLogoUrl = escapeHtml(logoUrl);
-	const resetLinkWithoutProtocol = escapeHtml(resetLink.replace(/^https?:\/\//, ""));
-
-	const html = `
+    return `
 <!DOCTYPE html>
 <html lang="en">
 	<head>
@@ -37,7 +30,7 @@ export const generateResetPasswordEmail = (
 		<meta name="x-apple-disable-message-reformatting" />
 		<meta name="color-scheme" content="light" />
 		<meta name="supported-color-schemes" content="light" />
-		<title>Reset your Lumora password</title>
+		<title>Welcome to Lumora</title>
 		<style>
 			@media screen and (max-width: 600px) {
 				.email-shell { width: 100% !important; }
@@ -47,7 +40,7 @@ export const generateResetPasswordEmail = (
 		</style>
 	</head>
 	<body style="margin:0; padding:0; background-color:#f6f6f7; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; color:#1a1a1a;">
-		<div style="display:none; max-height:0; overflow:hidden; opacity:0;">Reset your Lumora password &mdash; this link expires in ${LINK_EXPIRY_MINUTES} minutes.</div>
+		<div style="display:none; max-height:0; overflow:hidden; opacity:0;">Your Lumora account is ready to go.</div>
 		<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f6f6f7;">
 			<tr>
 				<td align="center" style="padding:40px 16px;">
@@ -81,7 +74,7 @@ export const generateResetPasswordEmail = (
 
 									<tr>
 										<td class="content" style="padding:28px 40px 0;">
-											<h1 style="margin:0 0 22px; font-size:20px; line-height:26px; font-weight:700; letter-spacing:-0.3px; color:#1a1a1a;">Reset your password</h1>
+											<h1 style="margin:0 0 22px; font-size:20px; line-height:26px; font-weight:700; letter-spacing:-0.3px; color:#1a1a1a;">Welcome to Lumora, ${safeName}</h1>
 										</td>
 									</tr>
 
@@ -93,17 +86,24 @@ export const generateResetPasswordEmail = (
 
 									<tr>
 										<td class="content" style="padding:24px 40px 0;">
-											<p style="margin:0 0 16px; font-size:14px; line-height:22px; color:#4a4a4a;">Hi ${safeName},</p>
-											<p style="margin:0 0 24px; font-size:14px; line-height:22px; color:#4a4a4a;">We received a request to reset your Lumora password. Click the button below to choose a new one. This link expires in <strong style="color:#1a1a1a;">${LINK_EXPIRY_MINUTES} minutes</strong> and can only be used once.</p>
-										</td>
-									</tr>
+											<p style="margin:0 0 20px; font-size:14px; line-height:22px; color:#4a4a4a;">Your account is live. Lumora gives you one place to turn what you watch and read &mdash; videos, articles, PDFs &mdash; into understanding you actually keep.</p>
 
-									<tr>
-										<td class="content" style="padding:0 40px 24px;">
-											<table role="presentation" cellpadding="0" cellspacing="0" border="0">
+											<p style="margin:0 0 8px; font-size:13px; line-height:20px; font-weight:600; color:#8a8a8a; text-transform:uppercase; letter-spacing:0.4px;">Getting started</p>
+
+											<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:8px 0 24px;">
 												<tr>
-													<td style="border-radius:6px; background-color:#a6512f;">
-														<a href="${resetLink}" target="_blank" style="display:inline-block; padding:10px 20px; font-size:14px; font-weight:600; color:#ffffff; text-decoration:none; border-radius:6px;">Reset password</a>
+													<td style="padding:0 0 10px; font-size:14px; line-height:21px; color:#1a1a1a; vertical-align:top;">
+														<span style="color:#a6512f; font-weight:600;">1.</span>&nbsp; Add your first source &mdash; a video link or a document
+													</td>
+												</tr>
+												<tr>
+													<td style="padding:0 0 10px; font-size:14px; line-height:21px; color:#1a1a1a; vertical-align:top;">
+														<span style="color:#a6512f; font-weight:600;">2.</span>&nbsp; Ask it a question and see how Lumora responds
+													</td>
+												</tr>
+												<tr>
+													<td style="padding:0; font-size:14px; line-height:21px; color:#1a1a1a; vertical-align:top;">
+														<span style="color:#a6512f; font-weight:600;">3.</span>&nbsp; Save what's useful so it's there when you need it again
 													</td>
 												</tr>
 											</table>
@@ -111,15 +111,6 @@ export const generateResetPasswordEmail = (
 									</tr>
 
 									<tr>
-										<td class="content" style="padding:0 40px 24px;">
-											<p style="margin:0 0 6px; font-size:12px; line-height:18px; color:#8a8a8a;">If the button doesn't work, paste this link into your browser:</p>
-											<p style="margin:0; font-size:12px; line-height:18px; word-break:break-all;">
-												<a href="${resetLink}" target="_blank" style="color:#a6512f; text-decoration:none;">${resetLinkWithoutProtocol}</a>
-											</p>
-										</td>
-									</tr>
-
-									<tr>
 										<td style="padding:0 40px;">
 											<div style="border-top:1px solid #ececec;"></div>
 										</td>
@@ -127,8 +118,19 @@ export const generateResetPasswordEmail = (
 
 									<tr>
 										<td class="content" style="padding:24px 40px 0;">
-											<p style="margin:0 0 4px; font-size:13px; line-height:20px; font-weight:600; color:#1a1a1a;">Didn't request this?</p>
-											<p style="margin:0; font-size:13px; line-height:20px; color:#8a8a8a;">If you didn't ask to reset your password, you can safely ignore this email &mdash; your account is still secure and no changes have been made.</p>
+											<table role="presentation" cellpadding="0" cellspacing="0" border="0">
+												<tr>
+													<td style="border-radius:6px; background-color:#a6512f;">
+														<a href="${safeAppUrl}/app" target="_blank" style="display:inline-block; padding:10px 20px; font-size:14px; font-weight:600; color:#ffffff; text-decoration:none; border-radius:6px;">Open Lumora</a>
+													</td>
+												</tr>
+											</table>
+										</td>
+									</tr>
+
+									<tr>
+										<td class="content" style="padding:20px 40px 0;">
+											<p style="margin:0; font-size:13px; line-height:20px; color:#8a8a8a;">If you have any questions along the way, just reply to this email &mdash; it reaches our team directly, not a bot.</p>
 										</td>
 									</tr>
 
@@ -140,8 +142,7 @@ export const generateResetPasswordEmail = (
 
 									<tr>
 										<td class="content" style="padding:20px 40px 32px;">
-											<p style="margin:0 0 8px; font-size:12px; line-height:18px; color:#a3a3a3;">Need help? Contact us at <a href="mailto:support@lumora.ai" style="color:#a6512f; text-decoration:none;">support@lumora.ai</a></p>
-											<p style="margin:0; font-size:12px; line-height:18px; color:#a3a3a3;">You're receiving this because a password reset was requested for this Lumora account.</p>
+											<p style="margin:0; font-size:12px; line-height:18px; color:#a3a3a3;">You're receiving this because an account was created at Lumora with this email address.</p>
 										</td>
 									</tr>
 
@@ -162,10 +163,5 @@ export const generateResetPasswordEmail = (
 			</tr>
 		</table>
 	</body>
-</html>`.trim();
-
-	return {
-		subject: "Reset your Lumora password",
-		html,
-	};
+</html>`;
 };

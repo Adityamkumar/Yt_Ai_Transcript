@@ -6,7 +6,6 @@ import {
   refreshAccessToken,
   getCurrentUser,
   deleteUser,
-  googleCallbackController,
   googleVerifyController,
   avatarProxyController,
   forgetPassword,
@@ -15,7 +14,6 @@ import {
 } from "../controller/auth.controller.js";
 import { authMiddleware } from "../middleware/auth.middleware.js";
 import { authRateLimiterMiddleware } from "../middleware/authRateLimiter.middleware.js";
-import passport from "passport";
 
 const router = express.Router();
 
@@ -28,25 +26,6 @@ router.get("/current-user", authMiddleware, getCurrentUser);
 router.delete("/delete/:id", authMiddleware, deleteUser);
 
 router.get("/avatar-proxy", avatarProxyController);
-
-router.get(
-  "/google",
-
-  passport.authenticate("google", {
-    scope: ["profile", "email"],
-  }),
-);
-
-router.get(
-  "/google/callback",
-
-  passport.authenticate("google", {
-    session: false,
-    failureRedirect: "/login",
-  }),
-
-  googleCallbackController,
-);
 
 router.post("/google/verify", googleVerifyController);
 

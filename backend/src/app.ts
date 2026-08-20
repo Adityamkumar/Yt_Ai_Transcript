@@ -10,7 +10,6 @@ import bookmarkRouter from './routes/bookmark.route.js'
 import pdfRouter from './routes/pdf.route.js'
 import searchRouter from './search/search.routes.js'
 import cookieParser from 'cookie-parser'
-import passport from "./config/passport.js";
 import { globalErrorHandler } from "./middleware/error.middleware.js";
 
 const app = express();
@@ -68,7 +67,6 @@ app.use(
 app.use(express.json());
 app.use(cookieParser())
 app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }))
-app.use(passport.initialize())
 
 app.use("/api/v1/video", videoRouter);
 app.use("/api/v1/chat", chatRouter);
