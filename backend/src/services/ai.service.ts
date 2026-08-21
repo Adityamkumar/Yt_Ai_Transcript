@@ -14,6 +14,8 @@ import logger from "../lib/logger.js";
 import { INTERMEDIATE_SUMMARY_SYSTEM_PROMPT } from "../rag/prompts/intermediate_summary.prompt.js";
 import {
   buildLanguageInstruction,
+  buildResponseLanguageInstruction,
+  type ResponseLanguage,
   type SummaryLanguage,
 } from "../rag/utils/languagePrompt.util.js";
 import { FINAL_SUMMARY_SYSTEM_PROMPT } from "../rag/prompts/final_summary.prompt.js";
@@ -115,6 +117,7 @@ export const buildContextPrompt = (
   question: string,
   recentMessages: ConversationMessage[] = [],
   type: "chat" | "notes" | "summary" = "chat",
+  language: ResponseLanguage,
   durationSeconds?: number,
 ) => {
   let formattedTranscript = "";
@@ -146,8 +149,12 @@ export const buildContextPrompt = (
         ? SUMMARY_SYSTEM_PROMPT
         : CHAT_SYSTEM_PROMPT;
 
+  const languageInstruction = buildResponseLanguageInstruction(language);
+
   return `
 ${systemPrompt}
+
+${languageInstruction}
 
 Video Duration: ${durationStr} (${durationSeconds || 0} seconds)
 
@@ -368,6 +375,7 @@ export const askAiAboutTranscript = async (
   question: string,
   recentMessages: ConversationMessage[] = [],
   type: "chat" | "notes" = "chat",
+  language: ResponseLanguage,
 ) => {
   try {
     const totalDurationSeconds =
@@ -380,6 +388,7 @@ export const askAiAboutTranscript = async (
       question,
       recentMessages,
       type,
+      language,
       totalDurationSeconds,
     );
 
@@ -498,6 +507,7 @@ export async function* streamAiAboutTranscript(
   question: string,
   recentMessages: ConversationMessage[] = [],
   type: "chat" | "notes" = "chat",
+  language: ResponseLanguage,
 ) {
   try {
     if (type === "notes") {
@@ -506,6 +516,7 @@ export async function* streamAiAboutTranscript(
         question,
         recentMessages,
         type,
+        language,
       );
 
       yield result;
@@ -523,6 +534,7 @@ export async function* streamAiAboutTranscript(
       question,
       recentMessages,
       type,
+      language,
       totalDurationSeconds,
     );
 
@@ -615,6 +627,7 @@ ${transcriptSample}
 export const buildPdfContextPrompt = (
   context: string,
   question: string,
+  language: ResponseLanguage,
   recentMessages: ConversationMessage[] = [],
   type: "chat" | "notes" | "summary" = "chat",
 ) => {
@@ -625,9 +638,12 @@ export const buildPdfContextPrompt = (
         ? SUMMARY_SYSTEM_PROMPT
         : PDF_CHAT_SYSTEM_PROMPT;
 
+  const responseLanguageInstruction = buildResponseLanguageInstruction(language);
+
   return `
 ${systemPrompt}
 
+${responseLanguageInstruction}
 PDF Document Context:
 ${context}
 
@@ -648,6 +664,7 @@ ${
 export const askAiAboutPdf = async (
   context: string,
   question: string,
+  language: ResponseLanguage,
   recentMessages: ConversationMessage[] = [],
   type: "chat" | "notes" | "summary" = "chat",
 ) => {
@@ -655,6 +672,7 @@ export const askAiAboutPdf = async (
     const prompt = buildPdfContextPrompt(
       context,
       question,
+      language,
       recentMessages,
       type,
     );
@@ -703,12 +721,15 @@ export async function* streamAiAboutPdf(
   question: string,
   recentMessages: ConversationMessage[] = [],
   type: "chat" | "notes" | "summary" = "chat",
+  language: ResponseLanguage,
 ) {
   try {
     if (type === "notes" || type === "summary") {
       const result = await askAiAboutPdf(
         context,
         question,
+        language,
+
         recentMessages,
         type,
       );
@@ -719,6 +740,7 @@ export async function* streamAiAboutPdf(
     const prompt = buildPdfContextPrompt(
       context,
       question,
+      language,
       recentMessages,
       type,
     );

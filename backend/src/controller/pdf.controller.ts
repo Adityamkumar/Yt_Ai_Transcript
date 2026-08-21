@@ -336,6 +336,8 @@ export const askPdfQuestion = asyncHandler(async (req, res) => {
     stream = false,
   } = req.body;
 
+  const responseLanguage = req.user?.preferences.responseLanguage
+
   if (!documentId || (!question && type !== "notes")) {
     throw new ApiError(400, "documentId and question are required");
   }
@@ -362,8 +364,9 @@ export const askPdfQuestion = asyncHandler(async (req, res) => {
     const answer = await askAiAboutPdf(
       contextText,
       question || "",
+      responseLanguage!,
       recentMessages,
-      type,
+      type
     );
     return res
       .status(200)
@@ -388,6 +391,7 @@ export const askPdfQuestion = asyncHandler(async (req, res) => {
       question || "",
       recentMessages,
       type,
+      responseLanguage!
     )) {
       if (closed || res.destroyed) break;
       res.write(chunk);

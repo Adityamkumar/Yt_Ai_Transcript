@@ -1,24 +1,36 @@
-import mongoose, {Document, Schema} from "mongoose";
+import mongoose, { Document, Schema } from "mongoose";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import crypto from 'node:crypto'
+import crypto from "node:crypto";
 
-export interface IUser extends Document{
-   name: string;
-   email: string;
-   password?: string;
-   avatar?:string;
-   googleId?:string;
-   provider: 'local' | 'google'
-   refreshToken?: string[];
-   resetPasswordToken?: string;
-   resetPasswordExpiry?: Date;
-   isPasswordCorrect(
-     password: string
-   ): Promise<boolean>;
-   generateAccessToken(): string;
-   generateRefreshToken(): string;
-   generateResetPasswordToken(): string;
+interface IUserPreferences {
+  responseLanguage:
+    | "en"
+    | "hi"
+    | "ta"
+    | "te"
+    | "kn"
+    | "ml"
+    | "bn"
+    | "mr";
+}
+
+
+export interface IUser extends Document {
+  name: string;
+  email: string;
+  password?: string;
+  avatar?: string;
+  googleId?: string;
+  provider: "local" | "google";
+  refreshToken?: string[];
+  resetPasswordToken?: string;
+  resetPasswordExpiry?: Date;
+  preferences:IUserPreferences
+  isPasswordCorrect(password: string): Promise<boolean>;
+  generateAccessToken(): string;
+  generateRefreshToken(): string;
+  generateResetPasswordToken(): string;
 }
 
 const userSchema = new Schema<IUser>(
@@ -28,28 +40,35 @@ const userSchema = new Schema<IUser>(
     password: {
       type: String,
       required: function (this: any) {
-        return this.provider === 'local';
+        return this.provider === "local";
       },
     },
-    googleId:{
-      type: String
+    googleId: {
+      type: String,
     },
-    avatar:{
-      type:String,
-      default: ""
+    avatar: {
+      type: String,
+      default: "",
     },
-    provider:{
-      type:String,
-      enum:['local', 'google'],
-      default: 'local'
+    provider: {
+      type: String,
+      enum: ["local", "google"],
+      default: "local",
     },
     refreshToken: { type: [String], default: [] },
-    resetPasswordToken:{
-      type: String
+    resetPasswordToken: {
+      type: String,
     },
-    resetPasswordExpiry:{
-      type: Date
-    }
+    resetPasswordExpiry: {
+      type: Date,
+    },
+    preferences:{
+      responseLanguage: {
+        type: String,
+        enum: ["en", "hi", "ta", "te", "kn", "ml", "bn", "mr"],
+        default:'en'
+      },
+    },
   },
   {
     timestamps: true,
@@ -90,20 +109,15 @@ userSchema.methods.generateRefreshToken = function () {
   );
 };
 
-userSchema.methods.generateResetPasswordToken =
-function () {
+userSchema.methods.generateResetPasswordToken = function () {
+  const resetToken = crypto.randomBytes(32).toString("hex");
 
-  const resetToken =
-    crypto.randomBytes(32).toString("hex");
+  this.resetPasswordToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
 
-  this.resetPasswordToken =
-    crypto
-      .createHash("sha256")
-      .update(resetToken)
-      .digest("hex");
-
-  this.resetPasswordExpiry =
-    Date.now() + 5 * 60 * 1000;
+  this.resetPasswordExpiry = Date.now() + 5 * 60 * 1000;
 
   return resetToken;
 };

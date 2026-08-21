@@ -9,6 +9,7 @@ import { PdfChunk } from "../models/pdfChunk.model.js";
 import { retrieveRelevantTranscriptChunks } from "../utils/retrieveRelevantTranscriptChunks.js";
 import { retrieveRelevantChunks } from "../utils/retrieveRelevantChunks.js";
 import logger from "../lib/logger.js";
+import { buildResponseLanguageInstruction } from "../rag/utils/languagePrompt.util.js";
 
 const GeminiFollowUpSchema = {
   type: "object",
@@ -107,10 +108,13 @@ export const generateFollowUp = asyncHandler(async (req, res) => {
   const finalContext = retrievedContext || context || "";
   const truncatedAnswer = answer.slice(0, 1500);
   const truncatedContext = finalContext.slice(0, 3000);
+  const language = req.user?.preferences?.responseLanguage ?? "en";
+ const followUpResponseLanguage = buildResponseLanguageInstruction(language);
 
   const prompt = `
 ${FOLLOWUP_SYSTEM_PROMPT}
 
+${followUpResponseLanguage}
 User Question:
 ${question}
 

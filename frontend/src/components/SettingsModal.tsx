@@ -27,6 +27,8 @@ import { useAuth } from "@/store/AuthContext";
 import { useState, useEffect, useRef } from "react";
 import { DeleteAccountModal } from "./DeleteAccountModal";
 import { UserAvatar } from "@/components/auth/UserAvatar";
+import toast from "react-hot-toast";
+import { settingsService, type ResponseLanguage } from "@/services/settings.service";
 
 interface Props {
   isOpen: boolean;
@@ -79,7 +81,7 @@ const ToggleSwitch = ({ checked, onChange }: { checked: boolean; onChange: (val:
   <button
     type="button"
     onClick={() => onChange(!checked)}
-    className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-[#111] ${
+    className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full transition-colors duration-200 ease-in-out focus:outline-none ${
       checked ? 'bg-indigo-500' : 'bg-white/10'
     }`}
   >
@@ -139,7 +141,7 @@ const SettingSelect = ({
     <div className="relative" ref={dropdownRef}>
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center gap-2 rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+        className={`flex items-center gap-2 rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none ${
           isOpen ? 'border-white/20 bg-white/10 text-white' : 'border-white/10 bg-white/[0.02] text-white hover:bg-white/10'
         }`}
       >
@@ -270,16 +272,16 @@ function ProfileTab({ user, onShowDeleteModal }: any) {
   );
 }
 
-function LearningTab({ prefs, updatePref }: any) {
+function LearningTab({ prefs, updatePref, updateResponseLanguage }: any) {
   const languageOptions = [
     { label: 'English', value: 'en' },
-    { label: 'हिन्दी', value: 'hi' },
-    { label: 'தமிழ்', value: 'ta' },
-    { label: 'తెలుగు', value: 'te' },
-    { label: 'ಕನ್ನಡ', value: 'kn' },
-    { label: 'മലയാളം', value: 'ml' },
-    { label: 'বাংলা', value: 'bn' },
-    { label: 'मराठी', value: 'mr' },
+    { label: 'Hindi', value: 'hi' },
+    { label: 'Tamil', value: 'ta' },
+    { label: 'Telugu', value: 'te' },
+    { label: 'Kannada', value: 'kn' },
+    { label: 'Malayalam', value: 'ml' },
+    { label: 'Bengali', value: 'bn' },
+    { label: 'Marathi', value: 'mr' },
   ];
 
   const styleOptions = [
@@ -312,7 +314,7 @@ function LearningTab({ prefs, updatePref }: any) {
             <SettingSelect 
               value={prefs.responseLanguage} 
               options={languageOptions}
-              onChange={(v) => updatePref('responseLanguage', v)} 
+              onChange={updateResponseLanguage}
             />
           </SettingRow>
           <SettingRow title="Answer style" description="Choose how Lumora should structure explanations and answers.">
@@ -525,8 +527,9 @@ export function SettingsModal({ isOpen, onClose }: Props) {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [activeTab, setActiveTab] = useState<TabId>('profile');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(true);
+  const [isUpdatingResponseLanguage, setIsUpdatingResponseLanguage] = useState(false);
 
-  // --- Temporary Local Frontend State ---
+  // Other settings remain local-only until their backend integrations are added.
   const [prefs, setPrefs] = useState({
     responseLanguage: 'en',
     answerStyle: 'balanced',
@@ -542,6 +545,40 @@ export function SettingsModal({ isOpen, onClose }: Props) {
 
   const updatePref = (key: keyof typeof prefs, value: any) => {
     setPrefs(p => ({ ...p, [key]: value }));
+  };
+
+  useEffect(() => {
+    const savedLanguage = user?.preferences?.responseLanguage || (user?.id && localStorage.getItem(`responseLanguage:${user.id}`));
+
+    if (savedLanguage) {
+      setPrefs(p => ({ ...p, responseLanguage: savedLanguage }));
+    }
+  }, [user?.id, user?.preferences?.responseLanguage]);
+
+  const updateResponseLanguage = async (responseLanguage: string) => {
+    if (
+      responseLanguage === prefs.responseLanguage ||
+      isUpdatingResponseLanguage
+    ) {
+      return;
+    }
+
+    setIsUpdatingResponseLanguage(true);
+
+    try {
+      const savedLanguage = await settingsService.updateResponseLanguage(
+        responseLanguage as ResponseLanguage,
+      );
+      setPrefs(p => ({ ...p, responseLanguage: savedLanguage }));
+
+      if (user?.id) {
+        localStorage.setItem(`responseLanguage:${user.id}`, savedLanguage);
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to update response language');
+    } finally {
+      setIsUpdatingResponseLanguage(false);
+    }
   };
   // -------------------------------------
 
@@ -682,7 +719,13 @@ export function SettingsModal({ isOpen, onClose }: Props) {
                 <div className="flex-1 overflow-y-auto p-5 sm:p-8 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
                   <div className="mx-auto max-w-2xl pb-8">
                     {activeTab === 'profile' && <ProfileTab user={user} onShowDeleteModal={() => { onClose(); setShowDeleteModal(true); }} />}
-                    {activeTab === 'learning' && <LearningTab prefs={prefs} updatePref={updatePref} />}
+                    {activeTab === 'learning' && (
+                      <LearningTab
+                        prefs={prefs}
+                        updatePref={updatePref}
+                        updateResponseLanguage={updateResponseLanguage}
+                      />
+                    )}
                     {activeTab === 'ai' && <AiTab prefs={prefs} updatePref={updatePref} />}
                     {activeTab === 'workspace' && <WorkspaceTab prefs={prefs} updatePref={updatePref} />}
                     {activeTab === 'security' && <SecurityTab />}

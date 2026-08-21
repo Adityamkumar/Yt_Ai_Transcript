@@ -3,6 +3,18 @@ export type SummaryLanguage =
   | "hindi"
   | "hinglish";
 
+export type ResponseLanguage =
+  | "en"
+  | "hi"
+  | "ta"
+  | "te"
+  | "kn"
+  | "ml"
+  | "bn"
+  | "mr";
+
+
+
 export const buildLanguageInstruction = (
   language: SummaryLanguage,
 ): string => {
@@ -50,4 +62,68 @@ export const detectSummaryLanguage = (
   }
 
   return "english";
+};
+
+
+
+
+export const buildResponseLanguageInstruction = (
+  language: ResponseLanguage,
+): string => {
+  switch (language) {
+    case "hi":
+      return `
+Language Instruction:
+- Respond ONLY in Hindi.
+- Keep technical terms like LLM, RAG, Vector Database, Embedding, MongoDB, Node.js in English unless a widely accepted Hindi equivalent exists.
+`;
+
+    case "ta":
+      return `
+Language Instruction:
+- Respond ONLY in Tamil.
+- Keep technical terms like LLM, RAG, Vector Database, Embedding, MongoDB, Node.js in English.
+`;
+
+    case "te":
+      return `
+Language Instruction:
+- Respond ONLY in Telugu.
+- Keep technical terms like LLM, RAG, Vector Database, Embedding, MongoDB, Node.js in English.
+`;
+
+    case "kn":
+      return `
+Language Instruction:
+- Respond ONLY in Kannada.
+- Keep technical terms like LLM, RAG, Vector Database, Embedding, MongoDB, Node.js in English.
+`;
+
+    case "ml":
+      return `
+Language Instruction:
+- Respond ONLY in Malayalam.
+- Keep technical terms like LLM, RAG, Vector Database, Embedding, MongoDB, Node.js in English.
+`;
+
+    case "bn":
+      return `
+Language Instruction:
+- Respond ONLY in Bengali.
+- Keep technical terms like LLM, RAG, Vector Database, Embedding, MongoDB, Node.js in English.
+`;
+
+    case "mr":
+      return `
+Language Instruction:
+- Respond ONLY in Marathi.
+- Keep technical terms like LLM, RAG, Vector Database, Embedding, MongoDB, Node.js in English.
+`;
+
+    default:
+      return `
+Language Instruction:
+- Respond ONLY in English.
+`;
+  }
 };

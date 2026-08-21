@@ -9,6 +9,7 @@ import messageRouter from './routes/message.route.js'
 import bookmarkRouter from './routes/bookmark.route.js'
 import pdfRouter from './routes/pdf.route.js'
 import searchRouter from './search/search.routes.js'
+import settingsRouter from './routes/settings.route.js'
 import cookieParser from 'cookie-parser'
 import { globalErrorHandler } from "./middleware/error.middleware.js";
 
@@ -76,6 +77,7 @@ app.use("/api/v1/messages",messageRouter);
 app.use("/api/v1/bookmarks", bookmarkRouter)
 app.use("/api/v1/pdf", pdfRouter);
 app.use("/api/v1/search", searchRouter);
+app.use('/api/v1/settings', settingsRouter)
 
 
 app.use(globalErrorHandler)

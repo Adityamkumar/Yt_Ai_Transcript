@@ -8,6 +8,7 @@ import React, {
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "@/lib/axios";
 import { authService } from "@/services/auth.service";
+import type { ResponseLanguage } from "@/services/settings.service";
 
 interface User {
   id: string;
@@ -16,6 +17,9 @@ interface User {
   avatar?: string;
   provider?: "local" | "google";
   hasPassword?: boolean;
+  preferences?: {
+    responseLanguage?: ResponseLanguage;
+  };
 }
 
 export type AuthStatus = "checking" | "authenticated" | "unauthenticated" | "error";
@@ -47,6 +51,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         avatar: userData.avatar || undefined,
         provider: userData.provider || "local",
         hasPassword: userData.hasPassword,
+        preferences: userData.preferences,
       });
       localStorage.setItem("isAuthenticated", "true");
       setAuthStatus("authenticated");
@@ -81,6 +86,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       avatar: userData.avatar || undefined,
       provider: userData.provider || "local",
       hasPassword: userData.hasPassword,
+      preferences: userData.preferences,
     });
     localStorage.setItem("isAuthenticated", "true");
     setAuthStatus("authenticated");
@@ -100,6 +106,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       email: userData.email,
       avatar: userData.avatar || undefined,
       hasPassword: userData.hasPassword,
+      preferences: userData.preferences,
     });
     localStorage.setItem("isAuthenticated", "true");
     setAuthStatus("authenticated");
@@ -115,6 +122,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       avatar: userData.avatar || undefined,
       provider: userData.provider || "google",
       hasPassword: userData.hasPassword,
+      preferences: userData.preferences,
     });
     localStorage.setItem("isAuthenticated", "true");
     setAuthStatus("authenticated");

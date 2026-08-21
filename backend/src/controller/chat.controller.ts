@@ -31,7 +31,7 @@ const isStreamingRequest = (body: AskQuestionBody, acceptHeader?: string | strin
 
 export const askQuestion = asyncHandler(async (req, res) => {
   const { videoId, question, recentMessages = [], type = "chat" } = req.body as AskQuestionBody;
-
+  const responseLanguage = req.user?.preferences.responseLanguage ?? 'en'
   if (!videoId || (!question && type !== "notes")) {
     throw new ApiError(400, "videoId and question are required");
   }
@@ -88,6 +88,7 @@ if (type === "notes" || !isStreamingRequest(req.body as AskQuestionBody, req.hea
     question || "",
     contextMessages,
     type,
+    responseLanguage
   );
 
   return res
@@ -109,7 +110,7 @@ if (type === "notes" || !isStreamingRequest(req.body as AskQuestionBody, req.hea
   });
 
   try {
-    for await (const chunk of streamAiAboutTranscript(relevantChunks, question || "", contextMessages, type)) {
+    for await (const chunk of streamAiAboutTranscript(relevantChunks, question || "", contextMessages, type, responseLanguage)) {
       if (closed || res.destroyed) break;
       res.write(chunk);
     }
