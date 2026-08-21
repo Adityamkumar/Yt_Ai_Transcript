@@ -19,6 +19,7 @@ const ForgotPasswordPage = lazy(() => import('@/pages/ForgotPasswordPage'));
 const ResetPasswordPage = lazy(() => import('@/pages/ResetPasswordPage'));
 const PrivacyPage = lazy(() => import('@/pages/PrivacyPage'));
 const TermsPage = lazy(() => import('@/pages/TermsPage'));
+const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
 
 function RouteLoading() {
   return (
@@ -94,6 +95,7 @@ function AppRouter() {
               </ProtectedRoute>
             }
           />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Suspense>
       <YouTubePlayerModal />
