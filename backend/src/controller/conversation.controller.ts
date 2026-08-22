@@ -26,12 +26,12 @@ export const conversation = asyncHandler(async (req: any, res) => {
     throw new ApiError(400, "PdfDocumentId is required for pdf conversations");
   }
 
-  if (!req.user?._id) {
+  if (!req.authUserId) {
     throw new ApiError(401, "Unauthorized request");
   }
 
   const conversation = await Conversation.create({
-    userId: req.user._id,
+    userId: req.authUserId,
     videoId: type === "video" ? videoId : undefined,
     pdfDocumentId: type === "pdf" ? pdfDocumentId : undefined,
     type,
@@ -50,12 +50,12 @@ export const conversation = asyncHandler(async (req: any, res) => {
 });
 
 export const getConversations = asyncHandler(async (req: any, res) => {
-  if (!req.user?._id) {
+  if (!req.authUserId) {
     throw new ApiError(401, "Unauthorized request");
   }
 
   const conversations = await Conversation.find({
-    userId: req.user._id,
+    userId: req.authUserId,
   })
     .populate("videoId")
     .populate("pdfDocumentId")
@@ -77,13 +77,13 @@ export const deleteConversation = asyncHandler(async (req: any, res) => {
     throw new ApiError(400, "ConversationId is required");
   }
 
-  if (!req.user?._id) {
+  if (!req.authUserId) {
     throw new ApiError(401, "Unauthorized request");
   }
 
   const conversation = await Conversation.findOne({
     _id: new mongoose.Types.ObjectId(conversationId as string),
-    userId: req.user._id,
+    userId: req.authUserId,
   });
 
   if (!conversation) {

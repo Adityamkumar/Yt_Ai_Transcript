@@ -144,7 +144,7 @@ export const getTranscript = asyncHandler(async (req, res) => {
     youtubeUrl,
     youtubeVideoId: videoId,
     title,
-    uploadedBy:req.user?._id!,
+    uploadedBy:req.authUserId,
     status: "processing",
     ragStatus: "processing",
   });

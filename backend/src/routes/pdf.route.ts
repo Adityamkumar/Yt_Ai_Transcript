@@ -1,6 +1,7 @@
 import { Router } from "express";
 import multer from "multer";
 import { authMiddleware } from "../middleware/auth.middleware.js";
+import { authIdentityMiddleware } from "../middleware/authIdentity.middleware.js";
 import {
   uploadPdf,
   getPdfStatus,
@@ -27,13 +28,11 @@ const upload = multer({
   },
 });
 
-router.use(authMiddleware);
-
-router.post("/upload", upload.single("file"), uploadPdf);
-router.get("/status/:documentId", getPdfStatus);
-router.post("/retry/:documentId", retryPdfIngestion);
-router.post("/ask", askPdfQuestion);
-router.delete("/:documentId", deletePdfDocument);
+router.post("/upload", authIdentityMiddleware, upload.single("file"), uploadPdf);
+router.get("/status/:documentId", authMiddleware, getPdfStatus);
+router.post("/retry/:documentId", authIdentityMiddleware, retryPdfIngestion);
+router.post("/ask", authMiddleware, askPdfQuestion);
+router.delete("/:documentId", authIdentityMiddleware, deletePdfDocument);
 
 export default router;
 

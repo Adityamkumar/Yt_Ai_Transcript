@@ -198,13 +198,13 @@ export const userLogout = asyncHandler(async (req, res) => {
   const incomingRefreshToken = req.cookies.refreshToken;
 
   if (incomingRefreshToken) {
-    await User.findByIdAndUpdate((req.user as any)?._id, {
+    await User.findByIdAndUpdate(req.authUserId, {
       $pull: {
         refreshToken: incomingRefreshToken,
       },
     });
   } else {
-    await User.findByIdAndUpdate((req.user as any)?._id, {
+    await User.findByIdAndUpdate(req.authUserId, {
       $unset: {
         refreshToken: 1,
       },
@@ -221,6 +221,7 @@ export const userLogout = asyncHandler(async (req, res) => {
 });
 
 export const getCurrentUser = asyncHandler(async (req, res) => {
+
   const userId = (req.user as any)?._id;
   const userWithPassword = await User.findById(userId).select("password");
 
@@ -240,7 +241,7 @@ export const deleteUser = asyncHandler(async (req, res) => {
   const userId = req.params.id;
   const { password } = req.body;
 
-  if (userId !== String((req.user as any)?._id)) {
+  if (userId !== String(req.authUserId)) {
     throw new ApiError(403, "Forbidden: You can only delete your own account");
   }
 

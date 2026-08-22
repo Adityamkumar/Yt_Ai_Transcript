@@ -1,7 +1,6 @@
 import { Bookmark } from "../models/bookmark.model.js";
 import { Conversation } from "../models/conversation.model.js";
 import { Message } from "../models/message.model.js";
-import User from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -15,7 +14,7 @@ export const bookMark = asyncHandler(async (req, res) => {
 
   const conversation = await Conversation.findOne({
     _id: conversationId,
-    userId: req.user?._id!,
+    userId: req.authUserId,
   });
 
   if (!conversation) {
@@ -32,7 +31,7 @@ export const bookMark = asyncHandler(async (req, res) => {
   }
 
   const bookmark = await Bookmark.create({
-    userId: req.user?._id!,
+    userId: req.authUserId,
     conversationId: conversationId,
     messageId: messageId,
     type: type,
@@ -46,12 +45,12 @@ export const bookMark = asyncHandler(async (req, res) => {
 });
 
 export const getBookmarks = asyncHandler(async (req, res) => {
-  if (!req.user?._id) {
+  if (!req.authUserId) {
     throw new ApiError(401, "Unauthorized request");
   }
 
   const bookmarks = await Bookmark.find({
-    userId: req.user._id,
+    userId: req.authUserId,
   })
     .sort({
       createdAt: -1,
@@ -72,7 +71,7 @@ export const deleteBookmark = asyncHandler(async (req, res) => {
 
   const bookmark = await Bookmark.findOneAndDelete({
     _id: id,
-    userId: req.user?._id!,
+    userId: req.authUserId,
   });
 
   if (!bookmark) {

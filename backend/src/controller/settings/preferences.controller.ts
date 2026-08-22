@@ -4,7 +4,7 @@ import { ApiResponse } from "../../utils/ApiResponse.js";
 import { asyncHandler } from "../../utils/asyncHandler.js";
 
 export const updatePreferences = asyncHandler(async (req, res) => {
-  const userId = req.user?._id;
+  const userId = req.authUserId
   const { responseLanguage } = req.body;
 
   if (!responseLanguage) {
@@ -16,8 +16,6 @@ export const updatePreferences = asyncHandler(async (req, res) => {
   if (!allowedLanguages.includes(responseLanguage)) {
     throw new ApiError(400, "Invalid response language");
   }
-
-  const dbStart = performance.now();
 
   const user = await User.findByIdAndUpdate(
     userId,
@@ -31,10 +29,7 @@ export const updatePreferences = asyncHandler(async (req, res) => {
       runValidators: true,
     },
   ).select("preferences");
-  
-  console.log(
-    `[PERF] Preferences DB update: ${(performance.now() - dbStart).toFixed(2)}ms`,
-  );
+
 
   if (!user) {
     throw new ApiError(404, "User not found");

@@ -102,7 +102,7 @@ export const uploadPdf = asyncHandler(async (req: any, res) => {
     if (effectiveRagStatus === "ready") {
       const conversation = await getOrCreateConversation(
         existing._id as mongoose.Types.ObjectId,
-        req.user._id,
+        req.authUserId,
         existing.title,
       );
       return res
@@ -119,7 +119,7 @@ export const uploadPdf = asyncHandler(async (req: any, res) => {
     if (effectiveRagStatus === "processing") {
       const conversation = await getOrCreateConversation(
         existing._id as mongoose.Types.ObjectId,
-        req.user._id,
+        req.authUserId,
         existing.title,
       );
       return res
@@ -150,7 +150,7 @@ export const uploadPdf = asyncHandler(async (req: any, res) => {
           fileName: existing.fileName,
           fileUrl: existing.fileUrl,
           fileId: existing.fileId,
-          uploadedBy: req.user._id,
+          uploadedBy: req.authUserId,
         }).catch((err: Error) => {
           logger.error(
             { err },
@@ -161,7 +161,7 @@ export const uploadPdf = asyncHandler(async (req: any, res) => {
 
       const conversation = await getOrCreateConversation(
         existing._id as mongoose.Types.ObjectId,
-        req.user._id,
+        req.authUserId,
         existing.title,
       );
       return res
@@ -190,7 +190,7 @@ export const uploadPdf = asyncHandler(async (req: any, res) => {
   const pdfDoc = await processPdfUpload(
     fileBuffer,
     originalName,
-    req.user._id,
+    req.authUserId,
     title,
     documentHash,
   );
@@ -201,13 +201,13 @@ export const uploadPdf = asyncHandler(async (req: any, res) => {
     fileName: originalName,
     fileUrl: pdfDoc.fileUrl,
     fileId: pdfDoc.fileId,
-    uploadedBy: req.user._id,
+    uploadedBy: req.authUserId,
   }).catch((err: Error) => {
     logger.error({ err }, "[RAG] Background PDF ingestion failed");
   });
 
   const conversation = await Conversation.create({
-    userId: req.user._id,
+    userId: req.authUserId,
     pdfDocumentId: pdfDoc._id,
     type: "pdf",
     title,
@@ -256,7 +256,7 @@ export const retryPdfIngestion = asyncHandler(async (req: any, res) => {
 
   const pdfDoc = await PdfDocument.findOne({
     _id: documentId,
-    uploadedBy: req.user._id,
+    uploadedBy: req.authUserId,
   });
   if (!pdfDoc) {
     throw new ApiError(404, "PDF Document not found or unauthorized");
@@ -308,7 +308,7 @@ export const retryPdfIngestion = asyncHandler(async (req: any, res) => {
     fileName: pdfDoc.fileName,
     fileUrl: pdfDoc.fileUrl,
     fileId: pdfDoc.fileId,
-    uploadedBy: req.user._id,
+    uploadedBy: req.authUserId,
   }).catch((err: Error) => {
     logger.error({ err }, "[RAG] Manual retry ingestion failed");
   });
@@ -416,7 +416,7 @@ export const deletePdfDocument = asyncHandler(async (req: any, res) => {
   const { documentId } = req.params;
   const pdfDoc = await PdfDocument.findOne({
     _id: documentId,
-    uploadedBy: req.user._id,
+    uploadedBy: req.authUserId,
   });
   if (!pdfDoc) {
     throw new ApiError(404, "PDF Document not found or unauthorized");

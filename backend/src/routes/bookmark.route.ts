@@ -1,10 +1,10 @@
 import express from 'express'
 import { bookMark, getBookmarks, deleteBookmark } from '../controller/bookmark.controller.js'
-import { authMiddleware } from '../middleware/auth.middleware.js'
+import { authIdentityMiddleware } from '../middleware/authIdentity.middleware.js'
 
 const router = express.Router()
 
-router.use(authMiddleware)
+router.use(authIdentityMiddleware)
 router.post('/create', bookMark)
 router.get('/get', getBookmarks)
 router.delete('/delete/:id', deleteBookmark)

@@ -563,6 +563,8 @@ export function SettingsModal({ isOpen, onClose }: Props) {
       return;
     }
 
+    const previousResponseLanguage = prefs.responseLanguage;
+    setPrefs(p => ({ ...p, responseLanguage }));
     setIsUpdatingResponseLanguage(true);
 
     try {
@@ -575,6 +577,7 @@ export function SettingsModal({ isOpen, onClose }: Props) {
         localStorage.setItem(`responseLanguage:${user.id}`, savedLanguage);
       }
     } catch (error) {
+      setPrefs(p => ({ ...p, responseLanguage: previousResponseLanguage }));
       toast.error(error instanceof Error ? error.message : 'Failed to update response language');
     } finally {
       setIsUpdatingResponseLanguage(false);

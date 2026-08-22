@@ -7,7 +7,7 @@ import type { SearchResponse } from "./search.types.js";
 import { searchConversations } from "./search.service.js";
 
 export const search = asyncHandler(async (req: any, res) => {
-  if (!req.user?._id) {
+  if (!req.authUserId) {
     throw new ApiError(401, "Unauthorized — authentication required");
   }
 
@@ -33,7 +33,7 @@ export const search = asyncHandler(async (req: any, res) => {
 
   switch (type) {
     case SearchType.CONVERSATION:
-      results = await searchConversations(req.user._id, q, limit);
+      results = await searchConversations(req.authUserId, q, limit);
       break;
 
     default:

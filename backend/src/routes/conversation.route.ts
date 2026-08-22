@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { authMiddleware } from "../middleware/auth.middleware.js";
+import { authIdentityMiddleware } from "../middleware/authIdentity.middleware.js";
 import { 
   conversation, 
   getConversations, 
@@ -8,7 +8,7 @@ import {
 
 const router = Router();
 
-router.use(authMiddleware);
+router.use(authIdentityMiddleware);
 
 router.post("/", conversation);
 router.get("/:conversationId", getConversations);
