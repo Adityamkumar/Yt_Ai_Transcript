@@ -5,8 +5,6 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import User from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
 
-
-
 export const authMiddleware = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const token =
@@ -14,7 +12,7 @@ export const authMiddleware = asyncHandler(
       req.header("Authorization")?.replace("Bearer ", "");
 
     if (!token) {
-     throw new ApiError(401, "Unauthorized access")
+      throw new ApiError(401, "Unauthorized access");
     }
 
     try {
@@ -22,21 +20,28 @@ export const authMiddleware = asyncHandler(
         token,
         process.env.ACCESS_TOKEN_SECRET,
       ) as CustomJwtPayload;
-  
+
+      const authStart = performance.now();
+
       const user = await User.findById(decoded._id).select("-password");
-  
+
+      console.log(
+        `[PERF] Auth DB query: ${(performance.now() - authStart).toFixed(2)}ms`,
+      );
+
       if (!user) {
-        throw new ApiError(401, "Invalid token")
+        throw new ApiError(401, "Invalid token");
       }
 
-  
       req.user = user;
       next();
     } catch (error) {
       return res.status(401).json({
-        message: error instanceof jwt.TokenExpiredError ? "Token expired" : "Invalid token",
+        message:
+          error instanceof jwt.TokenExpiredError
+            ? "Token expired"
+            : "Invalid token",
       });
     }
   },
 );
-
