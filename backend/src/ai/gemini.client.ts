@@ -1,17 +1,32 @@
 import { GoogleGenAI } from "@google/genai";
 
-let geminiClient: GoogleGenAI | null = null;
+let geminiGenerationClient: GoogleGenAI | null = null;
+let geminiEmbeddingClient: GoogleGenAI | null = null;
 
-export const getGeminiClient = () => {
-  const apiKey = process.env.GEMINI_API_KEY;
+export const getGeminiGenerationClient = () => {
+  const apiKey = process.env.GEMINI_GENERATION_API_KEY;
 
   if (!apiKey) {
-    throw new Error("GEMINI_API_KEY is required for Gemini AI operations.");
+    throw new Error("GEMINI_GENERATION_API_KEY is required for Gemini generation operations.");
   }
 
-  if (!geminiClient) {
-    geminiClient = new GoogleGenAI({ apiKey });
+  if (!geminiGenerationClient) {
+    geminiGenerationClient = new GoogleGenAI({ apiKey });
   }
 
-  return geminiClient;
+  return geminiGenerationClient;
+};
+
+export const getGeminiEmbeddingClient = () => {
+  const apiKey = process.env.GEMINI_EMBEDDING_API_KEY;
+
+  if (!apiKey) {
+    throw new Error("GEMINI_EMBEDDING_API_KEY is required for Gemini embedding operations.");
+  }
+
+  if (!geminiEmbeddingClient) {
+    geminiEmbeddingClient = new GoogleGenAI({ apiKey });
+  }
+
+  return geminiEmbeddingClient;
 };

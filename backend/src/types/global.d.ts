@@ -6,7 +6,8 @@ namespace NodeJS {
     REFRESH_TOKEN_EXPIRY: string;
     PORT: string;
     MONGODB_URI: string;
-    GEMINI_API_KEY: string;
+    GEMINI_GENERATION_API_KEY: string;
+    GEMINI_EMBEDDING_API_KEY: string;
   }
 }
 

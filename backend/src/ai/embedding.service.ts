@@ -1,4 +1,4 @@
-import { getGeminiClient } from "./gemini.client.js";
+import { getGeminiEmbeddingClient } from "./gemini.client.js";
 import { RAG_CONFIG } from "../rag/RagConfig/rag.config.js";
 import logger from "../lib/logger.js";
 
@@ -79,7 +79,7 @@ export const generateEmbedding = async (
       throw new Error("Cannot generate an embedding for empty text.");
     }
 
-    const ai = getGeminiClient();
+    const ai = getGeminiEmbeddingClient();
 
     const config = createEmbeddingConfig(options);
 
@@ -128,7 +128,7 @@ export const generateEmbeddings = async (
       throw new Error("One or more texts are empty.");
     }
 
-    const ai = getGeminiClient();
+    const ai = getGeminiEmbeddingClient();
 
     const config = createEmbeddingConfig(options);
 

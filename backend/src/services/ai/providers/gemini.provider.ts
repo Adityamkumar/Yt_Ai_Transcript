@@ -1,4 +1,4 @@
-import { getGeminiClient } from "../../../ai/gemini.client.js";
+import { getGeminiGenerationClient } from "../../../ai/gemini.client.js";
 import type { IAIProvider } from "./aiProvider.service.js";
 
 const TIMEOUT_MS = 8000;
@@ -23,7 +23,7 @@ export class GeminiProvider implements IAIProvider {
   }
 
   async generateResponse(prompt: string, systemPrompt?: string): Promise<string> {
-    const ai = getGeminiClient();
+    const ai = getGeminiGenerationClient();
     const model = this.getModel();
     const contents = systemPrompt ? `${systemPrompt}\n\n${prompt}` : prompt;
 
@@ -39,7 +39,7 @@ export class GeminiProvider implements IAIProvider {
   }
 
   async generateStructuredResponse(prompt: string, schema: any, systemPrompt?: string): Promise<string> {
-    const ai = getGeminiClient();
+    const ai = getGeminiGenerationClient();
     const model = this.getModel();
     const contents = systemPrompt ? `${systemPrompt}\n\n${prompt}` : prompt;
 
@@ -59,7 +59,7 @@ export class GeminiProvider implements IAIProvider {
   }
 
   async *generateStream(prompt: string, systemPrompt?: string): AsyncGenerator<string, void, unknown> {
-    const ai = getGeminiClient();
+    const ai = getGeminiGenerationClient();
     const model = this.getModel();
     const contents = systemPrompt ? `${systemPrompt}\n\n${prompt}` : prompt;
 
