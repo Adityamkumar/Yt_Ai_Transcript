@@ -324,7 +324,7 @@ To handle API failures or rate limits without breaking the app:
 - Node.js (v18+)
 - MongoDB (Local instance or MongoDB Atlas)
 - Google Cloud Console credentials (for Google Login)
-- Gemini API Key (from Google AI Studio)
+- Gemini Generation and Embedding API Keys (from Google AI Studio)
 - Groq API Key (from Groq Console)
 - OpenRouter API Key
 - ImageKit account (for PDF uploads)
@@ -354,7 +354,10 @@ To handle API failures or rate limits without breaking the app:
    GOOGLE_CLIENT_SECRET=your_google_client_secret
    EMAIL_USER=your_gmail_address
    EMAIL_PASS=your_app_password
-   GEMINI_API_KEY=your_gemini_api_key
+   # Used for chat, summaries, notes, titles, and other Gemini text generation.
+   GEMINI_GENERATION_API_KEY=your_gemini_generation_api_key
+   # Used for document/chunk and query embeddings.
+   GEMINI_EMBEDDING_API_KEY=your_gemini_embedding_api_key
    GROQ_API_KEY=your_groq_api_key
    OPENROUTER_API_KEY=your_openrouter_api_key
    IMAGEKIT_PUBLIC_KEY=your_imagekit_public_key
