@@ -1,6 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  AlertTriangle,
   Eye,
   EyeOff,
   Loader2,
@@ -124,23 +123,23 @@ export function DeleteAccountModal({ isOpen, onClose }: Props) {
             initial="hidden"
             animate="visible"
             exit="exit"
-            className="relative w-full max-w-sm overflow-hidden rounded-2xl border border-[var(--border-medium)] bg-[#0e1019]/98 shadow-2xl backdrop-blur-xl"
+            className="relative w-full max-w-md overflow-hidden rounded-3xl border border-white/[0.11] bg-[#11131b]/98 shadow-[0_28px_80px_rgba(0,0,0,0.5)] backdrop-blur-xl"
           >
-            <div className="h-1 w-full bg-gradient-to-r from-[var(--accent)] via-[#6B9EF7] to-[#7C5CFF]" />
+            <div className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-white/45 to-transparent" />
 
-            <div className="px-6 pt-5 pb-0">
+            <div className="px-6 pt-6 pb-0 sm:px-7">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
-                  <span className="grid h-10 w-10 place-items-center rounded-xl border border-[var(--accent)]/20 bg-[var(--accent-subtle)]">
-                    <AlertTriangle size={20} className="text-[var(--accent)]" />
+                  <span className="grid h-10 w-10 place-items-center rounded-xl border border-white/[0.1] bg-white/[0.055]">
+                    <Lock size={17} strokeWidth={1.7} className="text-white/75" />
                   </span>
                   <div>
-                    <h2 className="text-base font-semibold text-white">
-                      Delete Account
-                    </h2>
-                    <p className="text-xs text-[var(--text-muted)]">
-                      This cannot be undone
+                    <p className="mb-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">
+                      Account Deletion
                     </p>
+                    <h2 className="text-base font-semibold tracking-[-0.02em] text-white">
+                      Delete your account
+                    </h2>
                   </div>
                 </div>
                 <button
@@ -154,22 +153,21 @@ export function DeleteAccountModal({ isOpen, onClose }: Props) {
             </div>
 
             {}
-            <div className="px-6 py-5 space-y-4">
-              <p className="text-sm leading-relaxed text-[var(--text-secondary)]">
-                All your conversations, bookmarks, and notes will be permanently
-                deleted.
+            <div className="px-6 py-6 space-y-5 sm:px-7">
+              <p className="text-sm leading-6 text-[var(--text-secondary)]">
+                This permanently removes your conversations, bookmarks, notes, and profile.
                 {requiresPassword && " Enter your password to confirm."}
               </p>
 
               {!requiresPassword ? (
-                <div className="rounded-xl border border-blue-500/20 bg-blue-500/10 p-4">
+                <div className="rounded-2xl border border-white/[0.09] bg-white/[0.035] p-4">
                   <div className="flex items-start gap-3">
-                    <Info size={18} className="mt-0.5 text-blue-400 shrink-0" />
+                    <Info size={17} className="mt-0.5 shrink-0 text-[var(--text-secondary)]" />
                     <div>
-                      <p className="text-sm font-medium text-blue-300">
+                      <p className="text-sm font-medium text-white">
                         Connected with Google
                       </p>
-                      <p className="mt-1 text-xs text-blue-400/80">
+                      <p className="mt-1 text-xs leading-5 text-[var(--text-muted)]">
                         This account is managed via Google authentication. No
                         password exists for this account.
                       </p>
@@ -181,8 +179,8 @@ export function DeleteAccountModal({ isOpen, onClose }: Props) {
                   animate={shouldShake ? "shake" : undefined}
                   variants={shakeVariants}
                 >
-                  <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">
-                    Confirm Password
+                  <label className="mb-2 block text-xs font-medium text-[var(--text-secondary)]">
+                    Password confirmation
                   </label>
                   <div className="relative">
                     <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]">
@@ -199,7 +197,7 @@ export function DeleteAccountModal({ isOpen, onClose }: Props) {
                       disabled={isDeleting}
                       placeholder="Enter your password"
                       autoFocus
-                      className={`w-full rounded-xl border bg-white/[0.04] py-3 pl-10 pr-11 text-sm text-white placeholder-[var(--text-muted)] transition-colors focus:outline-none disabled:opacity-50 ${
+                      className={`w-full rounded-xl border bg-white/[0.045] py-3 pl-10 pr-11 text-sm text-white placeholder-[var(--text-muted)] transition-colors focus:outline-none disabled:opacity-50 ${
                         error
                           ? "border-red-500/40 focus:border-red-500/60"
                           : "border-white/[0.1] focus:border-white/[0.2]"
@@ -233,7 +231,7 @@ export function DeleteAccountModal({ isOpen, onClose }: Props) {
             </div>
 
             {}
-            <div className="flex items-center gap-3 border-t border-white/[0.07] px-6 py-4">
+            <div className="flex items-center gap-3 border-t border-white/[0.07] px-6 py-5 sm:px-7">
               <button
                 onClick={handleClose}
                 disabled={isDeleting}
@@ -244,7 +242,7 @@ export function DeleteAccountModal({ isOpen, onClose }: Props) {
               <button
                 onClick={handleDelete}
                 disabled={isDeleting || (requiresPassword && !password.trim())}
-                className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-white hover:bg-neutral-200 py-2.5 text-sm font-semibold text-neutral-900 transition-all disabled:cursor-not-allowed disabled:opacity-40 active:scale-[0.97]"
+                className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-white py-2.5 text-sm font-semibold text-neutral-900 transition-all hover:bg-neutral-200 disabled:cursor-not-allowed disabled:opacity-40 active:scale-[0.97]"
               >
                 {isDeleting ? (
                   <>
@@ -252,7 +250,7 @@ export function DeleteAccountModal({ isOpen, onClose }: Props) {
                     <span>Deleting…</span>
                   </>
                 ) : (
-                  <span>Delete My Account</span>
+                  <span>Delete account</span>
                 )}
               </button>
             </div>

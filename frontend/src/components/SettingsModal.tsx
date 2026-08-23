@@ -6,7 +6,6 @@ import {
   Mail,
   Shield,
   Trash2,
-  AlertTriangle,
   Check,
   ChevronRight,
   ChevronLeft,
@@ -243,31 +242,34 @@ function ProfileTab({ user, onShowDeleteModal }: any) {
         </div>
       </div>
 
-      <div>
-        <h3 className="mb-4 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-red-400/80">
-          Danger Zone
-        </h3>
-        <div className="rounded-xl border border-red-500/15 bg-red-500/[0.04] p-5">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <div className="flex items-center gap-2">
-                <AlertTriangle size={14} className="text-red-400" />
-                <p className="text-sm font-medium text-white">Delete Account</p>
+      <section className="pt-2">
+        <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">
+          Account management
+        </p>
+        <div className="group relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[linear-gradient(135deg,rgba(255,255,255,0.045),rgba(255,255,255,0.015))] p-5 shadow-[0_12px_32px_rgba(0,0,0,0.12)]">
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent" />
+          <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex min-w-0 items-start gap-3.5">
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-white/[0.09] bg-white/[0.045] text-[var(--text-secondary)]">
+                <Trash2 size={16} strokeWidth={1.7} />
+              </span>
+              <div>
+                <p className="text-sm font-medium tracking-[-0.01em] text-white">Delete your account</p>
+                <p className="mt-1.5 max-w-md text-xs leading-5 text-[var(--text-muted)]">
+                  Permanently remove your profile and all data associated with it.
+                </p>
               </div>
-              <p className="mt-1.5 text-xs text-[var(--text-muted)] max-w-sm">
-                Permanently delete your account and all associated data. This action cannot be undone.
-              </p>
             </div>
             <button
               onClick={onShowDeleteModal}
-              className="flex shrink-0 items-center justify-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-2.5 text-sm font-medium text-red-400 transition-all hover:bg-red-500/20 hover:text-red-300 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-[#111]"
+              className="flex shrink-0 items-center justify-center gap-2 rounded-xl border border-white/[0.12] bg-white/[0.045] px-4 py-2.5 text-sm font-medium text-[var(--text-secondary)] transition-all hover:border-white/[0.2] hover:bg-white/[0.09] hover:text-white active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-white/25 focus:ring-offset-2 focus:ring-offset-[#111]"
             >
-              <Trash2 size={14} />
-              <span>Delete Account</span>
+              <span>Delete account</span>
+              <ChevronRight size={15} strokeWidth={1.8} />
             </button>
           </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 }
