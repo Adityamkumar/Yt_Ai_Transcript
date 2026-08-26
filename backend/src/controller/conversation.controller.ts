@@ -10,6 +10,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import mongoose from "mongoose";
 import logger from "../lib/logger.js";
+import { cleanupSharedPdfResource } from "../rag/services/PdfCleanup.service.js";
 
 export const conversation = asyncHandler(async (req: any, res) => {
   const { videoId, pdfDocumentId, type = "video", title } = req.body;
@@ -45,7 +46,11 @@ export const conversation = asyncHandler(async (req: any, res) => {
   res
     .status(200)
     .json(
-      new ApiResponse(200, populatedConversation, "Conversation created successfully"),
+      new ApiResponse(
+        200,
+        populatedConversation,
+        "Conversation created successfully",
+      ),
     );
 });
 
@@ -97,27 +102,19 @@ export const deleteConversation = asyncHandler(async (req: any, res) => {
   await Conversation.findByIdAndDelete(conversationId);
 
   if (conversation.type === "pdf" && pdfDocumentId) {
-    const pdfDoc = await PdfDocument.findById(pdfDocumentId);
-    if (pdfDoc) {
-      try {
-        await deletePdf(pdfDoc.fileId);
-      } catch (err) {
-        logger.error({ err }, "Failed to delete PDF from ImageKit storage during conversation deletion");
-      }
-      try {
-        await deletePdfRagArtifacts(pdfDoc._id);
-      } catch (err: any) {
-        logger.error({ err, documentId: pdfDoc._id }, "[RAG Cleanup] Failed to delete RAG chunks");
-      }
-      await PdfDocument.findByIdAndDelete(pdfDocumentId);
-    }
+     await cleanupSharedPdfResource(pdfDocumentId);
   } else if (videoId) {
-    const remainingConversations = await Conversation.countDocuments({ videoId });
+    const remainingConversations = await Conversation.countDocuments({
+      videoId,
+    });
     if (remainingConversations === 0) {
       try {
         await deleteVideoRagArtifacts(videoId);
       } catch (err: any) {
-        logger.error({ err, videoId }, "[RAG Cleanup] Failed to delete RAG chunks");
+        logger.error(
+          { err, videoId },
+          "[RAG Cleanup] Failed to delete RAG chunks",
+        );
       }
       await Video.findByIdAndDelete(videoId);
     }
@@ -127,4 +124,3 @@ export const deleteConversation = asyncHandler(async (req: any, res) => {
     .status(200)
     .json(new ApiResponse(200, {}, "Conversation deleted successfully"));
 });
-

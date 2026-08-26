@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { PdfDocument } from "../models/pdfDocument.model.js";
 import { Conversation } from "../models/conversation.model.js";
 import { hashPdfBuffer, processPdfUpload } from "../services/pdf.service.js";
@@ -22,6 +22,7 @@ import {
 } from "../rag/services/pdfRagIngestion.service.js";
 import { deletePdfRagArtifacts } from "../rag/services/pdfRagCleanup.service.js";
 import logger from "../lib/logger.js";
+import { cleanupPdfDocument } from "../rag/services/PdfCleanup.service.js";
 
 const GENERIC_PDF_TITLES = new Set([
   "new document",
@@ -154,7 +155,7 @@ export const uploadPdf = asyncHandler(async (req: any, res) => {
         }).catch((err: Error) => {
           logger.error(
             { err },
-            "[RAG] Background re-ingestion (dedup case C) failed"
+            "[RAG] Background re-ingestion (dedup case C) failed",
           );
         });
       }
@@ -336,7 +337,7 @@ export const askPdfQuestion = asyncHandler(async (req, res) => {
     stream = false,
   } = req.body;
 
-  const responseLanguage = req.user?.preferences.responseLanguage
+  const responseLanguage = req.user?.preferences.responseLanguage;
 
   if (!documentId || (!question && type !== "notes")) {
     throw new ApiError(400, "documentId and question are required");
@@ -366,7 +367,7 @@ export const askPdfQuestion = asyncHandler(async (req, res) => {
       question || "",
       responseLanguage!,
       recentMessages,
-      type
+      type,
     );
     return res
       .status(200)
@@ -391,7 +392,7 @@ export const askPdfQuestion = asyncHandler(async (req, res) => {
       question || "",
       recentMessages,
       type,
-      responseLanguage!
+      responseLanguage!,
     )) {
       if (closed || res.destroyed) break;
       res.write(chunk);
@@ -412,38 +413,22 @@ export const askPdfQuestion = asyncHandler(async (req, res) => {
   }
 });
 
-export const deletePdfDocument = asyncHandler(async (req: any, res) => {
+export const deletePdfDocument = asyncHandler(async (req, res) => {
   const { documentId } = req.params;
+  if (typeof documentId !== "string" || !Types.ObjectId.isValid(documentId)) {
+    throw new ApiError(404, "PDF Document not found or unauthorized");
+  }
+
+  const authUserId = new Types.ObjectId(req.authUserId);
   const pdfDoc = await PdfDocument.findOne({
     _id: documentId,
-    uploadedBy: req.authUserId,
+    uploadedBy: authUserId,
   });
   if (!pdfDoc) {
     throw new ApiError(404, "PDF Document not found or unauthorized");
   }
 
-  try {
-    await deletePdf(pdfDoc.fileId);
-  } catch (err) {
-    logger.error({ err }, "Failed to delete PDF from ImageKit storage");
-  }
-
-  try {
-    await deletePdfRagArtifacts(pdfDoc._id);
-  } catch (err: any) {
-    logger.error(
-      { err, documentId: pdfDoc._id },
-      "[RAG Cleanup] Failed to delete RAG chunks"
-    );
-  }
-
-  await PdfDocument.findByIdAndDelete(pdfDoc._id);
-
-  const conversations = await Conversation.find({ pdfDocumentId: pdfDoc._id });
-  for (const conv of conversations) {
-    await mongoose.model("Message").deleteMany({ conversationId: conv._id });
-    await Conversation.findByIdAndDelete(conv._id);
-  }
+  await cleanupPdfDocument(pdfDoc._id, authUserId);
 
   return res
     .status(200)

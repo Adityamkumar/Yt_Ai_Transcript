@@ -16,6 +16,8 @@ import { googleClient } from "../config/googleAuth.js";
 import { authRateLimiterService } from "../services/authRateLimiter.service.js";
 import logger from "../lib/logger.js";
 import { userEvent } from "../events/user.events.js";
+import { cleanupUserData } from "../rag/services/accountCleanup.service.js";
+
 
 export const userRegister = asyncHandler(async (req, res) => {
   try {
@@ -221,7 +223,6 @@ export const userLogout = asyncHandler(async (req, res) => {
 });
 
 export const getCurrentUser = asyncHandler(async (req, res) => {
-
   const userId = (req.user as any)?._id;
   const userWithPassword = await User.findById(userId).select("password");
 
@@ -257,6 +258,8 @@ export const deleteUser = asyncHandler(async (req, res) => {
     }
   }
 
+
+  await cleanupUserData(user._id)
   await User.findByIdAndDelete(userId);
 
   res
