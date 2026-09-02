@@ -411,7 +411,7 @@ export const avatarProxyController = asyncHandler(async (req, res) => {
   }
 });
 
-export const forgetPassword = asyncHandler(async (req, res) => {
+export const forgotPassword = asyncHandler(async (req, res) => {
   const { email } = req.body;
 
   if (!email) {
@@ -466,7 +466,9 @@ export const forgetPassword = asyncHandler(async (req, res) => {
 
   const user = await User.findOne({ email: normalizedEmail });
   if (!user) {
-    throw new ApiError(200, "If eligible, we'll send a reset link.");
+    return res
+    .status(200)
+    .json(new ApiResponse(200, "If eligible, we'll send a reset link"));
   }
 
   if (!user.password) {

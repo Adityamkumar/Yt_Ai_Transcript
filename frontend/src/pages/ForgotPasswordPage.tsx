@@ -54,9 +54,9 @@ export default function ForgotPasswordPage() {
             <div className="flex items-center justify-center text-green-400">
               <CheckCircle2 size={24} />
             </div>
-            <p className="text-sm font-semibold text-foreground">Reset link sent</p>
+            <p className="text-sm font-semibold text-foreground">Check your email</p>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Please check your inbox and spam folder for the password reset email.
+             If eligible, we'll send a reset link.
             </p>
           </motion.div>
         ) : (

@@ -8,7 +8,7 @@ import {
   deleteUser,
   googleVerifyController,
   avatarProxyController,
-  forgetPassword,
+  forgotPassword,
   resetPasswordController,
   validateResetPasswordTokenController,
 } from "../controller/auth.controller.js";
@@ -30,7 +30,7 @@ router.get("/avatar-proxy", avatarProxyController);
 
 router.post("/google/verify", googleVerifyController);
 
-router.post('/forgot-password', forgetPassword)
+router.post('/forgot-password', forgotPassword)
 router.get(
   "/reset-password/:token/validate",
   validateResetPasswordTokenController
