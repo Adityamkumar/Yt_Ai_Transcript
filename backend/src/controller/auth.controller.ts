@@ -17,65 +17,88 @@ import { authRateLimiterService } from "../services/authRateLimiter.service.js";
 import logger from "../lib/logger.js";
 import { userEvent } from "../events/user.events.js";
 import { cleanupUserData } from "../rag/services/accountCleanup.service.js";
-
+import { authRequestRateLimiterService } from "../services/authRequestRateLimiter.service.js";
+import { signupRateLimiterService } from "../services/signupRateLimiter.service.js";
 
 export const userRegister = asyncHandler(async (req, res) => {
-  try {
-    const { name, email, password } = req.body;
+  const { name, email, password } = req.body;
+  const ip = req.ip || req.socket.remoteAddress || "";
 
-    if (!name) {
-      throw new ApiError(400, "Name is required");
-    }
+  if (signupRateLimiterService.isFailedAttemptBlocked(ip)) {
+    const retryAfter = signupRateLimiterService.getFailedRetryAfter(ip);
 
-    const isUserAlreadyExists = await User.findOne({ email });
+    return res
+      .status(429)
+      .json(
+        new ApiResponse(
+          429,
+          retryAfter,
+          "Too many failed signup attempts. Please try again in 10 minutes.",
+        ),
+      );
+  }
 
-    if (isUserAlreadyExists) {
-      throw new ApiError(400, "User already exists with this email");
-    }
+  if (signupRateLimiterService.isSuccessfulSignupBlocked(ip)) {
+    const retryAfter = signupRateLimiterService.getSuccessfulRetryAfter(ip);
 
-    if (!password) {
-      throw new ApiError(400, "Password is required");
-    }
-    if (typeof password != "string") {
-      throw new ApiError(400, "Password must be a string");
-    }
+    return res
+      .status(429)
+      .json(
+        new ApiResponse(
+          429,
+          retryAfter,
+          "Too many accounts created. Please try again in 1 hour.",
+        ),
+      );
+  }
 
-    const user = await User.create({
-      name,
-      email: email,
-      password: password,
-    });
+  if (!name || !email) {
+    signupRateLimiterService.recordFailedAttempt(ip);
+    throw new ApiError(400, "Name and Email is required");
+  }
 
-    const { accessToken, refreshToken } =
-      await generateAccessTokenAndRefreshToken(user._id);
+  const isUserAlreadyExists = await User.findOne({ email: email });
 
-    res.cookie("accessToken", accessToken, accessCookieOptions);
-    res.cookie("refreshToken", refreshToken, refreshCookieOptions);
+  if (isUserAlreadyExists) {
+    signupRateLimiterService.recordFailedAttempt(ip);
+    throw new ApiError(400, "User already exists.");
+  }
 
-    userEvent.emit("user.created", {
-      userId: user._id,
+  if (!password || typeof password !== "string") {
+    signupRateLimiterService.recordFailedAttempt(ip);
+    throw new ApiError(400, "Password is required and must be a string");
+  }
+
+
+  const user = await User.create({
+    name,
+    email: email,
+    password: password,
+  });
+
+  signupRateLimiterService.recordSuccessfulSignup(ip);
+
+  const { accessToken, refreshToken } =
+    await generateAccessTokenAndRefreshToken(user._id);
+
+  res.cookie("accessToken", accessToken, accessCookieOptions);
+  res.cookie("refreshToken", refreshToken, refreshCookieOptions);
+
+  userEvent.emit("user.created", {
+    userId: user._id,
+    name: user.name,
+    email: user.email,
+  });
+
+  res.status(201).json({
+    message: "User register successfully",
+    user: {
+      id: user._id,
       name: user.name,
       email: user.email,
-    });
-
-    res.status(201).json({
-      message: "User register successfully",
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        hasPassword: true,
-      },
-    });
-  } catch (error) {
-    if (
-      error instanceof ApiError ||
-      (error && typeof error === "object" && "statusCode" in error)
-    ) {
-      throw error;
-    }
-    throw new ApiError(500, "Internal server error!");
-  }
+      hasPassword: true,
+    },
+  });
 });
 
 export const userLogin = asyncHandler(async (req, res) => {
@@ -95,9 +118,9 @@ export const userLogin = asyncHandler(async (req, res) => {
     const user = await User.findOne({ email });
 
     if (!user || !user.password) {
-      authRateLimiterService.recordFailure(ip);
-      if (authRateLimiterService.isBlocked(ip)) {
-        const retryAfter = authRateLimiterService.getRetryAfter(ip);
+      authRateLimiterService.recordFailure(ip, "login");
+      if (authRateLimiterService.isBlocked(ip, "login")) {
+        const retryAfter = authRateLimiterService.getRetryAfter(ip, "login");
         return res.status(429).json({
           success: false,
           message: "Too many failed login attempts. Please try again later.",
@@ -110,9 +133,9 @@ export const userLogin = asyncHandler(async (req, res) => {
     const isPasswordMatched = await user.isPasswordCorrect(password);
 
     if (!isPasswordMatched) {
-      authRateLimiterService.recordFailure(ip);
-      if (authRateLimiterService.isBlocked(ip)) {
-        const retryAfter = authRateLimiterService.getRetryAfter(ip);
+      authRateLimiterService.recordFailure(ip, "login");
+      if (authRateLimiterService.isBlocked(ip, "login")) {
+        const retryAfter = authRateLimiterService.getRetryAfter(ip, "login");
         return res.status(429).json({
           success: false,
           message: "Too many failed login attempts. Please try again later.",
@@ -130,7 +153,7 @@ export const userLogin = asyncHandler(async (req, res) => {
     );
 
     // Reset rate limiter on successful login
-    authRateLimiterService.reset(ip);
+    authRateLimiterService.reset(ip, "login");
 
     res.cookie("accessToken", accessToken, accessCookieOptions);
     res.cookie("refreshToken", refreshToken, refreshCookieOptions);
@@ -258,8 +281,7 @@ export const deleteUser = asyncHandler(async (req, res) => {
     }
   }
 
-
-  await cleanupUserData(user._id)
+  await cleanupUserData(user._id);
   await User.findByIdAndDelete(userId);
 
   res
@@ -391,20 +413,66 @@ export const avatarProxyController = asyncHandler(async (req, res) => {
 
 export const forgetPassword = asyncHandler(async (req, res) => {
   const { email } = req.body;
+
   if (!email) {
     throw new ApiError(400, "Email is required");
   }
 
-  const user = await User.findOne({ email: email });
+  const ip = req.ip || req.socket.remoteAddress || "";
+  const normalizedEmail = email.trim().toLowerCase();
+
+  if (authRequestRateLimiterService.isBlocked(ip, "forgotPassword")) {
+    const retryAfter = authRequestRateLimiterService.getRetryAfter(
+      ip,
+      "forgotPassword",
+    );
+
+    return res
+      .status(429)
+      .json(
+        new ApiResponse(
+          429,
+          retryAfter,
+          "Too many password reset attempts. Please try again in 1 hour.",
+        ),
+      );
+  }
+
+  if (
+    authRequestRateLimiterService.isBlocked(normalizedEmail, "forgotPassword")
+  ) {
+    const retryAfter = authRequestRateLimiterService.getRetryAfter(
+      normalizedEmail,
+      "forgotPassword",
+    );
+
+    return res
+      .status(429)
+      .json(
+        new ApiResponse(
+          429,
+          retryAfter,
+          "Too many password reset attempts. Please try again in 1 hour.",
+        ),
+      );
+  }
+
+  authRequestRateLimiterService.recordRequest(ip, "forgotPassword");
+
+  authRequestRateLimiterService.recordRequest(
+    normalizedEmail,
+    "forgotPassword",
+  );
+
+  const user = await User.findOne({ email: normalizedEmail });
   if (!user) {
-    throw new ApiError(404, "Couldn't find the user with this email");
+    throw new ApiError(200, "If eligible, we'll send a reset link.");
   }
 
   if (!user.password) {
-    return res.status(400).json({
-      success: false,
-      message: "This account uses Google Sign-In.",
-    });
+    return res
+      .status(400)
+      .json(new ApiResponse(400, "This account uses Google Sign-In."));
   }
 
   const resetToken = user.generateResetPasswordToken();
@@ -422,9 +490,10 @@ export const forgetPassword = asyncHandler(async (req, res) => {
     subject: template.subject,
     html: template.html,
   });
+
   res
     .status(200)
-    .json(new ApiResponse(200, "Reset password link sent successfully."));
+    .json(new ApiResponse(200, "If eligible, we'll send a reset link"));
 });
 
 export const resetPasswordController = asyncHandler(async (req, res) => {
@@ -441,14 +510,13 @@ export const resetPasswordController = asyncHandler(async (req, res) => {
 
   const user = await User.findOne({
     resetPasswordToken: hashedToken,
-
     resetPasswordExpiry: {
       $gt: new Date(),
     },
   });
 
   if (!user) {
-    throw new ApiError(400, "Invalid or expired reset token");
+    throw new ApiError(489, "Invalid or expired reset token");
   }
 
   if (!password || typeof password !== "string") {

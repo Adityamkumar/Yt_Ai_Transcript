@@ -109,7 +109,8 @@ axiosInstance.interceptors.response.use(
         
         const customError = new Error(message) as any;
         customError.status = error.response?.status;
-        customError.retryAfter = error.response?.data?.retryAfter;
+        customError.retryAfter = error.response?.data?.retryAfter
+            ?? (error.response?.status === 429 ? error.response?.data?.data : undefined);
         return Promise.reject(customError);
     }
 );

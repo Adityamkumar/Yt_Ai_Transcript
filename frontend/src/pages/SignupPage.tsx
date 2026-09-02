@@ -20,12 +20,24 @@ const getErrorMessage = (error: unknown, fallback: string) => {
   return fallback;
 };
 
+const formatRetryAfter = (retryAfter: number): string => {
+  const totalMinutes = Math.ceil(retryAfter / 60);
+
+  if (totalMinutes < 60) {
+    return `${totalMinutes} minute${totalMinutes === 1 ? "" : "s"}`;
+  }
+
+  const hours = Math.ceil(totalMinutes / 60);
+  return `${hours} hour${hours === 1 ? "" : "s"}`;
+};
+
 export default function SignupPage() {
   useAuthRedirect();
   const { register, user, authStatus } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [isRateLimited, setIsRateLimited] = useState(false);
 
   const isOAuthReturn = sessionStorage.getItem("oauth_pending") === "true";
 
@@ -41,11 +53,27 @@ export default function SignupPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isRateLimited) return;
+
     setIsLoading(true);
     setError(null);
     try {
       await register(form.name, form.email, form.password);
     } catch (err: unknown) {
+      const rateLimitError = err as { status?: number; retryAfter?: number };
+
+      if (rateLimitError.status === 429) {
+        setIsRateLimited(true);
+        const message = getErrorMessage(err, "Too many signup attempts. Please try again later.");
+
+        setError(
+          typeof rateLimitError.retryAfter === "number" && !/try again in/i.test(message)
+            ? `${message} Please try again in ${formatRetryAfter(rateLimitError.retryAfter)}.`
+            : message,
+        );
+        return;
+      }
+
       setError(getErrorMessage(err, "Failed to create account"));
     } finally {
       setIsLoading(false);
@@ -137,11 +165,11 @@ export default function SignupPage() {
 
           <Button
             type="submit"
-            disabled={isLoading}
+            disabled={isLoading || isRateLimited}
             className="mt-2 w-full bg-white text-black font-semibold hover:bg-neutral-200"
           >
             {isLoading ? "Creating account..." : "Sign Up"}
-            {!isLoading && <ArrowRight size={15} />}
+            {!isLoading && !isRateLimited && <ArrowRight size={15} />}
           </Button>
 
           <p className="text-[10px] text-muted-foreground text-center leading-relaxed mt-1">

@@ -15,9 +15,12 @@ export default function ForgotPasswordPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [isRateLimited, setIsRateLimited] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isRateLimited) return;
+
     setIsLoading(true);
     setError(null);
 
@@ -25,6 +28,9 @@ export default function ForgotPasswordPage() {
       await authService.forgotPassword(email);
       setSuccess(true);
     } catch (err: unknown) {
+      if ((err as { status?: number }).status === 429) {
+        setIsRateLimited(true);
+      }
       setError(getErrorMessage(err, "Unable to send reset link"));
     } finally {
       setIsLoading(false);
@@ -81,11 +87,11 @@ export default function ForgotPasswordPage() {
 
             <Button
               type="submit"
-              disabled={isLoading}
+              disabled={isLoading || isRateLimited}
               className="mt-1 w-full bg-white text-black font-semibold hover:bg-neutral-200"
             >
               {isLoading ? "Sending link..." : "Send Reset Link"}
-              {!isLoading && <ArrowRight size={15} />}
+              {!isLoading && !isRateLimited && <ArrowRight size={15} />}
             </Button>
           </form>
         )}

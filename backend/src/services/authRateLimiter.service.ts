@@ -1,4 +1,7 @@
-import { authRateLimiterConfig } from "../config/authRateLimiter.config.js";
+import {
+  authRateLimiterConfig,
+  type AuthRateLimitAction,
+} from "../config/authRateLimiter.config.js";
 
 interface IpRateLimitState {
   failedAttempts: number;
@@ -8,26 +11,30 @@ interface IpRateLimitState {
 class AuthRateLimiterService {
   private store = new Map<string, IpRateLimitState>();
 
-  public isBlocked(ip: string): boolean {
-    const state = this.store.get(ip);
+  private getKey(ip: string, action: AuthRateLimitAction): string {
+    return `${action}:${ip}`;
+  }
+
+  public isBlocked(ip: string, action: AuthRateLimitAction): boolean {
+    const key = this.getKey(ip, action);
+    const state = this.store.get(key);
     if (!state) return false;
 
     if (state.lockedUntil) {
       if (Date.now() < state.lockedUntil) {
         return true;
       }
-      // Lock has expired, clean up memory
       this.store.delete(ip);
     }
     return false;
   }
 
-  public recordFailure(ip: string): void {
-    let state = this.store.get(ip);
+  public recordFailure(ip: string, action: AuthRateLimitAction): void {
+    let key = this.getKey(ip, action);
+    let state = this.store.get(key);
 
     if (state && state.lockedUntil && Date.now() >= state.lockedUntil) {
-      // Stale lock has expired, clean up memory before starting new count
-      this.store.delete(ip);
+      this.store.delete(key);
       state = undefined;
     }
 
@@ -36,10 +43,9 @@ class AuthRateLimiterService {
         failedAttempts: 0,
         lockedUntil: null,
       };
-      this.store.set(ip, state);
+      this.store.set(key, state);
     }
 
-    // Do not continue incrementing counter while already locked
     if (state.lockedUntil && Date.now() < state.lockedUntil) {
       return;
     }
@@ -51,12 +57,14 @@ class AuthRateLimiterService {
     }
   }
 
-  public reset(ip: string): void {
-    this.store.delete(ip);
+  public reset(ip: string, action: AuthRateLimitAction): void {
+    const key = this.getKey(ip, action);
+    this.store.delete(key);
   }
 
-  public getRetryAfter(ip: string): number {
-    const state = this.store.get(ip);
+  public getRetryAfter(ip: string, action: AuthRateLimitAction): number {
+    const key = this.getKey(ip, action);
+    const state = this.store.get(key);
     if (state && state.lockedUntil && state.lockedUntil > Date.now()) {
       return Math.ceil((state.lockedUntil - Date.now()) / 1000);
     }
