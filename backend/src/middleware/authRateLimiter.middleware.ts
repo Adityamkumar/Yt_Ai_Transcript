@@ -4,8 +4,8 @@ import { authRateLimiterService } from "../services/authRateLimiter.service.js";
 export const authRateLimiterMiddleware = (req: Request, res: Response, next: NextFunction): void => {
   const ip = req.ip || req.socket.remoteAddress || "";
 
-  if (authRateLimiterService.isBlocked(ip)) {
-    const retryAfter = authRateLimiterService.getRetryAfter(ip);
+  if (authRateLimiterService.isBlocked(ip, 'login')) {
+    const retryAfter = authRateLimiterService.getRetryAfter(ip, 'login');
     res.status(429).json({
       success: false,
       message: "Too many failed login attempts. Please try again later.",
