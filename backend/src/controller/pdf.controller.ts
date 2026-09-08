@@ -298,34 +298,56 @@ export const retryPdfIngestion = asyncHandler(async (req: any, res) => {
     );
   }
 
-  await PdfDocument.findByIdAndUpdate(pdfDoc._id, {
+  const updatedDoc = await PdfDocument.findByIdAndUpdate(
+  pdfDoc._id,
+  {
+    $inc: {
+      retryCount: 1,
+    },
     status: "processing",
     ragStatus: "processing",
-  });
+  },
+  {
+    returnDocument: "after",
+  },
+);
 
-  ingestPdfForRag({
-    pdfDocumentId: pdfDoc._id,
-    title: pdfDoc.title,
-    fileName: pdfDoc.fileName,
-    fileUrl: pdfDoc.fileUrl,
-    fileId: pdfDoc.fileId,
-    uploadedBy: req.authUserId,
-  }).catch((err: Error) => {
-    logger.error({ err }, "[RAG] Manual retry ingestion failed");
-  });
+if (!updatedDoc) {
+  throw new ApiError(404, "PDF Document not found");
+}
 
-  return res.status(200).json(
-    new ApiResponse(
-      200,
-      {
-        ragStatus: "processing",
-        retryCount: nextRetryCount,
-        maxRetries: MAX_RETRY_COUNT,
-        cooldownUntil: undefined,
-      },
-      "Re-indexing started successfully",
-    ),
+const manualRetryCount = updatedDoc.retryCount ?? 0;
+
+await ingestPdfForRag({
+  pdfDocumentId: pdfDoc._id,
+  title: pdfDoc.title,
+  fileName: pdfDoc.fileName,
+  fileUrl: pdfDoc.fileUrl,
+  fileId: pdfDoc.fileId,
+  uploadedBy: req.authUserId,
+  retryType: "manual",
+}).catch((err: Error) => {
+  logger.error(
+    {
+      documentId: pdfDoc._id,
+      error: err,
+    },
+    "[RAG] Manual retry ingestion failed",
   );
+});
+
+return res.status(200).json(
+  new ApiResponse(
+    200,
+    {
+      ragStatus: "processing",
+      retryCount: manualRetryCount,
+      maxRetries: MAX_RETRY_COUNT,
+      cooldownUntil: undefined,
+    },
+    "Re-indexing started successfully",
+  ),
+);
 });
 
 export const askPdfQuestion = asyncHandler(async (req, res) => {

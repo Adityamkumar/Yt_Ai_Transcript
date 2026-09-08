@@ -11,6 +11,8 @@ import {
   forgotPassword,
   resetPasswordController,
   validateResetPasswordTokenController,
+  verifyEmail,
+  resendEmailVerification,
 } from "../controller/auth.controller.js";
 import { authMiddleware } from "../middleware/auth.middleware.js";
 import { authIdentityMiddleware } from "../middleware/authIdentity.middleware.js";
@@ -39,5 +41,9 @@ router.post(
   "/reset-password/:token",
   resetPasswordController
 );
+
+router.get("/verify-email/:verificationToken", verifyEmail);
+router.post("/resend-email-verification", resendEmailVerification);
+
 export default router;
 

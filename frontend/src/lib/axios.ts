@@ -1,5 +1,14 @@
 import axios from 'axios';
 
+export const EMAIL_NOT_VERIFIED_CODE = 'EMAIL_NOT_VERIFIED';
+export const EMAIL_VERIFICATION_REQUIRED_EVENT = 'lumora:email-verification-required';
+
+export const notifyEmailVerificationRequired = () => {
+    if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event(EMAIL_VERIFICATION_REQUIRED_EVENT));
+    }
+};
+
 export const getApiBaseUrl = (): string => {
     const envUrl = import.meta.env.VITE_API_BASE_URL;
     
@@ -53,6 +62,11 @@ axiosInstance.interceptors.response.use(
     (response) => response,
     async (error) => {
         const originalRequest = error.config;
+        const errorCode = error.response?.data?.code;
+
+        if (errorCode === EMAIL_NOT_VERIFIED_CODE) {
+            notifyEmailVerificationRequired();
+        }
 
         const isAuthRequest =
             originalRequest.url?.includes('login') ||
@@ -99,7 +113,9 @@ axiosInstance.interceptors.response.use(
             }
         }
 
-        console.error("Axios request failed:", error);
+        if (errorCode !== EMAIL_NOT_VERIFIED_CODE) {
+            console.error("Axios request failed:", error);
+        }
         let message = error.response?.data?.message || error.message || 'Something went wrong. Please try again.';
         if (error.code === 'ECONNABORTED') {
             message = 'Request timeout: The upload is taking too long on this network connection.';
@@ -109,8 +125,14 @@ axiosInstance.interceptors.response.use(
         
         const customError = new Error(message) as any;
         customError.status = error.response?.status;
+        customError.code = errorCode;
+        customError.isEmailVerificationRequired = errorCode === EMAIL_NOT_VERIFIED_CODE;
         customError.retryAfter = error.response?.data?.retryAfter
-            ?? (error.response?.status === 429 ? error.response?.data?.data : undefined);
+            ?? error.response?.data?.data?.retryAfter
+            ?? (error.response?.status === 429 && typeof error.response?.data?.data === "number"
+                ? error.response.data.data
+                : undefined);
+        customError.reason = error.response?.data?.reason ?? error.response?.data?.data?.reason;
         return Promise.reject(customError);
     }
 );

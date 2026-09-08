@@ -4,6 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { FileText, Loader2, Sparkles, Youtube } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { EMAIL_NOT_VERIFIED_CODE } from '@/lib/axios';
 
 const ChatContainer = lazy(() => import('@/components/ChatContainer').then(m => ({ default: m.ChatContainer })));
 const PdfChatContainer = lazy(() => import('@/components/pdf/PdfChatContainer').then(m => ({ default: m.PdfChatContainer })));
@@ -80,6 +81,7 @@ export default function HomePage({ onActionReady }: HomePageProps) {
 
         navigate(`/workspace/${conversation._id}`);
       } catch (err) {
+        if ((err as { code?: string })?.code === EMAIL_NOT_VERIFIED_CODE) return;
         toast.error(err instanceof Error ? err.message : 'Indexing failed');
       } finally {
         setIsExtracting(false);

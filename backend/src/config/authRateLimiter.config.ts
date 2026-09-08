@@ -3,4 +3,4 @@ export const authRateLimiterConfig = {
   LOCK_DURATION_MS: 20 * 60 * 1000, // 20 minutes in milliseconds
 };
 
-export type AuthRateLimitAction = "login" | "signup" | "forgotPassword";
+export type AuthRateLimitAction = "login";

@@ -15,15 +15,13 @@ export type IngestPdfForRagInput = {
   fileUrl: string;
   fileId: string;
   uploadedBy: string | Types.ObjectId;
+  retryType?: "auto" | "manual";
 };
 
-/** Number of automatic retries before requiring user intervention. */
 export const MAX_AUTO_RETRIES = RAG_CONFIG.retries.MAX_AUTO_RETRIES;
 
-/** Number of manual retries the user can trigger. */
 export const MAX_MANUAL_RETRIES = RAG_CONFIG.retries.MAX_MANUAL_RETRIES;
 
-/** Total retry budget (automatic + manual). Does not include the initial attempt. */
 export const MAX_RETRY_COUNT =
   MAX_AUTO_RETRIES + MAX_MANUAL_RETRIES;
 
@@ -104,6 +102,7 @@ export const ingestPdfForRag = async ({
   fileUrl,
   fileId: _fileId,
   uploadedBy: _uploadedBy,
+  retryType,
 }: IngestPdfForRagInput): Promise<void> => {
   const documentObjectId = toObjectId(pdfDocumentId);
 
@@ -152,23 +151,123 @@ export const ingestPdfForRag = async ({
       { documentId: documentObjectId, chunksCount: embeddedChunks.length },
       "[RAG] PDF ingestion complete"
     );
-  } catch (error: any) {
+      } catch (error: any) {
+    const isRetryable = error?.retryable === true;
+
+    const retryAfterMs =
+      typeof error?.retryAfterMs === "number"
+        ? error.retryAfterMs
+        : null;
+
+    if (!isRetryable) {
+      await PdfDocument.findByIdAndUpdate(documentObjectId, {
+        status: "failed",
+        ragStatus: "failed",
+      });
+
+      await PdfChunk.deleteMany({
+        documentId: documentObjectId,
+      });
+
+      logger.error(
+        {
+          documentId: documentObjectId,
+          status: error?.status,
+          error: error?.message ?? String(error),
+        },
+        "[RAG] Non-retryable PDF ingestion error. Stopping retry."
+      );
+
+      throw new Error(
+        `[RAG] PDF ingestion failed for documentId=${documentObjectId}: ${
+          error?.message ?? "Unknown error"
+        }`
+      );
+    }
+
+    if (retryType === "manual") {
+  const currentDoc = await PdfDocument.findById(documentObjectId);
+
+  const retryCount = currentDoc?.retryCount ?? 0;
+
+  await PdfDocument.findByIdAndUpdate(documentObjectId, {
+    status: "failed",
+    ragStatus: "failed",
+  });
+
+  await PdfChunk.deleteMany({
+    documentId: documentObjectId,
+  });
+
+  if (retryCount >= MAX_RETRY_COUNT) {
+    const cooldownTime = new Date(
+      Date.now() + 10 * 60 * 1000,
+    );
+
+    await PdfDocument.findByIdAndUpdate(documentObjectId, {
+      cooldownUntil: cooldownTime,
+    });
+
+    logger.warn(
+      {
+        documentId: documentObjectId,
+        retryCount,
+        maxRetryCount: MAX_RETRY_COUNT,
+        cooldownUntil: cooldownTime.toISOString(),
+      },
+      "[RAG] Maximum retry budget reached. Entering cooldown.",
+    );
+  }
+
+  throw new Error(
+    `[RAG] Manual PDF ingestion failed for documentId=${documentObjectId}: ${
+      error?.message ?? "Unknown error"
+    }`,
+  );
+}
+
+
     const updatedDoc = await PdfDocument.findByIdAndUpdate(
       documentObjectId,
       {
         status: "failed",
         ragStatus: "failed",
-        $inc: { retryCount: 1 },
+        $inc: {
+          retryCount: 1,
+        },
       },
-      { returnDocument: 'after' }
+      {
+        returnDocument: "after",
+      }
     );
 
-    await PdfChunk.deleteMany({ documentId: documentObjectId });
+    await PdfChunk.deleteMany({
+      documentId: documentObjectId,
+    });
 
-    if (updatedDoc) {
-      if (updatedDoc.retryCount < MAX_AUTO_RETRIES) {
-        logger.info({ documentId: documentObjectId, attempt: updatedDoc.retryCount + 1 }, "[RAG] Auto-retry ingestion");
-        
+    if (!updatedDoc) {
+      throw new Error(
+        `[RAG] PDF document not found: ${documentObjectId}`
+      );
+    }
+
+    const retryCount = updatedDoc.retryCount ?? 0;
+
+    if (retryCount <= MAX_AUTO_RETRIES) {
+      const delayMs = retryAfterMs ?? 1000;
+
+      logger.warn(
+        {
+          documentId: documentObjectId,
+          retryCount,
+          maxAutoRetries: MAX_AUTO_RETRIES,
+          retryAfterMs: delayMs,
+          error: error?.message ?? String(error),
+        },
+        "[RAG] Scheduling automatic PDF ingestion retry."
+      );
+
+      setTimeout(() => {
         ingestPdfForRag({
           pdfDocumentId,
           title,
@@ -176,20 +275,43 @@ export const ingestPdfForRag = async ({
           fileUrl,
           fileId: _fileId,
           uploadedBy: _uploadedBy,
-        }).catch((err: Error) => {
-          logger.error({ err, documentId: documentObjectId }, "[RAG] Background auto-retry ingestion failed");
+          retryType:'auto'
+        }).catch((retryError: Error) => {
+          logger.error(
+            {
+              documentId: documentObjectId,
+              error: retryError,
+            },
+            "[RAG] Background auto-retry ingestion failed."
+          );
         });
-      } else if (updatedDoc.retryCount >= MAX_RETRY_COUNT) {
-        const cooldownTime = new Date(Date.now() + 10 * 60 * 1000);
-        await PdfDocument.findByIdAndUpdate(documentObjectId, {
-          cooldownUntil: cooldownTime,
-        });
-        logger.warn({ documentId: documentObjectId, cooldownUntil: cooldownTime.toISOString() }, "[RAG] Maximum retries reached. Entering cooldown.");
-      }
+      }, delayMs);
+
+      throw new Error(
+        `[RAG] PDF ingestion failed temporarily. Auto-retry scheduled in ${delayMs}ms.`
+      );
     }
 
-    throw new Error(
-      `[RAG] PDF ingestion failed for documentId=${documentObjectId}: ${error?.message ?? "Unknown error"}`,
-    );
+    if (retryCount >= MAX_RETRY_COUNT) {
+      const cooldownTime = new Date(
+        Date.now() + 10 * 60 * 1000
+      );
+
+      await PdfDocument.findByIdAndUpdate(documentObjectId, {
+        cooldownUntil: cooldownTime,
+      });
+
+      logger.warn(
+        {
+          documentId: documentObjectId,
+          retryCount,
+          maxRetryCount: MAX_RETRY_COUNT,
+          cooldownUntil: cooldownTime.toISOString(),
+        },
+        "[RAG] Maximum retry budget reached. Entering cooldown."
+      );
+    }
+
+   throw error
   }
 };

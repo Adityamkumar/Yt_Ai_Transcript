@@ -7,6 +7,7 @@ interface AuthPrimaryButtonProps {
   loadingText?: string;
   text: string;
   icon?: React.ReactNode;
+  onClick?: () => void;
 }
 
 export function AuthPrimaryButton({
@@ -16,10 +17,12 @@ export function AuthPrimaryButton({
   loadingText,
   text,
   icon,
+  onClick,
 }: AuthPrimaryButtonProps) {
   return (
     <button
       type={type}
+      onClick={onClick}
       disabled={disabled || isLoading}
       className="relative w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold text-white overflow-hidden transition-all duration-300 hover:scale-[1.01] disabled:opacity-70 disabled:scale-100 disabled:cursor-not-allowed shadow-[0_18px_40px_rgba(110,127,255,0.22)]"
     >

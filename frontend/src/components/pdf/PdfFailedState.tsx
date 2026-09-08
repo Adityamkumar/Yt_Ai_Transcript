@@ -4,10 +4,10 @@ import { Clock, RefreshCw, FileText, ExternalLink, AlertCircle } from "lucide-re
 import { pdfService } from "@/services/pdf.service";
 import { PdfDocument } from "@/types";
 import toast from "react-hot-toast";
+import { EMAIL_NOT_VERIFIED_CODE } from "@/lib/axios";
 
 interface PdfFailedStateProps {
   document: PdfDocument;
-  /** Total maximum retries allowed (backend constant passed through). */
   maxRetries: number;
   onRetryStarted: (newRetryCount?: number) => void;
 }
@@ -54,6 +54,10 @@ export function PdfFailedState({ document, maxRetries: _maxRetries, onRetryStart
       toast.success("Retrying AI setup...", { duration: 3000 });
       onRetryStarted(result.retryCount);
     } catch (err: any) {
+      if (err?.code === EMAIL_NOT_VERIFIED_CODE) {
+        setIsRetrying(false);
+        return;
+      }
       const status = err?.response?.status;
       if (status === 429) {
         toast.error("Please try again in a little while.");

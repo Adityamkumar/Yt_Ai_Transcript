@@ -19,10 +19,19 @@ import { userEvent } from "../events/user.events.js";
 import { cleanupUserData } from "../rag/services/accountCleanup.service.js";
 import { authRequestRateLimiterService } from "../services/authRequestRateLimiter.service.js";
 import { signupRateLimiterService } from "../services/signupRateLimiter.service.js";
+import { normalizeEmail } from "../utils/email.util.js";
+import { checkEmailDomain } from "../services/disposable-email.service.js";
 
 export const userRegister = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body;
   const ip = req.ip || req.socket.remoteAddress || "";
+
+  const normalizedEmail = normalizeEmail(email);
+  const domainCheck = checkEmailDomain(normalizedEmail);
+
+  if (domainCheck.status === "reject") {
+    throw new ApiError(400, "Please use a permanent email address.");
+  }
 
   if (signupRateLimiterService.isFailedAttemptBlocked(ip)) {
     const retryAfter = signupRateLimiterService.getFailedRetryAfter(ip);
@@ -52,7 +61,7 @@ export const userRegister = asyncHandler(async (req, res) => {
       );
   }
 
-  if (!name || !email) {
+  if (!name || !email.toLowerCase()) {
     signupRateLimiterService.recordFailedAttempt(ip);
     throw new ApiError(400, "Name and Email is required");
   }
@@ -61,7 +70,7 @@ export const userRegister = asyncHandler(async (req, res) => {
 
   if (isUserAlreadyExists) {
     signupRateLimiterService.recordFailedAttempt(ip);
-    throw new ApiError(400, "User already exists.");
+    throw new ApiError(400, "User already exists with this email.");
   }
 
   if (!password || typeof password !== "string") {
@@ -69,12 +78,21 @@ export const userRegister = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Password is required and must be a string");
   }
 
-
-  const user = await User.create({
+  const user = new User({
     name,
-    email: email,
+    email: normalizedEmail,
     password: password,
+    isEmailVerified: false,
+    verificationExpiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
   });
+
+  const { unHashedToken, hashedToken, tokenExpiry } =
+    user.generateTemporaryToken();
+
+  user.emailVerificationToken = hashedToken;
+  user.emailVerificationExpiry = tokenExpiry;
+
+  await user.save({ validateBeforeSave: false });
 
   signupRateLimiterService.recordSuccessfulSignup(ip);
 
@@ -84,10 +102,11 @@ export const userRegister = asyncHandler(async (req, res) => {
   res.cookie("accessToken", accessToken, accessCookieOptions);
   res.cookie("refreshToken", refreshToken, refreshCookieOptions);
 
-  userEvent.emit("user.created", {
+  userEvent.emit("user.verification.requested", {
     userId: user._id,
     name: user.name,
     email: user.email,
+    verificationToken: unHashedToken,
   });
 
   res.status(201).json({
@@ -256,6 +275,7 @@ export const getCurrentUser = asyncHandler(async (req, res) => {
       email: (req.user as any)?.email,
       avatar: (req.user as any)?.avatar,
       provider: (req.user as any)?.provider,
+      isEmailVerified: (req.user as any)?.isEmailVerified,
       hasPassword: !!userWithPassword?.password,
     },
   });
@@ -467,8 +487,8 @@ export const forgotPassword = asyncHandler(async (req, res) => {
   const user = await User.findOne({ email: normalizedEmail });
   if (!user) {
     return res
-    .status(200)
-    .json(new ApiResponse(200, "If eligible, we'll send a reset link"));
+      .status(200)
+      .json(new ApiResponse(200, "If eligible, we'll send a reset link"));
   }
 
   if (!user.password) {
@@ -483,7 +503,9 @@ export const forgotPassword = asyncHandler(async (req, res) => {
   });
 
   const clientUrl =
-    process.env.FRONTEND_CLOUDFLARE_URL || "http://localhost:5173";
+    process.env.NODE_ENV === "production"
+        ? process.env.FRONTEND_CLOUDFLARE_URL
+        : "http://localhost:5173";
   const resetLink = `${clientUrl}/reset-password/${resetToken}`;
   const template = generateResetPasswordEmail(resetLink, user.name);
 
@@ -563,3 +585,164 @@ export const validateResetPasswordTokenController = asyncHandler(
     return res.status(200).json(new ApiResponse(200, "Reset token is valid"));
   },
 );
+
+export const verifyEmail = asyncHandler(async (req, res) => {
+  const { verificationToken } = req.params;
+  if (typeof verificationToken !== "string" || !verificationToken) {
+    throw new ApiError(400, "Email verification token is missing");
+  }
+
+  const hashedToken = crypto
+    .createHash("sha256")
+    .update(verificationToken)
+    .digest("hex");
+
+  const user = await User.findOne({
+    emailVerificationToken: hashedToken,
+    emailVerificationExpiry: {
+      $gt: new Date(),
+    },
+  });
+
+  if (!user) {
+    throw new ApiError(400, "Token is invalid or expired");
+  }
+
+  user.emailVerificationToken = undefined;
+  user.emailVerificationExpiry = undefined;
+  user.isEmailVerified = true;
+
+  await user.save({
+    validateBeforeSave: false,
+  });
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        isEmailVerified: true,
+      },
+      "Email verified successfully",
+    ),
+  );
+});
+
+export const resendEmailVerification = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+  if (!email || typeof email !== "string") {
+    throw new ApiError(400, "Email is required");
+  }
+
+  const normalizedEmail = normalizeEmail(email);
+
+  const ip = req.ip || req.socket.remoteAddress || "";
+
+  const ipRateLimit = authRequestRateLimiterService.getRateLimitStatus(
+    ip,
+    "emailVerification",
+  );
+
+  if (ipRateLimit.blocked) {
+    const message =
+      ipRateLimit.reason === "cooldown"
+        ? "Please wait before requesting another verification email."
+        : "Too many Email verification attempts. Please try again in 1 hour.";
+
+    return res.status(429).json(
+      new ApiResponse(
+        429,
+        {
+          retryAfter: ipRateLimit.retryAfter,
+          reason: ipRateLimit.reason,
+        },
+        message,
+      ),
+    );
+  }
+
+  const emailRateLimit = authRequestRateLimiterService.getRateLimitStatus(
+    normalizedEmail,
+    "emailVerification",
+  );
+
+  if (emailRateLimit.blocked) {
+    const message =
+      emailRateLimit.reason === "cooldown"
+        ? "Please wait before requesting another verification email."
+        : "Too many Email verification attempts. Please try again in 1 hour.";
+
+    return res.status(429).json(
+      new ApiResponse(
+        429,
+        {
+          retryAfter: emailRateLimit.retryAfter,
+          reason: emailRateLimit.reason,
+        },
+        message,
+      ),
+    );
+  }
+
+  const user = await User.findOne({
+    email: normalizedEmail,
+  });
+
+  if (!user) {
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          {},
+          "If the request can be processed, a verification email will be sent.",
+        ),
+      );
+  }
+
+  if (user.isEmailVerified) {
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          {},
+          "If the request can be processed, a verification email will be sent.",
+        ),
+      );
+  }
+
+  const { unHashedToken, hashedToken, tokenExpiry } =
+    user.generateTemporaryToken();
+
+  user.emailVerificationToken = hashedToken;
+
+  user.emailVerificationExpiry = tokenExpiry;
+
+  await user.save({
+    validateBeforeSave: false,
+  });
+
+  authRequestRateLimiterService.recordRequest(ip, "emailVerification");
+
+  authRequestRateLimiterService.recordRequest(
+    normalizedEmail,
+    "emailVerification",
+  );
+
+  userEvent.emit("user.verification.requested", {
+    userId: user._id,
+    name: user.name,
+    email: user.email,
+    verificationToken: unHashedToken,
+  });
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        {},
+        "If the request can be processed, a verification email will be sent.",
+      ),
+    );
+});

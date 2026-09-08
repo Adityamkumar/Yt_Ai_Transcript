@@ -4,17 +4,8 @@ import jwt from "jsonwebtoken";
 import crypto from "node:crypto";
 
 interface IUserPreferences {
-  responseLanguage:
-    | "en"
-    | "hi"
-    | "ta"
-    | "te"
-    | "kn"
-    | "ml"
-    | "bn"
-    | "mr";
+  responseLanguage: "en" | "hi" | "ta" | "te" | "kn" | "ml" | "bn" | "mr";
 }
-
 
 export interface IUser extends Document {
   name: string;
@@ -26,17 +17,32 @@ export interface IUser extends Document {
   refreshToken?: string[];
   resetPasswordToken?: string;
   resetPasswordExpiry?: Date;
-  preferences:IUserPreferences
+  preferences: IUserPreferences;
+  isEmailVerified: Boolean;
+  emailVerificationToken: string | undefined;
+  emailVerificationExpiry: Date | undefined;
+  verificationExpiresAt:Date;
   isPasswordCorrect(password: string): Promise<boolean>;
   generateAccessToken(): string;
   generateRefreshToken(): string;
   generateResetPasswordToken(): string;
+  generateTemporaryToken():{
+     unHashedToken:string,
+     hashedToken: string;
+     tokenExpiry: Date;
+  };
 }
 
 const userSchema = new Schema<IUser>(
   {
     name: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
+    },
     password: {
       type: String,
       required: function (this: any) {
@@ -62,18 +68,33 @@ const userSchema = new Schema<IUser>(
     resetPasswordExpiry: {
       type: Date,
     },
-    preferences:{
+    preferences: {
       responseLanguage: {
         type: String,
         enum: ["en", "hi", "ta", "te", "kn", "ml", "bn", "mr"],
-        default:'en'
+        default: "en",
       },
+    },
+    isEmailVerified: {
+      type: Boolean,
+      default: false,
+    },
+    emailVerificationToken: {
+      type: String,
+    },
+
+    emailVerificationExpiry: {
+      type: Date,
+    },
+    verificationExpiresAt: {
+      type: Date,
     },
   },
   {
     timestamps: true,
   },
 );
+
 
 userSchema.pre("save", async function () {
   if (!this.isModified("password")) return;
@@ -121,6 +142,31 @@ userSchema.methods.generateResetPasswordToken = function () {
 
   return resetToken;
 };
+
+userSchema.methods.generateTemporaryToken = function (){
+  const unHashedToken = crypto.randomBytes(20).toString("hex");
+
+  const hashedToken = crypto
+    .createHash("sha256")
+    .update(unHashedToken)
+    .digest("hex");
+
+  const tokenExpiry = Date.now() + 15 * 60 * 1000; //15min
+  return { unHashedToken, hashedToken, tokenExpiry };
+};
+
+userSchema.index(
+  {
+    verificationExpiresAt: 1
+  },
+  {
+    expireAfterSeconds: 0,
+    partialFilterExpression:{
+      isEmailVerified: false,
+    }
+  }
+)
+
 const User = mongoose.model<IUser>("User", userSchema);
 
 export default User;

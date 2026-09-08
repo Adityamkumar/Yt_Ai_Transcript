@@ -24,10 +24,14 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/store/AuthContext";
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { DeleteAccountModal } from "./DeleteAccountModal";
 import { UserAvatar } from "@/components/auth/UserAvatar";
 import toast from "react-hot-toast";
 import { settingsService, type ResponseLanguage } from "@/services/settings.service";
+import { authService } from "@/services/auth.service";
+import { EMAIL_NOT_VERIFIED_CODE } from "@/lib/axios";
+import { useResendEmailVerificationRateLimit } from "@/hooks/useResendEmailVerificationRateLimit";
 
 interface Props {
   isOpen: boolean;
@@ -198,6 +202,23 @@ const SettingAction = ({ icon: Icon, label, danger }: { icon: any, label: string
 // Tabs content components
 function ProfileTab({ user, onShowDeleteModal }: any) {
   const isGoogle = user?.provider === "google";
+  const navigate = useNavigate();
+  const { resendState, cooldownSeconds, isDisabled, setLoading, reset, handleRateLimitError } = useResendEmailVerificationRateLimit();
+
+  const handleVerifyEmail = async () => {
+    if (!user?.email || isDisabled) return;
+
+    setLoading();
+    try {
+      await authService.resendEmailVerification(user.email);
+      navigate("/verify-email", { state: { email: user.email, resendCooldownUntil: Date.now() + 60_000 } });
+    } catch (error) {
+      if (!handleRateLimitError(error)) {
+        toast.error("We couldn't send another verification email. Please try again.");
+        reset();
+      }
+    }
+  };
 
   return (
     <div className="space-y-10 animate-in fade-in slide-in-from-bottom-2 duration-300">
@@ -231,7 +252,33 @@ function ProfileTab({ user, onShowDeleteModal }: any) {
           <div className="flex items-center justify-between py-4">
             <div>
               <p className="text-xs text-[var(--text-muted)] mb-1">Email address</p>
-              <p className="text-sm font-medium text-white">{user?.email}</p>
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="text-sm font-medium text-white">{user?.email}</p>
+                {user?.isEmailVerified ? (
+                  <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-300">
+                    <Check size={11} strokeWidth={2.5} aria-hidden="true" />
+                    Verified
+                  </span>
+                ) : (
+                  <span className="rounded-full border border-amber-400/20 bg-amber-400/10 px-2 py-0.5 text-[10px] font-medium text-amber-200">
+                    Unverified
+                  </span>
+                )}
+              </div>
+              {!user?.isEmailVerified && (
+                <div>
+                  <button
+                  type="button"
+                  onClick={handleVerifyEmail}
+                  disabled={isDisabled}
+                  className="mt-2 text-xs font-medium text-indigo-400 transition-colors hover:text-indigo-300 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {resendState === "loading" ? "Sending verification email..." : "Verify email"}
+                  </button>
+                  {resendState === "cooldown" && <p className="mt-1 text-xs text-[var(--text-muted)]">Available again in {cooldownSeconds}s</p>}
+                  {resendState === "hourly_limit" && <p className="mt-1 text-xs font-medium" style={{ color: "#ff4d4f" }}>Too many Email verification attempts. Please try again in 1 hour.</p>}
+                </div>
+              )}
               {isGoogle && (
                 <p className="text-xs text-[var(--text-muted)] mt-1 flex items-center gap-1.5">
                   <GoogleIcon /> Managed by Google
@@ -580,7 +627,9 @@ export function SettingsModal({ isOpen, onClose }: Props) {
       }
     } catch (error) {
       setPrefs(p => ({ ...p, responseLanguage: previousResponseLanguage }));
-      toast.error(error instanceof Error ? error.message : 'Failed to update response language');
+      if ((error as { code?: string })?.code !== EMAIL_NOT_VERIFIED_CODE) {
+        toast.error(error instanceof Error ? error.message : 'Failed to update response language');
+      }
     } finally {
       setIsUpdatingResponseLanguage(false);
     }

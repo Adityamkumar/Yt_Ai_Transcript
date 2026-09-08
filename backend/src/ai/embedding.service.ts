@@ -12,6 +12,32 @@ export type GenerateEmbeddingOptions = {
   title?: string;
 };
 
+export class EmbeddingError extends Error {
+  public readonly retryable: boolean;
+  public readonly status?: number;
+  public readonly retryAfterMs?: number;
+
+  constructor(
+    message: string,
+    options: {
+      retryable: boolean;
+      status?: number;
+      retryAfterMs?: number;
+    },
+  ) {
+    super(message);
+
+    this.name = "EmbeddingError";
+    this.retryable = options.retryable;
+    if (options.status !== undefined) {
+      this.status = options.status;
+    }
+    if (options.retryAfterMs !== undefined) {
+      this.retryAfterMs = options.retryAfterMs;
+    }
+  }
+}
+
 const createEmbeddingConfig = (options: GenerateEmbeddingOptions) => ({
   outputDimensionality: RAG_CONFIG.embeddings.dimensions,
   ...(options.taskType && { taskType: options.taskType }),
@@ -29,42 +55,182 @@ const assertValidEmbedding = (embedding: number[], source: string) => {
 const sleep = (ms: number) =>
   new Promise<void>((resolve) => setTimeout(resolve, ms));
 
-const withRetry = async <T>(operation: () => Promise<T>): Promise<T> => {
-  const { maxAttempts, baseDelayMs } = RAG_CONFIG.retries;
+const getErrorStatus = (error: any): number | null => {
+  if (typeof error?.status === "number") {
+    return error.status;
+  }
 
-  let lastError: Error | null = null;
+  if (typeof error?.statusCode === "number") {
+    return error.statusCode;
+  }
+
+  return null;
+};
+
+const isRetryableError = (error: any): boolean => {
+  const status = getErrorStatus(error);
+
+  // errors that may recover if we wait.
+  return (
+    status === 408 ||
+    status === 429 ||
+    status === 500 ||
+    status === 502 ||
+    status === 503 ||
+    status === 504
+  );
+};
+
+const getRetryAfterMs = (error: any): number | null => {
+  const headers = error?.headers;
+
+  if (headers) {
+    let retryAfter: string | null = null;
+
+    if (typeof headers.get === "function") {
+      retryAfter = headers.get("retry-after");
+    } else if (typeof headers["retry-after"] === "string") {
+      retryAfter = headers["retry-after"];
+    } else if (typeof headers["Retry-After"] === "string") {
+      retryAfter = headers["Retry-After"];
+    }
+
+    if (retryAfter) {
+      const seconds = Number(retryAfter);
+
+      if (Number.isFinite(seconds) && seconds >= 0) {
+        return seconds * 1000;
+      }
+
+      const retryDate = Date.parse(retryAfter);
+
+      if (!Number.isNaN(retryDate)) {
+        return Math.max(0, retryDate - Date.now());
+      }
+    }
+  }
+
+  const details = error?.error?.details ?? error?.details;
+
+  if (Array.isArray(details)) {
+    for (const detail of details) {
+      const retryDelay = detail?.retryDelay;
+
+      if (typeof retryDelay === "string") {
+        const match = retryDelay.match(/^([\d.]+)s$/);
+
+        if (match) {
+          const seconds = Number(match[1]);
+
+          if (Number.isFinite(seconds) && seconds >= 0) {
+            return seconds * 1000;
+          }
+        }
+      }
+    }
+  }
+
+  return null;
+};
+
+const withRetry = async <T>(operation: () => Promise<T>): Promise<T> => {
+  const { maxAttempts, baseDelayMs, maxJitterMs } = RAG_CONFIG.retries;
+
+  let lastError: EmbeddingError | null = null;
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
       return await operation();
     } catch (error: any) {
-      lastError = error instanceof Error ? error : new Error(String(error));
+      const status = getErrorStatus(error);
+      const retryAfterMs = getRetryAfterMs(error);
+      const retryable = isRetryableError(error);
+      const errorOptions: {
+        retryable: boolean;
+        status?: number;
+        retryAfterMs?: number;
+      } = {
+        retryable,
+      };
+
+      if (status !== null) {
+        errorOptions.status = status;
+      }
+
+      if (retryAfterMs !== null) {
+        errorOptions.retryAfterMs = retryAfterMs;
+      }
+
+      lastError = new EmbeddingError(
+        error?.message ?? String(error),
+        errorOptions,
+      );
+
+      if (!retryable) {
+        logger.error(
+          {
+            attempt,
+            maxAttempts,
+            status,
+            error: lastError.message,
+          },
+          "[Embedding] Non-retryable error. Stopping retry.",
+        );
+
+        throw lastError;
+      }
 
       if (attempt === maxAttempts) {
         break;
       }
 
-      const delayMs = baseDelayMs * Math.pow(2, attempt - 1);
-      const jitter = Math.floor(Math.random() * RAG_CONFIG.retries.maxJitterMs);
+      let delayMs: number;
 
-      logger.warn(
-        {
-          attempt,
-          maxAttempts,
-          retryAfterMs: delayMs + jitter,
-          error: lastError.message,
-        },
-        "[Embedding] Request failed. Retrying...",
-      );
+      if (retryAfterMs !== null) {
+        delayMs = retryAfterMs;
 
-      await sleep(delayMs + jitter);
+        logger.warn(
+          {
+            attempt,
+            maxAttempts,
+            status,
+            retryAfterMs: delayMs,
+            error: lastError.message,
+          },
+          "[Embedding] Gemini requested a retry delay. Respecting it.",
+        );
+      } else {
+        const exponentialDelay = baseDelayMs * Math.pow(2, attempt - 1);
+
+        const jitter = Math.floor(Math.random() * maxJitterMs);
+
+        delayMs = exponentialDelay + jitter;
+
+        logger.warn(
+          {
+            attempt,
+            maxAttempts,
+            status,
+            retryAfterMs: delayMs,
+            error: lastError.message,
+          },
+          "[Embedding] Transient error. Retrying with exponential backoff.",
+        );
+      }
+
+      await sleep(delayMs);
     }
   }
 
-  throw new Error(
-    `[Embedding] All ${maxAttempts} attempts exhausted. Last error: ${
-      lastError?.message ?? "Unknown"
-    }`,
+  if (lastError) {
+    throw lastError;
+  }
+
+  throw new EmbeddingError(
+    `[Embedding] All ${maxAttempts} attempts exhausted.`,
+    {
+      retryable: true,
+    },
   );
 };
 
@@ -104,10 +270,7 @@ export const generateEmbedding = async (
     return embedding;
   });
 
-export const generateDocumentEmbeddings = (
-  texts: string[],
-  title?: string,
-) =>
+export const generateDocumentEmbeddings = (texts: string[], title?: string) =>
   generateEmbeddings(texts, {
     taskType: RAG_CONFIG.embeddings.documentTaskType,
     ...(title && { title }),

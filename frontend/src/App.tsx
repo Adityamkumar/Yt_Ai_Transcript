@@ -17,6 +17,7 @@ const HomePage = lazy(() => import('@/pages/HomePage'));
 const BookmarksPage = lazy(() => import('@/features/bookmarks/BookmarksPage'));
 const ForgotPasswordPage = lazy(() => import('@/pages/ForgotPasswordPage'));
 const ResetPasswordPage = lazy(() => import('@/pages/ResetPasswordPage'));
+const EmailVerificationPage = lazy(() => import('@/pages/EmailVerificationPage'));
 const PrivacyPage = lazy(() => import('@/pages/PrivacyPage'));
 const TermsPage = lazy(() => import('@/pages/TermsPage'));
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
@@ -63,6 +64,8 @@ function AppRouter() {
           <Route path="/signup" element={authStatus === 'authenticated' ? <Navigate to="/app" replace /> : <SignupPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+          <Route path="/verify-email" element={<EmailVerificationPage />} />
+          <Route path="/verify-email/:token" element={<EmailVerificationPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/terms" element={<TermsPage />} />
           <Route

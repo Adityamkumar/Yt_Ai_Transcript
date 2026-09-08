@@ -31,5 +31,6 @@ export const globalErrorHandler: ErrorRequestHandler = (
     statusCode,
     message,
     errors: err.errors || [],
+    ...(typeof err?.code === "string" ? { code: err.code } : {}),
   });
 };

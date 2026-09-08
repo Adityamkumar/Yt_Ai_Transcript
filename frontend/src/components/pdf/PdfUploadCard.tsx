@@ -5,6 +5,7 @@ import { pdfService } from "@/services/pdf.service";
 import { IConversation } from "@/types";
 import { cn } from "@/utils/cn";
 import toast from "react-hot-toast";
+import { EMAIL_NOT_VERIFIED_CODE } from "@/lib/axios";
 
 interface PdfUploadCardProps {
   onUploadSuccess: (conversation: IConversation) => void;
@@ -55,6 +56,10 @@ export function PdfUploadCard({ onUploadSuccess, onUploadingStateChange }: PdfUp
       toast.success("PDF indexed successfully!");
       onUploadSuccess(conversation);
     } catch (err: any) {
+      if (err?.code === EMAIL_NOT_VERIFIED_CODE) {
+        setFile(null);
+        return;
+      }
       const errMsg = err.message || "Failed to index PDF document";
       setErrorMsg(errMsg);
       toast.error(errMsg);

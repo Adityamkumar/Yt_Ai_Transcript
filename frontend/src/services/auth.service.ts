@@ -34,5 +34,15 @@ export const authService = {
     const response = await axiosInstance.post(`/api/v1/user/reset-password/${token}`, { password });
     return response.data;
   },
+
+  verifyEmail: async (token: string) => {
+    const response = await axiosInstance.get(`/api/v1/user/verify-email/${encodeURIComponent(token)}`);
+    return response.data;
+  },
+
+  resendEmailVerification: async (email: string) => {
+    const response = await axiosInstance.post('/api/v1/user/resend-email-verification', { email });
+    return response.data;
+  },
 };
 

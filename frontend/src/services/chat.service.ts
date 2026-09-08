@@ -1,4 +1,8 @@
-import axiosInstance, { getApiBaseUrl } from '@/lib/axios';
+import axiosInstance, {
+  EMAIL_NOT_VERIFIED_CODE,
+  getApiBaseUrl,
+  notifyEmailVerificationRequired,
+} from '@/lib/axios';
 import { AskQuestionPayload } from '@/types';
 
 export const chatService = {
@@ -27,7 +31,12 @@ export const chatService = {
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({ message: 'Streaming failed' }));
-      throw new Error(error.message || 'Streaming failed');
+      if (error.code === EMAIL_NOT_VERIFIED_CODE) {
+        notifyEmailVerificationRequired();
+      }
+      const requestError = new Error(error.message || 'Streaming failed') as Error & { code?: string };
+      requestError.code = error.code;
+      throw requestError;
     }
 
     const reader = response.body?.getReader();

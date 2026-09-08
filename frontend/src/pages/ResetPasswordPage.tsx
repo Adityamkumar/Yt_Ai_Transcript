@@ -3,9 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Loader2, CheckCircle2, AlertCircle, ArrowLeft, ArrowRight } from "lucide-react";
 import { authService } from "@/services/auth.service";
-import { AuthShell } from "@/components/auth/AuthShell";
-import { AuthPasswordInput } from "@/components/auth/AuthInput";
-import { AuthPrimaryButton } from "@/components/auth/AuthPrimaryButton";
+import { AuthSplitLayout, Button, PasswordInput } from "@/components/ui/auth-ui";
 
 type TokenStatus = "checking" | "valid" | "invalid";
 
@@ -14,8 +12,6 @@ export default function ResetPasswordPage() {
   const [tokenStatus, setTokenStatus] = useState<TokenStatus>("checking");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -61,101 +57,79 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <AuthShell
-      title="Reset Password"
-      subtitle="Choose a new password for your account."
-      maxWidthClass="max-w-[430px]"
+    <AuthSplitLayout
+      imageSrc="https://i.ibb.co/XrkdGrrv/original-ccdd6d6195fff2386a31b684b7abdd2e-removebg-preview.png"
+      quoteText="A fresh start for your Lumora account."
+      quoteAuthor="Lumora AI"
     >
+      <div className="space-y-6">
+        <div className="space-y-2 text-center">
+          <span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl border border-indigo-400/20 bg-indigo-400/10 text-indigo-300 shadow-[0_0_30px_rgba(129,140,248,0.14)]">
+            <CheckCircle2 size={22} aria-hidden="true" />
+          </span>
+          <h1 className="pt-2 text-2xl font-bold tracking-tight text-foreground">Reset your password</h1>
+          <p className="text-sm leading-6 text-muted-foreground">Choose a strong new password for your account.</p>
+        </div>
 
-          {tokenStatus === "checking" && (
-            <div className="rounded-xl border border-[var(--border-soft)] bg-[var(--surface-3)] p-4 text-center text-sm text-[var(--text-secondary)] flex items-center justify-center gap-2">
-              <Loader2 size={15} className="animate-spin" />
-              Verifying reset link...
+        {tokenStatus === "checking" && (
+          <div className="flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.035] px-4 py-4 text-sm text-muted-foreground" role="status">
+            <Loader2 size={16} className="animate-spin text-indigo-300" />
+            Verifying your reset link…
+          </div>
+        )}
+
+        {tokenStatus === "invalid" && (
+          <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} className="rounded-2xl border border-amber-500/25 bg-amber-500/10 p-5 text-center">
+            <AlertCircle size={22} className="mx-auto text-amber-300" aria-hidden="true" />
+            <p className="mt-3 text-sm font-semibold text-foreground">This reset link is invalid or expired</p>
+            <p className="mt-2 text-xs leading-5 text-muted-foreground">Reset links are time-limited and can only be used once. Request a new link to continue.</p>
+            <Button asChild className="mt-5 w-full">
+              <Link to="/forgot-password">Request a new link <ArrowRight size={15} /></Link>
+            </Button>
+          </motion.div>
+        )}
+
+        {tokenStatus === "valid" && isSuccess && (
+          <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} className="rounded-2xl border border-emerald-500/25 bg-emerald-500/10 p-5 text-center">
+            <CheckCircle2 size={26} className="mx-auto text-emerald-400" aria-hidden="true" />
+            <p className="mt-3 text-sm font-semibold text-foreground">Password reset successful</p>
+            <p className="mt-2 text-xs leading-5 text-muted-foreground">Your password has been updated. You can now sign in securely.</p>
+            <Button asChild className="mt-5 w-full">
+              <Link to="/login">Go to login <ArrowRight size={15} /></Link>
+            </Button>
+          </motion.div>
+        )}
+
+        {tokenStatus === "valid" && !isSuccess && (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {error && (
+              <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-2.5 rounded-xl border border-red-500/25 bg-red-500/10 px-3.5 py-3 text-xs font-medium text-red-400" role="alert">
+                <AlertCircle size={15} className="shrink-0" />
+                <span>{error}</span>
+              </motion.div>
+            )}
+
+            <PasswordInput id="reset-password" label="New password" autoComplete="new-password" required minLength={6} value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Enter a new password" />
+            <div>
+              <PasswordInput id="confirm-reset-password" label="Confirm password" autoComplete="new-password" required value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} placeholder="Re-enter your new password" className={mismatch ? "border-red-500/60 focus:border-red-500/70 focus:ring-red-500/20" : undefined} />
+              {mismatch && <p className="mt-1.5 text-xs text-red-400">Passwords do not match.</p>}
             </div>
-          )}
 
-          {tokenStatus === "invalid" && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4">
-              <div className="flex items-center gap-2 text-amber-300 mb-2">
-                <AlertCircle size={16} />
-                <span className="text-sm font-medium">Reset link is invalid or expired</span>
-              </div>
-              <p className="text-xs text-[var(--text-secondary)] mb-4">For security, password reset links are time-limited and single-use. Request a new reset link to continue.</p>
-              <Link to="/forgot-password" className="inline-flex items-center gap-2 text-xs px-3 py-2 rounded-lg bg-[var(--accent)] text-neutral-950 hover:bg-[var(--accent-strong)] transition-colors">
-                Request New Link
-                <ArrowRight size={13} />
-              </Link>
-            </motion.div>
-          )}
+            <Button type="submit" disabled={isSubmitting || mismatch || password.length < 6} className="mt-2 w-full">
+              {isSubmitting ? "Resetting password..." : "Reset password"}
+              {!isSubmitting && <ArrowRight size={15} />}
+            </Button>
+          </form>
+        )}
 
-          {tokenStatus === "valid" && isSuccess && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="rounded-xl border border-green-500/30 bg-green-500/10 p-4 text-center">
-              <div className="flex items-center justify-center mb-2 text-green-400">
-                <CheckCircle2 size={20} />
-              </div>
-              <p className="text-sm text-[var(--text-primary)] mb-1">Password reset successful</p>
-              <p className="text-xs text-[var(--text-secondary)] mb-4">Your password has been updated. You can now sign in with your new password.</p>
-              <Link to="/login" className="inline-flex items-center gap-2 text-xs px-3 py-2 rounded-lg bg-[var(--accent)] text-neutral-950 hover:bg-[var(--accent-strong)] transition-colors">
-                Go to Login
-                <ArrowRight size={13} />
-              </Link>
-            </motion.div>
-          )}
-
-          {tokenStatus === "valid" && !isSuccess && (
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {error && (
-                <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center gap-2 text-red-400 text-xs">
-                  <AlertCircle size={14} />
-                  {error}
-                </motion.div>
-              )}
-
-              <AuthPasswordInput
-                id="reset-password"
-                label="New password"
-                autoComplete="new-password"
-                required
-                minLength={6}
-                value={password}
-                onChange={setPassword}
-                placeholder="Enter new password"
-                visible={showPassword}
-                onToggleVisible={() => setShowPassword((v) => !v)}
-              />
-
-              <div>
-                <AuthPasswordInput
-                  id="confirm-reset-password"
-                  label="Confirm password"
-                  autoComplete="new-password"
-                  required
-                  value={confirmPassword}
-                  onChange={setConfirmPassword}
-                  placeholder="Re-enter new password"
-                  visible={showConfirmPassword}
-                  onToggleVisible={() => setShowConfirmPassword((v) => !v)}
-                  hasError={mismatch}
-                />
-                {mismatch && <p className="text-xs text-red-400 mt-1.5">Passwords do not match.</p>}
-              </div>
-
-              <AuthPrimaryButton
-                type="submit"
-                disabled={mismatch || password.length < 6}
-                isLoading={isSubmitting}
-                loadingText="Resetting password..."
-                text="Reset Password"
-                icon={<ArrowRight size={15} />}
-              />
-            </form>
-          )}
-
-          <Link to="/login" className="mt-6 inline-flex items-center gap-1.5 text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
+        <div className="text-center">
+          <Link to="/login" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground">
             <ArrowLeft size={14} />
             Back to login
           </Link>
-    </AuthShell>
+        </div>
+      </div>
+    </AuthSplitLayout>
   );
 }
   const getErrorMessage = (err: unknown, fallback: string) => {

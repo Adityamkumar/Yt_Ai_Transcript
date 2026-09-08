@@ -16,6 +16,7 @@ interface User {
   email: string;
   avatar?: string;
   provider?: "local" | "google";
+  isEmailVerified: boolean;
   hasPassword?: boolean;
   preferences?: {
     responseLanguage?: ResponseLanguage;
@@ -50,6 +51,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email: userData.email,
         avatar: userData.avatar || undefined,
         provider: userData.provider || "local",
+        isEmailVerified: Boolean(userData.isEmailVerified),
         hasPassword: userData.hasPassword,
         preferences: userData.preferences,
       });
@@ -85,6 +87,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       email: userData.email,
       avatar: userData.avatar || undefined,
       provider: userData.provider || "local",
+      isEmailVerified: Boolean(userData.isEmailVerified),
       hasPassword: userData.hasPassword,
       preferences: userData.preferences,
     });
@@ -100,17 +103,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       password,
     });
     const userData = response.data.user;
-    setUser({
-      id: userData.id || userData._id,
-      name: userData.name,
-      email: userData.email,
-      avatar: userData.avatar || undefined,
-      hasPassword: userData.hasPassword,
-      preferences: userData.preferences,
-    });
-    localStorage.setItem("isAuthenticated", "true");
-    setAuthStatus("authenticated");
-    navigate("/app");
+
+    // Registration creates an account, but it does not establish that the
+    // account is eligible to enter the application. The backend verification
+    // endpoint remains the source of truth for that decision.
+    navigate("/verify-email", { state: { email: userData.email } });
   };
 
   const loginWithGoogle = useCallback(async (code: string) => {
@@ -121,6 +118,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       email: userData.email,
       avatar: userData.avatar || undefined,
       provider: userData.provider || "google",
+      isEmailVerified: Boolean(userData.isEmailVerified),
       hasPassword: userData.hasPassword,
       preferences: userData.preferences,
     });

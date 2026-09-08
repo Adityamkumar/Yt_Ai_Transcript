@@ -12,30 +12,45 @@ export const authMiddleware = asyncHandler(
       req.header("Authorization")?.replace("Bearer ", "");
 
     if (!token) {
-      throw new ApiError(401, "Unauthorized access");
+      throw new ApiError(
+        401,
+        "Authentication required",
+        [],
+        "",
+        "AUTHENTICATION_REQUIRED",
+      );
     }
 
+    let decoded: CustomJwtPayload;
     try {
-      const decoded = jwt.verify(
+      decoded = jwt.verify(
         token,
         process.env.ACCESS_TOKEN_SECRET,
       ) as CustomJwtPayload;
-
-      const user = await User.findById(decoded._id).select("-password");
-
-      if (!user) {
-        throw new ApiError(401, "Invalid token");
-      }
-
-      req.user = user;
-      next();
     } catch (error) {
-      return res.status(401).json({
-        message:
-          error instanceof jwt.TokenExpiredError
-            ? "Token expired"
-            : "Invalid token",
-      });
+      throw new ApiError(
+        401,
+        error instanceof jwt.TokenExpiredError ? "Token expired" : "Invalid token",
+        [],
+        "",
+        "AUTHENTICATION_REQUIRED",
+      );
     }
+
+    const user = await User.findById(decoded._id).select("-password");
+
+    if (!user) {
+      throw new ApiError(
+        401,
+        "Authentication required",
+        [],
+        "",
+        "AUTHENTICATION_REQUIRED",
+      );
+    }
+
+    req.user = user;
+    req.authUserId = String(user._id);
+    next();
   },
 );

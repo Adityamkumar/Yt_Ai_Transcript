@@ -1,10 +1,19 @@
-export const authRequestRateLimiterConfig  = {
+export const authRequestRateLimiterConfig = {
   forgotPassword: {
-    MAX_REQUESTS: 3,
-    WINDOW_MS: 60 * 60 * 1000,
-    LOCK_DURATION_MS: 60 * 60 * 1000,
+    maxRequests: 3,
+    windowMs: 60 * 60 * 1000,
+    lockDurationMs: 60 * 60 * 1000,
+    cooldownMs: 0,
+  },
+
+  emailVerification: {
+    maxRequests: 3,
+    windowMs: 60 * 60 * 1000,
+    lockDurationMs: 60 * 60 * 1000,
+    cooldownMs: 60 * 1000,
   },
 };
 
-export type AuthRequestRateLimitAction = "forgotPassword"
-
+export type AuthRequestRateLimitAction =
+  | "forgotPassword"
+  | "emailVerification";
