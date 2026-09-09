@@ -9,7 +9,7 @@ export default function LandingPage() {
   useAuthRedirect();
 
   return (
-    <div className="min-h-screen overflow-x-hidden text-[#F5F7FF]">
+    <div className="min-h-screen overflow-x-hidden bg-[#07080c] text-[#F5F7FF]">
       <Navbar />
       <main>
         <HeroSection />

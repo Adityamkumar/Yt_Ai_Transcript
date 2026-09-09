@@ -6,11 +6,25 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@font-face {
+  font-family: 'Absans';
+  src: url('/fonts/Absans-Regular.woff2') format('woff2');
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 @theme {
   --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
   --font-serif: 'Lora', Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-display: 'Absans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 }
+
+.font-display {
+  font-family: 'Absans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+}
+
 
 
 

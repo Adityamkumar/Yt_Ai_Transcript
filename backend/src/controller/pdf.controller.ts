@@ -231,7 +231,16 @@ export const uploadPdf = asyncHandler(async (req: any, res) => {
 
 export const getPdfStatus = asyncHandler(async (req, res) => {
   const { documentId } = req.params;
-  const pdfDoc = await PdfDocument.findById(documentId);
+
+  if (!documentId || !mongoose.isValidObjectId(documentId)) {
+    throw new ApiError(400, "Invalid Document ID");
+  }
+
+  const pdfDoc = await PdfDocument.findOne({
+    _id: documentId,
+    uploadedBy: req.authUserId,
+  });
+
   if (!pdfDoc) {
     throw new ApiError(404, "Document not found");
   }
@@ -254,7 +263,9 @@ export const getPdfStatus = asyncHandler(async (req, res) => {
 
 export const retryPdfIngestion = asyncHandler(async (req: any, res) => {
   const { documentId } = req.params;
-
+  if(!documentId || !mongoose.isValidObjectId(documentId)){
+    throw new ApiError(400, "Invalid Document ID")
+  }
   const pdfDoc = await PdfDocument.findOne({
     _id: documentId,
     uploadedBy: req.authUserId,
@@ -361,6 +372,10 @@ export const askPdfQuestion = asyncHandler(async (req, res) => {
 
   const responseLanguage = req.user?.preferences.responseLanguage;
 
+   if (!mongoose.isValidObjectId(documentId)) {
+    throw new ApiError(400, "Invalid Document ID");
+  }
+
   if (!documentId || (!question && type !== "notes")) {
     throw new ApiError(400, "documentId and question are required");
   }
@@ -437,8 +452,8 @@ export const askPdfQuestion = asyncHandler(async (req, res) => {
 
 export const deletePdfDocument = asyncHandler(async (req, res) => {
   const { documentId } = req.params;
-  if (typeof documentId !== "string" || !Types.ObjectId.isValid(documentId)) {
-    throw new ApiError(404, "PDF Document not found or unauthorized");
+  if (!documentId || !mongoose.isValidObjectId(documentId)) {
+    throw new ApiError(404, "Invalid Document ID or unauthorized");
   }
 
   const authUserId = new Types.ObjectId(req.authUserId);
