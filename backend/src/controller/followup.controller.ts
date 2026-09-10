@@ -11,15 +11,18 @@ import { retrieveRelevantChunks } from "../utils/retrieveRelevantChunks.js";
 import logger from "../lib/logger.js";
 import { buildResponseLanguageInstruction } from "../rag/utils/languagePrompt.util.js";
 
-const GeminiFollowUpSchema = {
+const FollowUpSchema = {
   type: "object",
   properties: {
     questions: {
       type: "array",
-      items: { type: "string" },
+      items: {
+        type: "string",
+      },
     },
   },
   required: ["questions"],
+  additionalProperties: false,
 };
 
 export const generateFollowUp = asyncHandler(async (req, res) => {
@@ -127,7 +130,7 @@ Generate follow-up questions:
 `;
 
   try {
-    const rawText = await aiProviderService.generateStructuredResponse(prompt, GeminiFollowUpSchema);
+    const rawText = await aiProviderService.generateStructuredResponse(prompt, FollowUpSchema);
 
     if (!rawText) {
       return res

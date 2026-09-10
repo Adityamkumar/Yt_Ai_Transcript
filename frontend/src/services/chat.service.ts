@@ -57,16 +57,34 @@ export const chatService = {
   },
 
   getFollowUpQuestions: async (
-    payload: { question: string; answer: string; context?: string; conversationId?: string },
-    signal?: AbortSignal,
-  ): Promise<string[]> => {
-    try {
-      const response = await axiosInstance.post('/api/v1/chat/followup', payload, { signal });
-      return response.data?.data?.followUpQuestions || [];
-    } catch {
-      return [];
-    }
+  payload: {
+    question: string;
+    answer: string;
+    context?: string;
+    conversationId?: string;
   },
+  signal?: AbortSignal,
+): Promise<string[]> => {
+  try {
+    const response = await axiosInstance.post(
+      "/api/v1/chat/followup",
+      payload,
+      { signal },
+    );
+
+    console.log("FollowUp_Questions-->", response);
+
+    return response.data?.data?.followUpQuestions || [];
+  } catch (error: any) {
+    console.error("[FollowUp] Request failed:", error);
+
+    if (error?.name === "CanceledError" || error?.code === "ERR_CANCELED") {
+      console.log("[FollowUp] Request was cancelled by the caller.");
+    }
+
+    throw error;
+  }
+},
 };
 
 

@@ -79,7 +79,7 @@ const resolveVideoTitle = (
 export const getTranscript = asyncHandler(async (req, res) => {
   const { youtubeUrl } = req.body;
     
-  if (!youtubeUrl || youtubeUrl !== "") {
+  if (!youtubeUrl) {
     throw new ApiError(400, "YoutubeUrl is required");
   }
 

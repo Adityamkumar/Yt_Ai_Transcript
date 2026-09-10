@@ -18,7 +18,7 @@ export class GroqProvider implements IAIProvider {
   readonly name = "Groq";
 
   private getModel(): string {
-    return process.env.GROQ_MODEL || "llama-3.3-70b-versatile";
+    return process.env.GROQ_MODEL || "openai/gpt-oss-120b";
   }
 
   async generateResponse(prompt: string, systemPrompt?: string): Promise<string> {
@@ -33,11 +33,8 @@ export class GroqProvider implements IAIProvider {
     const params: any = {
       model,
       messages,
+      reasoning_effort: "low",
     };
-
-    if (model.toLowerCase().includes("r1") || model.toLowerCase().includes("reasoning") || model.toLowerCase().includes("think")) {
-      params.thinking = { type: "none" };
-    }
 
     const response = await client.chat.completions.create(
       params,
@@ -61,13 +58,16 @@ export class GroqProvider implements IAIProvider {
     const params: any = {
       model,
       messages,
-      response_format: { type: "json_object" },
+      reasoning_effort: "low",
+      response_format: {
+      type: "json_schema",
+      json_schema: {
+        name: "follow_up_questions",
+        strict: true,
+        schema,
+      },
+    },
     };
-
-    if (model.toLowerCase().includes("r1") || model.toLowerCase().includes("reasoning") || model.toLowerCase().includes("think")) {
-      params.thinking = { type: "none" };
-    }
-
     const response = await client.chat.completions.create(
       params,
       {
@@ -91,11 +91,8 @@ export class GroqProvider implements IAIProvider {
       model,
       messages,
       stream: true,
+      reasoning_effort: "low",
     };
-
-    if (model.toLowerCase().includes("r1") || model.toLowerCase().includes("reasoning") || model.toLowerCase().includes("think")) {
-      params.thinking = { type: "none" };
-    }
 
     const stream = await client.chat.completions.create(
       params,

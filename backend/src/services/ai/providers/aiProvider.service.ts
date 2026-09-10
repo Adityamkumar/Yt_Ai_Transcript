@@ -4,12 +4,22 @@ import logger from "../../../lib/logger.js";
 export interface IAIProvider {
   readonly name: string;
   generateResponse(prompt: string, systemPrompt?: string): Promise<string>;
-  generateStructuredResponse(prompt: string, schema: any, systemPrompt?: string): Promise<string>;
-  generateStream(prompt: string, systemPrompt?: string): Promise<AsyncGenerator<string, void, unknown>> | AsyncGenerator<string, void, unknown>;
+  generateStructuredResponse(
+    prompt: string,
+    schema: any,
+    systemPrompt?: string,
+  ): Promise<string>;
+  generateStream(
+    prompt: string,
+    systemPrompt?: string,
+  ):
+    | Promise<AsyncGenerator<string, void, unknown>>
+    | AsyncGenerator<string, void, unknown>;
 }
 
-
-export const sanitizeModelOutput = (text: string | null | undefined): string => {
+export const sanitizeModelOutput = (
+  text: string | null | undefined,
+): string => {
   if (!text) return "";
   return text
     .replace(/<think>[\s\S]*?<\/think>/gi, "")
@@ -18,9 +28,8 @@ export const sanitizeModelOutput = (text: string | null | undefined): string => 
     .trim();
 };
 
-
 export async function* sanitizeStream(
-  stream: AsyncGenerator<string, void, unknown>
+  stream: AsyncGenerator<string, void, unknown>,
 ): AsyncGenerator<string, void, unknown> {
   let buffer = "";
   let insideTag: "think" | "thinking" | "reasoning" | null = null;
@@ -28,7 +37,7 @@ export async function* sanitizeStream(
   const tags = [
     { start: "<think>", end: "</think>", name: "think" },
     { start: "<thinking>", end: "</thinking>", name: "thinking" },
-    { start: "<reasoning>", end: "</reasoning>", name: "reasoning" }
+    { start: "<reasoning>", end: "</reasoning>", name: "reasoning" },
   ] as const;
 
   for await (const chunk of stream) {
@@ -77,7 +86,7 @@ export async function* sanitizeStream(
           }
         }
       } else {
-        const currentTagObj = tags.find(t => t.name === insideTag)!;
+        const currentTagObj = tags.find((t) => t.name === insideTag)!;
         const endTagIndex = buffer.indexOf(currentTagObj.end);
 
         if (endTagIndex !== -1) {
@@ -108,6 +117,31 @@ export async function* sanitizeStream(
   }
 }
 
+const getErrorStatus = (error: any): number | null => {
+  if (typeof error?.status === "number") {
+    return error.status;
+  }
+
+  if (typeof error?.statusCode === "number") {
+    return error.statusCode;
+  }
+
+  return null;
+};
+
+const isTransientProviderError = (error: any): boolean => {
+  const status = getErrorStatus(error);
+
+  return (
+    status === 408 ||
+    status === 429 ||
+    status === 500 ||
+    status === 502 ||
+    status === 503 ||
+    status === 504
+  );
+};
+
 export class AIProviderService {
   private unhealthyCooldowns: Map<string, number> = new Map();
   private readonly COOLDOWN_DURATION_MS = 5 * 60 * 1000;
@@ -115,17 +149,16 @@ export class AIProviderService {
   private isHealthy(providerName: string): boolean {
     const nameLower = providerName.toLowerCase();
     const cooldownUntil = this.unhealthyCooldowns.get(nameLower);
-    
+
     if (!cooldownUntil) {
       return true;
     }
-    
-    if (Date.now() >= cooldownUntil) {
 
+    if (Date.now() >= cooldownUntil) {
       this.unhealthyCooldowns.delete(nameLower);
       return true;
     }
-    
+
     return false;
   }
 
@@ -133,27 +166,28 @@ export class AIProviderService {
     const nameLower = providerName.toLowerCase();
     const cooldownUntil = Date.now() + this.COOLDOWN_DURATION_MS;
     this.unhealthyCooldowns.set(nameLower, cooldownUntil);
-    logger.warn({ providerName }, "[AI] Provider Health: Marked unhealthy. Skipping for 5 minutes.");
+    logger.warn(
+      { providerName },
+      "[AI] Provider Health: Marked unhealthy. Skipping for 5 minutes.",
+    );
   }
 
   private async executeWithFallback<T>(
     actionName: string,
-    actionFn: (provider: IAIProvider) => Promise<T>
+    actionFn: (provider: IAIProvider) => Promise<T>,
   ): Promise<T> {
     const providers = providerRegistry.getOrderedProviders();
     let lastError: any = null;
 
     for (let i = 0; i < providers.length; i++) {
       const provider = providers[i]!;
-      
-      if (!this.isHealthy(provider.name)) {
 
+      if (!this.isHealthy(provider.name)) {
         continue;
       }
 
-
       const startTime = Date.now();
-      
+
       try {
         const result = await actionFn(provider);
         const duration = ((Date.now() - startTime) / 1000).toFixed(1);
@@ -161,23 +195,62 @@ export class AIProviderService {
         return result;
       } catch (error: any) {
         lastError = error;
-        logger.warn({ error, providerName: provider.name, actionName }, "[AI] Provider failed during action");
-        this.markUnhealthy(provider.name);
+
+        const status = getErrorStatus(error);
+        const transient = isTransientProviderError(error);
+
+        logger.warn(
+          {
+            error,
+            providerName: provider.name,
+            actionName,
+            status,
+            transient,
+          },
+          "[AI] Provider failed during action",
+        );
+
+        if (transient) {
+          this.markUnhealthy(provider.name);
+        } else {
+          logger.warn(
+            {
+              providerName: provider.name,
+              actionName,
+              status,
+            },
+            "[AI] Non-transient provider error. Keeping provider healthy.",
+          );
+        }
 
         const nextProvider = providers[i + 1];
-        if (nextProvider) {
 
+        if (nextProvider) {
+          logger.info(
+            {
+              failedProvider: provider.name,
+              nextProvider: nextProvider.name,
+              actionName,
+            },
+            "[AI] Falling back to next provider.",
+          );
         }
       }
     }
 
-    logger.error({ lastError, actionName }, "[AI] All providers failed during action");
+    logger.error(
+      { lastError, actionName },
+      "[AI] All providers failed during action",
+    );
     throw new Error("Response generation temporarily unavailable.");
   }
 
-  async generateResponse(prompt: string, systemPrompt?: string): Promise<string> {
-    const raw = await this.executeWithFallback("generateResponse", (provider) => 
-      provider.generateResponse(prompt, systemPrompt)
+  async generateResponse(
+    prompt: string,
+    systemPrompt?: string,
+  ): Promise<string> {
+    const raw = await this.executeWithFallback("generateResponse", (provider) =>
+      provider.generateResponse(prompt, systemPrompt),
     );
     return sanitizeModelOutput(raw);
   }
@@ -186,19 +259,31 @@ export class AIProviderService {
     prompt: string,
     schema: any,
     systemPrompt?: string,
-    validateFn?: (rawText: string) => boolean
+    validateFn?: (rawText: string) => boolean,
   ): Promise<string> {
-    const raw = await this.executeWithFallback("generateStructuredResponse", async (provider) => {
-      const response = await provider.generateStructuredResponse(prompt, schema, systemPrompt);
-      if (validateFn && !validateFn(response)) {
-        throw new Error(`[AI] Provider ${provider.name} response failed structured format validation.`);
-      }
-      return response;
-    });
+    const raw = await this.executeWithFallback(
+      "generateStructuredResponse",
+      async (provider) => {
+        const response = await provider.generateStructuredResponse(
+          prompt,
+          schema,
+          systemPrompt,
+        );
+        if (validateFn && !validateFn(response)) {
+          throw new Error(
+            `[AI] Provider ${provider.name} response failed structured format validation.`,
+          );
+        }
+        return response;
+      },
+    );
     return sanitizeModelOutput(raw);
   }
 
-  async *generateStream(prompt: string, systemPrompt?: string): AsyncGenerator<string, void, unknown> {
+  async *generateStream(
+    prompt: string,
+    systemPrompt?: string,
+  ): AsyncGenerator<string, void, unknown> {
     const providers = providerRegistry.getOrderedProviders();
     let lastError: any = null;
 
@@ -206,10 +291,8 @@ export class AIProviderService {
       const provider = providers[i]!;
 
       if (!this.isHealthy(provider.name)) {
-
         continue;
       }
-
 
       let yieldedAny = false;
       const startTime = Date.now();
@@ -217,22 +300,27 @@ export class AIProviderService {
       try {
         const stream = await provider.generateStream(prompt, systemPrompt);
         const sanitizedStream = sanitizeStream(stream);
-        
+
         for await (const chunk of sanitizedStream) {
           if (!yieldedAny) {
             yieldedAny = true;
             const duration = ((Date.now() - startTime) / 1000).toFixed(1);
-
           }
           yield chunk;
         }
         return;
       } catch (error: any) {
         lastError = error;
-        logger.warn({ error, providerName: provider.name }, "[AI] Provider failed during generateStream");
-        
+        logger.warn(
+          { error, providerName: provider.name },
+          "[AI] Provider failed during generateStream",
+        );
+
         if (yieldedAny) {
-          logger.error({ providerName: provider.name }, "[AI] Stream failed mid-generation on provider. Cannot fall back.");
+          logger.error(
+            { providerName: provider.name },
+            "[AI] Stream failed mid-generation on provider. Cannot fall back.",
+          );
           throw error;
         }
 
@@ -240,12 +328,14 @@ export class AIProviderService {
 
         const nextProvider = providers[i + 1];
         if (nextProvider) {
-
         }
       }
     }
 
-    logger.error({ lastError }, "[AI] All providers failed during generateStream");
+    logger.error(
+      { lastError },
+      "[AI] All providers failed during generateStream",
+    );
     throw new Error("Response generation temporarily unavailable.");
   }
 }
