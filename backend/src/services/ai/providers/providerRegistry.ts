@@ -1,6 +1,5 @@
 import type { IAIProvider } from "./aiProvider.service.js";
 import { GroqProvider } from "./groq.provider.js";
-import { OpenRouterProvider } from "./openrouter.provider.js";
 import { GeminiProvider } from "./gemini.provider.js";
 
 export class ProviderRegistry {
@@ -27,8 +26,7 @@ export const providerRegistry = new ProviderRegistry();
 
 
 providerRegistry.register(new GroqProvider());
-providerRegistry.register(new OpenRouterProvider());
 providerRegistry.register(new GeminiProvider());
 
 
-providerRegistry.setOrder(["groq", "openrouter", "gemini"]);
+providerRegistry.setOrder(["groq", "gemini"]);
