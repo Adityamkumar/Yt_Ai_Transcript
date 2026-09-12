@@ -28,6 +28,16 @@ export const sanitizeModelOutput = (
     .trim();
 };
 
+type CircuitState = "CLOSED" | "OPEN" | "HALF_OPEN";
+
+type ProviderCircuit = {
+  state: CircuitState;
+  failureCount: number;
+  openedAt: number | null;
+  openUntil: number | null;
+  halfOpenInFlight: boolean;
+};
+
 export async function* sanitizeStream(
   stream: AsyncGenerator<string, void, unknown>,
 ): AsyncGenerator<string, void, unknown> {
@@ -116,6 +126,8 @@ export async function* sanitizeStream(
     yield buffer;
   }
 }
+const sleep = (ms: number) =>
+  new Promise<void>((resolve) => setTimeout(resolve, ms));
 
 const getErrorStatus = (error: any): number | null => {
   if (typeof error?.status === "number") {
@@ -142,33 +154,232 @@ const isTransientProviderError = (error: any): boolean => {
   );
 };
 
-export class AIProviderService {
-  private unhealthyCooldowns: Map<string, number> = new Map();
-  private readonly COOLDOWN_DURATION_MS = 5 * 60 * 1000;
+const getRetryAfterMs = (error: any): number | null => {
+  const headers = error?.headers;
 
-  private isHealthy(providerName: string): boolean {
-    const nameLower = providerName.toLowerCase();
-    const cooldownUntil = this.unhealthyCooldowns.get(nameLower);
+  if (headers) {
+    let retryAfter: string | null = null;
 
-    if (!cooldownUntil) {
-      return true;
+    if (typeof headers.get === "function") {
+      retryAfter = headers.get("retry-after");
+    } else if (typeof headers["retry-after"] === "string") {
+      retryAfter = headers["retry-after"];
+    } else if (typeof headers["Retry-After"] === "string") {
+      retryAfter = headers["Retry-After"];
     }
 
-    if (Date.now() >= cooldownUntil) {
-      this.unhealthyCooldowns.delete(nameLower);
-      return true;
-    }
+    if (retryAfter) {
+      const seconds = Number(retryAfter);
 
-    return false;
+      if (Number.isFinite(seconds) && seconds >= 0) {
+        return seconds * 1000;
+      }
+
+      const retryDate = Date.parse(retryAfter);
+
+      if (!Number.isNaN(retryDate)) {
+        return Math.max(0, retryDate - Date.now());
+      }
+    }
   }
 
-  private markUnhealthy(providerName: string) {
-    const nameLower = providerName.toLowerCase();
-    const cooldownUntil = Date.now() + this.COOLDOWN_DURATION_MS;
-    this.unhealthyCooldowns.set(nameLower, cooldownUntil);
+  return null;
+};
+
+export class AIProviderService {
+  private providerCircuits: Map<string, ProviderCircuit> = new Map();
+
+  private readonly PROVIDER_MAX_ATTEMPTS = 2;
+  private readonly PROVIDER_BASE_DELAY_MS = 500;
+  private readonly PROVIDER_MAX_JITTER_MS = 250;
+
+  private readonly CIRCUIT_FAILURE_THRESHOLD = 2;
+  private readonly CIRCUIT_BASE_OPEN_DURATION_MS = 30 * 1000;
+  private readonly CIRCUIT_MAX_OPEN_DURATION_MS = 5 * 60 * 1000;
+
+  private getCircuitKey(providerName: string, actionName: string): string {
+    return `${providerName.toLowerCase()}:${actionName}`;
+  }
+
+  private getOrCreateCircuit(
+    providerName: string,
+    actionName: string,
+  ): ProviderCircuit {
+    const key = this.getCircuitKey(providerName, actionName);
+
+    let circuit = this.providerCircuits.get(key);
+
+    if (!circuit) {
+      circuit = {
+        state: "CLOSED",
+        failureCount: 0,
+        openedAt: null,
+        openUntil: null,
+        halfOpenInFlight: false,
+      };
+
+      this.providerCircuits.set(key, circuit);
+    }
+
+    return circuit;
+  }
+
+  private canAttemptProvider(
+    providerName: string,
+    actionName: string,
+  ): boolean {
+    const circuit = this.getOrCreateCircuit(providerName, actionName);
+
+    if (circuit.state === "CLOSED") {
+      return true;
+    }
+
+    const now = Date.now();
+
+    if (circuit.state === "OPEN") {
+      if (circuit.openUntil !== null && now < circuit.openUntil) {
+        return false;
+      }
+
+      circuit.state = "HALF_OPEN";
+      circuit.halfOpenInFlight = true;
+
+      logger.info(
+        {
+          providerName,
+          actionName,
+        },
+        "[AI] Circuit moved to HALF_OPEN. Allowing probe request.",
+      );
+
+      return true;
+    }
+
+    // HALF_OPEN
+    if (circuit.halfOpenInFlight) {
+      return false;
+    }
+
+    circuit.halfOpenInFlight = true;
+
+    return true;
+  }
+
+  private recordProviderSuccess(
+    providerName: string,
+    actionName: string,
+  ): void {
+    const circuit = this.getOrCreateCircuit(providerName, actionName);
+
+    const wasRecovering = circuit.state === "HALF_OPEN";
+
+    circuit.state = "CLOSED";
+    circuit.failureCount = 0;
+    circuit.openedAt = null;
+    circuit.openUntil = null;
+    circuit.halfOpenInFlight = false;
+
+    if (wasRecovering) {
+      logger.info(
+        {
+          providerName,
+          actionName,
+        },
+        "[AI] Circuit recovered. Provider is CLOSED.",
+      );
+    }
+  }
+
+  private recordNonTransientFailure(
+    providerName: string,
+    actionName: string,
+  ): void {
+    const circuit = this.getOrCreateCircuit(providerName, actionName);
+
+    if (circuit.state === "HALF_OPEN") {
+      circuit.state = "CLOSED";
+      circuit.halfOpenInFlight = false;
+      circuit.openedAt = null;
+      circuit.openUntil = null;
+
+      logger.info(
+        {
+          providerName,
+          actionName,
+        },
+        "[AI] Non-transient response received during HALF_OPEN. Closing circuit.",
+      );
+    }
+  }
+
+  private recordTransientFailure(
+    providerName: string,
+    actionName: string,
+    retryAfterMs?: number | null,
+  ): void {
+    const circuit = this.getOrCreateCircuit(providerName, actionName);
+
+    if (retryAfterMs !== null && retryAfterMs !== undefined) {
+      const openUntil = Date.now() + retryAfterMs;
+
+      circuit.state = "OPEN";
+      circuit.openedAt = Date.now();
+      circuit.openUntil = openUntil;
+      circuit.halfOpenInFlight = false;
+
+      logger.warn(
+        {
+          providerName,
+          actionName,
+          retryAfterMs,
+          openUntil: new Date(openUntil).toISOString(),
+        },
+        "[AI] Circuit OPEN due to provider Retry-After.",
+      );
+
+      return;
+    }
+
+    circuit.failureCount += 1;
+    circuit.halfOpenInFlight = false;
+
+    if (circuit.failureCount < this.CIRCUIT_FAILURE_THRESHOLD) {
+      logger.warn(
+        {
+          providerName,
+          actionName,
+          failureCount: circuit.failureCount,
+          threshold: this.CIRCUIT_FAILURE_THRESHOLD,
+        },
+        "[AI] Transient failure recorded. Circuit remains CLOSED.",
+      );
+
+      return;
+    }
+
+    const exponent = circuit.failureCount - this.CIRCUIT_FAILURE_THRESHOLD;
+
+    const openDuration = Math.min(
+      this.CIRCUIT_BASE_OPEN_DURATION_MS * Math.pow(2, exponent),
+      this.CIRCUIT_MAX_OPEN_DURATION_MS,
+    );
+
+    const openedAt = Date.now();
+    const openUntil = openedAt + openDuration;
+
+    circuit.state = "OPEN";
+    circuit.openedAt = openedAt;
+    circuit.openUntil = openUntil;
+
     logger.warn(
-      { providerName },
-      "[AI] Provider Health: Marked unhealthy. Skipping for 5 minutes.",
+      {
+        providerName,
+        actionName,
+        failureCount: circuit.failureCount,
+        openDurationMs: openDuration,
+        openUntil: new Date(openUntil).toISOString(),
+      },
+      "[AI] Circuit OPEN after repeated transient failures.",
     );
   }
 
@@ -177,64 +388,141 @@ export class AIProviderService {
     actionFn: (provider: IAIProvider) => Promise<T>,
   ): Promise<T> {
     const providers = providerRegistry.getOrderedProviders();
+
     let lastError: any = null;
 
     for (let i = 0; i < providers.length; i++) {
       const provider = providers[i]!;
 
-      if (!this.isHealthy(provider.name)) {
+      if (!this.canAttemptProvider(provider.name, actionName)) {
+        logger.debug(
+          {
+            providerName: provider.name,
+            actionName,
+          },
+          "[AI] Provider circuit is OPEN. Skipping provider.",
+        );
+
         continue;
       }
 
-      const startTime = Date.now();
+      for (let attempt = 1; attempt <= this.PROVIDER_MAX_ATTEMPTS; attempt++) {
+        const startTime = Date.now();
 
-      try {
-        const result = await actionFn(provider);
-        const duration = ((Date.now() - startTime) / 1000).toFixed(1);
+        try {
+          const result = await actionFn(provider);
+          this.recordProviderSuccess(provider.name, actionName);
+          const duration = ((Date.now() - startTime) / 1000).toFixed(1);
 
-        return result;
-      } catch (error: any) {
-        lastError = error;
-
-        const status = getErrorStatus(error);
-        const transient = isTransientProviderError(error);
-
-        logger.warn(
-          {
-            error,
-            providerName: provider.name,
-            actionName,
-            status,
-            transient,
-          },
-          "[AI] Provider failed during action",
-        );
-
-        if (transient) {
-          this.markUnhealthy(provider.name);
-        } else {
-          logger.warn(
+          logger.info(
             {
               providerName: provider.name,
               actionName,
-              status,
+              attempt,
+              durationSeconds: Number(duration),
             },
-            "[AI] Non-transient provider error. Keeping provider healthy.",
+            "[AI] Provider request succeeded",
           );
-        }
 
-        const nextProvider = providers[i + 1];
+          return result;
+        } catch (error: any) {
+          lastError = error;
 
-        if (nextProvider) {
-          logger.info(
+          const status = getErrorStatus(error);
+          const transient = isTransientProviderError(error);
+          const retryAfterMs = getRetryAfterMs(error);
+
+          logger.warn(
             {
-              failedProvider: provider.name,
-              nextProvider: nextProvider.name,
+              error,
+              providerName: provider.name,
               actionName,
+              attempt,
+              maxAttempts: this.PROVIDER_MAX_ATTEMPTS,
+              status,
+              transient,
+              retryAfterMs,
             },
-            "[AI] Falling back to next provider.",
+            "[AI] Provider failed during action",
           );
+
+          if (!transient) {
+            this.recordNonTransientFailure(provider.name, actionName);
+
+            logger.warn(
+              {
+                providerName: provider.name,
+                actionName,
+                status,
+              },
+              "[AI] Non-transient provider error. Keeping provider healthy.",
+            );
+
+            break;
+          }
+
+          if (status === 429) {
+            this.recordTransientFailure(
+              provider.name,
+              actionName,
+              retryAfterMs,
+            );
+
+            logger.warn(
+              {
+                providerName: provider.name,
+                actionName,
+                retryAfterMs,
+              },
+              "[AI] Rate limited. Opening circuit until Retry-After.",
+            );
+
+            break;
+          }
+
+          if (attempt < this.PROVIDER_MAX_ATTEMPTS) {
+            const exponentialDelay =
+              this.PROVIDER_BASE_DELAY_MS * Math.pow(2, attempt - 1);
+
+            const jitter = Math.floor(
+              Math.random() * this.PROVIDER_MAX_JITTER_MS,
+            );
+
+            const delayMs = retryAfterMs ?? exponentialDelay + jitter;
+
+            logger.warn(
+              {
+                providerName: provider.name,
+                actionName,
+                attempt,
+                retryAfterMs: delayMs,
+                status,
+              },
+              "[AI] Retrying transient provider error",
+            );
+
+            await sleep(delayMs);
+
+            continue;
+          }
+
+          this.recordTransientFailure(provider.name, actionName, retryAfterMs);
+
+          break;
         }
+      }
+
+      const nextProvider = providers[i + 1];
+
+      if (nextProvider) {
+        logger.info(
+          {
+            failedProvider: provider.name,
+            nextProvider: nextProvider.name,
+            actionName,
+          },
+          "[AI] Falling back to next provider",
+        );
       }
     }
 
@@ -242,6 +530,7 @@ export class AIProviderService {
       { lastError, actionName },
       "[AI] All providers failed during action",
     );
+
     throw new Error("Response generation temporarily unavailable.");
   }
 
@@ -285,57 +574,186 @@ export class AIProviderService {
     systemPrompt?: string,
   ): AsyncGenerator<string, void, unknown> {
     const providers = providerRegistry.getOrderedProviders();
+
     let lastError: any = null;
 
     for (let i = 0; i < providers.length; i++) {
       const provider = providers[i]!;
 
-      if (!this.isHealthy(provider.name)) {
+      if (!this.canAttemptProvider(provider.name, "generateStream")) {
         continue;
       }
 
-      let yieldedAny = false;
-      const startTime = Date.now();
+      for (let attempt = 1; attempt <= this.PROVIDER_MAX_ATTEMPTS; attempt++) {
+        let yieldedAny = false;
 
-      try {
-        const stream = await provider.generateStream(prompt, systemPrompt);
-        const sanitizedStream = sanitizeStream(stream);
+        const startTime = Date.now();
 
-        for await (const chunk of sanitizedStream) {
-          if (!yieldedAny) {
-            yieldedAny = true;
-            const duration = ((Date.now() - startTime) / 1000).toFixed(1);
+        try {
+          const stream = await provider.generateStream(prompt, systemPrompt);
+
+          const sanitizedStream = sanitizeStream(stream);
+
+          for await (const chunk of sanitizedStream) {
+            if (!yieldedAny) {
+              yieldedAny = true;
+
+              const duration = ((Date.now() - startTime) / 1000).toFixed(1);
+
+              logger.info(
+                {
+                  providerName: provider.name,
+                  actionName: "generateStream",
+                  attempt,
+                  timeToFirstChunkSeconds: Number(duration),
+                },
+                "[AI] Streaming provider produced first chunk",
+              );
+            }
+
+            yield chunk;
           }
-          yield chunk;
-        }
-        return;
-      } catch (error: any) {
-        lastError = error;
-        logger.warn(
-          { error, providerName: provider.name },
-          "[AI] Provider failed during generateStream",
-        );
 
-        if (yieldedAny) {
-          logger.error(
-            { providerName: provider.name },
-            "[AI] Stream failed mid-generation on provider. Cannot fall back.",
+          this.recordProviderSuccess(provider.name, "generateStream");
+
+          logger.info(
+            {
+              providerName: provider.name,
+              actionName: "generateStream",
+              attempt,
+              durationSeconds: Number(
+                ((Date.now() - startTime) / 1000).toFixed(1),
+              ),
+            },
+            "[AI] Streaming provider request completed",
           );
-          throw error;
-        }
 
-        this.markUnhealthy(provider.name);
+          return;
+        } catch (error: any) {
+          lastError = error;
 
-        const nextProvider = providers[i + 1];
-        if (nextProvider) {
+          const status = getErrorStatus(error);
+          const transient = isTransientProviderError(error);
+          const retryAfterMs = getRetryAfterMs(error);
+
+          logger.warn(
+            {
+              error,
+              providerName: provider.name,
+              actionName: "generateStream",
+              attempt,
+              maxAttempts: this.PROVIDER_MAX_ATTEMPTS,
+              status,
+              transient,
+              retryAfterMs,
+              yieldedAny,
+            },
+            "[AI] Provider failed during generateStream",
+          );
+
+          if (yieldedAny) {
+            if (transient) {
+              this.recordTransientFailure(
+                provider.name,
+                "generateStream",
+                retryAfterMs,
+              );
+            }
+
+            throw error;
+          }
+
+          if (!transient) {
+            logger.warn(
+              {
+                providerName: provider.name,
+                actionName: "generateStream",
+                status,
+              },
+              "[AI] Non-transient provider error. Keeping provider healthy.",
+            );
+
+            break;
+          }
+
+          if (status === 429) {
+            this.recordTransientFailure(
+              provider.name,
+              "generateStream",
+              retryAfterMs,
+            );
+
+            break;
+          }
+
+          if (attempt < this.PROVIDER_MAX_ATTEMPTS) {
+            const exponentialDelay =
+              this.PROVIDER_BASE_DELAY_MS * Math.pow(2, attempt - 1);
+
+            const jitter = Math.floor(
+              Math.random() * this.PROVIDER_MAX_JITTER_MS,
+            );
+
+            const delayMs = retryAfterMs ?? exponentialDelay + jitter;
+
+            logger.warn(
+              {
+                providerName: provider.name,
+                actionName: "generateStream",
+                attempt,
+                status,
+                retryAfterMs: delayMs,
+              },
+              "[AI] Retrying transient streaming error.",
+            );
+
+            await sleep(delayMs);
+
+            continue;
+          }
+
+          this.recordTransientFailure(
+            provider.name,
+            "generateStream",
+            retryAfterMs,
+          );
+
+          logger.warn(
+            {
+              providerName: provider.name,
+              actionName: "generateStream",
+              attempt,
+              status,
+            },
+            "[AI] Streaming retries exhausted. Falling back.",
+          );
+
+          break;
         }
+      }
+
+      const nextProvider = providers[i + 1];
+
+      if (nextProvider) {
+        logger.info(
+          {
+            failedProvider: provider.name,
+            nextProvider: nextProvider.name,
+            actionName: "generateStream",
+          },
+          "[AI] Falling back to next streaming provider.",
+        );
       }
     }
 
     logger.error(
-      { lastError },
+      {
+        lastError,
+        actionName: "generateStream",
+      },
       "[AI] All providers failed during generateStream",
     );
+
     throw new Error("Response generation temporarily unavailable.");
   }
 }

@@ -72,8 +72,6 @@ export const chatService = {
       { signal },
     );
 
-    console.log("FollowUp_Questions-->", response);
-
     return response.data?.data?.followUpQuestions || [];
   } catch (error: any) {
     console.error("[FollowUp] Request failed:", error);

@@ -78,7 +78,7 @@ export function MascotWalker({ containerWidth = 380 }: MascotWalkerProps) {
       className="absolute pointer-events-none select-none z-20"
       style={{
         left: 0,
-        bottom: '100%', // Feet sit fully on and above the top edge of the button
+        bottom: '100%',
         transform: `translate3d(${posX}px, 0, 0)`,
         willChange: 'transform',
       }}

@@ -67,7 +67,7 @@ app.use(
 
 app.use(express.json({limit: "100kb"}));
 app.use(cookieParser())
-app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }))
+app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" }, }))
 
 app.use("/api/v1/video", videoRouter);
 app.use("/api/v1/chat", chatRouter);

@@ -271,11 +271,11 @@ export const getCurrentUser = asyncHandler(async (req, res) => {
   return res.status(200).json({
     user: {
       id: userId,
-      name: (req.user as any)?.name,
-      email: (req.user as any)?.email,
-      avatar: (req.user as any)?.avatar,
-      provider: (req.user as any)?.provider,
-      isEmailVerified: (req.user as any)?.isEmailVerified,
+      name: req.user?.name,
+      email: req.user?.email,
+      avatar: req.user?.avatar,
+      provider: req.user?.provider,
+      isEmailVerified: req.user?.isEmailVerified,
       hasPassword: !!userWithPassword?.password,
     },
   });

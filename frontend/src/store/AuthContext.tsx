@@ -104,9 +104,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
     const userData = response.data.user;
 
-    // Registration creates an account, but it does not establish that the
-    // account is eligible to enter the application. The backend verification
-    // endpoint remains the source of truth for that decision.
     navigate("/verify-email", { state: { email: userData.email } });
   };
 
