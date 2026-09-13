@@ -4,79 +4,63 @@ import { LumoraLogo } from '@/components/ui/LumoraLogo';
 
 export function Footer() {
   return (
-    <footer
-      className="relative py-12 sm:py-16"
-      style={{
-        background: 'var(--canvas)',
-        borderTop: '1px solid var(--border-soft)',
-      }}
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
-          
-          {/* Brand Left Column */}
-          <div className="md:col-span-6 flex flex-col items-start gap-3.5">
-            <Link to="/" className="flex items-center">
-              <LumoraLogo size="sm" />
-            </Link>
-            <p className="text-xs text-[var(--text-secondary)] max-w-sm leading-relaxed">
-              A minimalist, AI-powered knowledge operating system. Extract, map, and converse with video and document databases.
-            </p>
+    <footer className="relative mx-auto -mt-px w-full max-w-[1216px] border-x border-t border-[var(--border-soft)] bg-[#07080c]">
+      <div className="grid grid-cols-1 md:grid-cols-4">
+        {/* Brand */}
+        <div className="border-b border-[var(--border-soft)] p-6 sm:p-8 md:min-h-[250px] md:border-b-0 md:border-r">
+          <Link to="/" className="inline-flex items-center">
+            <LumoraLogo size="sm" />
+          </Link>
+          <p className="mt-4 max-w-xs text-sm leading-6 text-[var(--text-secondary)]">
+            Turn videos and documents into clear, useful knowledge.
+          </p>
+        </div>
 
-          </div>
-
-          {/* Links Middle Columns */}
-          <div className="md:col-span-3 flex flex-col items-start gap-3">
-            <span className="text-[10px] font-mono font-bold tracking-wider text-[var(--text-muted)] uppercase">Resources</span>
+        {/* Resources */}
+        <div className="border-b border-[var(--border-soft)] p-6 sm:p-8 md:min-h-[250px] md:border-b-0 md:border-r">
+          <h2 className="text-sm font-semibold text-[var(--text-primary)]">Resources</h2>
+          <nav className="mt-4 flex flex-col items-start gap-4" aria-label="Resources">
             <a
               href="https://github.com/Adityamkumar/Yt_Ai_Transcript"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1.5 text-xs text-[var(--text-secondary)] hover:text-white transition-colors"
+              className="inline-flex items-center gap-2 text-sm text-[var(--text-secondary)] transition-colors hover:text-white"
             >
-              <Github size={13} />
+              <Github size={14} />
               GitHub Repository
             </a>
-            <a
-              href="https://github.com/Adityamkumar/Yt_Ai_Transcript/issues"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs text-[var(--text-secondary)] hover:text-white transition-colors"
-            >
-              Issue Tracker
-            </a>
-          </div>
+          </nav>
+        </div>
 
-          <div className="md:col-span-3 flex flex-col items-start gap-3">
-            <span className="text-[10px] font-mono font-bold tracking-wider text-[var(--text-muted)] uppercase">Workspace Chrome</span>
-            <Link
-              to="/login"
-              className="text-xs text-[var(--text-secondary)] hover:text-white transition-colors"
-            >
+        {/* Workspace */}
+        <div className="border-b border-[var(--border-soft)] p-6 sm:p-8 md:min-h-[250px] md:border-b-0 md:border-r">
+          <h2 className="text-sm font-semibold text-[var(--text-primary)]">Workspace Chrome</h2>
+          <nav className="mt-4 flex flex-col items-start gap-4" aria-label="Workspace">
+            <Link to="/login" className="text-sm text-[var(--text-secondary)] transition-colors hover:text-white">
               Login to Session
             </Link>
-            <Link
-              to="/signup"
-              className="text-xs font-semibold text-[var(--accent)] hover:text-[var(--accent-strong)] transition-colors"
-            >
+            <Link to="/signup" className="text-sm font-semibold text-[var(--accent)] transition-colors hover:text-[var(--accent-strong)]">
               Create New Account
             </Link>
-          </div>
-
+          </nav>
         </div>
 
-        {/* Copyright divider block */}
-        <div
-          className="mt-12 pt-6 text-left flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] font-mono text-[var(--text-muted)]"
-          style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}
-        >
-          <span>&copy; {new Date().getFullYear()} Lumora. Crafted for learning.</span>
-          <div className="flex gap-4">
-            <Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
-            <Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
-          </div>
+        {/* Legal */}
+        <div className="p-6 sm:p-8 md:min-h-[250px]">
+          <h2 className="text-sm font-semibold text-[var(--text-primary)]">Legal</h2>
+          <nav className="mt-4 flex flex-col items-start gap-4" aria-label="Legal">
+            <Link to="/privacy" className="text-sm text-[var(--text-secondary)] transition-colors hover:text-white">
+              Privacy Policy
+            </Link>
+            <Link to="/terms" className="text-sm text-[var(--text-secondary)] transition-colors hover:text-white">
+              Terms of Service
+            </Link>
+          </nav>
         </div>
+      </div>
 
+      <div className="border-t border-[var(--border-soft)] px-6 py-4 text-center text-xs text-[var(--text-muted)] sm:px-8 sm:py-5">
+        &copy; {new Date().getFullYear()} Lumora. Crafted for learning.
       </div>
     </footer>
   );

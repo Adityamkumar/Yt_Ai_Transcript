@@ -10,6 +10,7 @@ import {
   IconDownload,
 } from "@tabler/icons-react";
 import { motion } from "framer-motion";
+import { Meteors } from "@/components/ui/meteors";
 
 export function FeaturesSection() {
   const features = [
@@ -121,7 +122,7 @@ const Feature = ({
   return (
     <div
       className={cn(
-        "group/feature relative flex min-h-[250px] flex-col border-b border-r border-[var(--border-soft)] px-6 py-8 transition-colors duration-300 hover:bg-[rgba(157,165,255,0.035)] sm:px-8 lg:px-10",
+        "group/feature relative flex min-h-[250px] flex-col overflow-hidden border-b border-r border-[var(--border-soft)] px-6 py-8 transition-colors duration-300 hover:bg-[rgba(157,165,255,0.035)] sm:px-8 lg:px-10",
         index < 2 && "lg:col-span-6 lg:row-span-2 lg:min-h-[430px]",
         index >= 2 && "lg:col-span-4 lg:min-h-[210px]",
         index === 6 && "sm:border-b-0",
@@ -129,6 +130,17 @@ const Feature = ({
         index === 7 && "sm:border-b-0"
       )}
     >
+      {index < 2 && (
+        <Meteors
+          number={16}
+          minDelay={0.2}
+          maxDelay={2.8}
+          minDuration={4}
+          maxDuration={8}
+          angle={215}
+          className="bg-[rgba(157,165,255,0.45)] shadow-[0_0_0_1px_rgba(157,165,255,0.12)]"
+        />
+      )}
       <div className="relative z-10 mb-8 text-[var(--text-secondary)]">
         {icon}
       </div>

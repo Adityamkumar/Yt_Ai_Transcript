@@ -111,9 +111,9 @@ export function SourcePanel({ pdf }: SourcePanelProps) {
               maxWidth: isDesktop ? '650px' : undefined,
             }}
             
-            className="flex flex-col border-[var(--border-soft)] bg-[var(--surface-2)] shadow-2xl backdrop-blur-md overflow-hidden shrink-0
-                       fixed bottom-0 left-0 w-full h-[80vh] rounded-t-3xl border-t z-50
-                       lg:relative lg:bottom-auto lg:left-auto lg:top-0 lg:h-full lg:rounded-t-none lg:border-l lg:border-t-0 lg:z-10"
+            className="flex flex-col bg-[var(--surface-2)] shadow-2xl backdrop-blur-md overflow-hidden shrink-0
+                       fixed bottom-0 left-0 w-full h-[80vh] rounded-t-3xl border-t border-[var(--border-soft)] z-50
+                       lg:relative lg:bottom-auto lg:left-auto lg:top-0 lg:h-full lg:rounded-t-none lg:border-t-0 lg:border-l lg:z-10"
           >
             {/* Header */}
             <div className="flex items-center justify-between border-b border-[var(--border-soft)] px-5 py-4 shrink-0">

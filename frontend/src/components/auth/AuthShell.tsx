@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ShootingStarsGrid } from "@/components/ui/shooting-stars-grid";
 import { LumoraLogo } from "@/components/ui/LumoraLogo";
 import { cn } from "@/utils/cn";
 
@@ -24,16 +23,7 @@ export function AuthShell({
       {minimalBackground ? (
         <div className="pointer-events-none absolute inset-0 bg-[#030304] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#11131a] via-[#060608] to-[#000000]" />
       ) : (
-        <>
-          <ShootingStarsGrid
-            className="absolute inset-0"
-            starCount={28}
-            shootingStarCount={4}
-            gridSize={52}
-            speed="slow"
-          />
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(7,9,15,0.05),rgba(7,9,15,0.46)_72%,rgba(7,9,15,0.72))]" />
-        </>
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(7,9,15,0.05),rgba(7,9,15,0.46)_72%,rgba(7,9,15,0.72))]" />
       )}
 
       <motion.div
