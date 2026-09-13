@@ -423,22 +423,6 @@ p {
   scrollbar-width: none;
 }
 
-.section-shell {
-  position: relative;
-  overflow: hidden;
-}
-
-.section-shell::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background:
-    radial-gradient(circle at 12% 12%, rgba(157, 165, 255, 0.06), transparent 24%),
-    radial-gradient(circle at 88% 18%, rgba(77, 162, 255, 0.05), transparent 20%);
-  opacity: 0.9;
-}
-
 .hero-glow {
   position: absolute;
   inset: auto auto 0 0;

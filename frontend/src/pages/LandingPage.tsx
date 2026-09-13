@@ -11,9 +11,9 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen overflow-x-hidden bg-[#07080c] text-[#F5F7FF]">
       <Navbar />
-      <main>
-        <HeroSection />
-        <div className="max-w-7xl mx-auto px-6 md:px-16 lg:px-24">
+      <main className="bg-[#07080c]">
+        <div className="mx-auto max-w-[1216px] overflow-hidden border-x border-[var(--border-soft)] bg-[#07080c]">
+          <HeroSection />
           <FeaturesSection />
           <ShowcaseSection />
         </div>
@@ -22,7 +22,5 @@ export default function LandingPage() {
     </div>
   );
 }
-
-
 
 

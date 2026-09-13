@@ -58,32 +58,18 @@ export function FeaturesSection() {
   return (
     <section
       id="features"
-      className="section-shell relative py-24 sm:py-32 overflow-hidden border-t border-[var(--border-soft)]"
-      style={{ background: 'linear-gradient(180deg, rgba(8, 9, 12, 0.96), rgba(6, 7, 10, 1))' }}
+      className="relative overflow-hidden border-t border-[var(--border-soft)] bg-[#07080c] pb-0 pt-24 sm:pt-32"
     >
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="relative z-10">
         
         {/* Section Header */}
-        <div className="text-left mb-16 max-w-3xl">
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[rgba(157,165,255,0.18)] bg-[rgba(255,255,255,0.04)] mb-6 backdrop-blur-md"
-          >
-            <IconSparkles size={11} className="text-[var(--accent)]" />
-            <span className="text-[10px] font-mono tracking-[0.26em] text-[var(--accent)] uppercase font-semibold">
-              Capabilities Map
-            </span>
-          </motion.div>
-
+        <div className="mx-auto mb-16 max-w-3xl px-4 text-center sm:px-6 lg:px-8">
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.05 }}
-            className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-[var(--text-primary)] tracking-tight leading-[1.08] mb-6"
+            className="text-3xl font-semibold leading-[1.08] tracking-tight text-[var(--text-primary)] sm:text-4xl lg:text-4xl"
           >
             A calm structure for your files{" "}
             <span className="font-serif italic font-normal text-[var(--accent)] leading-[1.2]">
@@ -96,7 +82,7 @@ export function FeaturesSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-sm sm:text-base text-[var(--text-secondary)] leading-relaxed"
+            className="mt-5 text-sm leading-relaxed text-[var(--text-secondary)] sm:text-[15px]"
           >
             Lumora streamlines material ingestion, analysis, and grounding. Experience the AI-native workspace architecture and real-time citation synchronization.
           </motion.p>
@@ -108,11 +94,13 @@ export function FeaturesSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-60px' }}
           transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 relative z-10 py-10"
+          className="relative z-10 overflow-hidden border border-[var(--border-soft)] bg-[#07080c]"
         >
-          {features.map((feature, index) => (
-            <Feature key={feature.title} {...feature} index={index} />
-          ))}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12">
+            {features.map((feature, index) => (
+              <Feature key={feature.title} {...feature} index={index} />
+            ))}
+          </div>
         </motion.div>
       </div>
     </section>
@@ -133,27 +121,24 @@ const Feature = ({
   return (
     <div
       className={cn(
-        "flex flex-col lg:border-r py-10 relative group/feature border-[var(--border-soft)] premium-card-hover",
-        (index === 0 || index === 4) && "lg:border-l border-[var(--border-soft)]",
-        index < 4 && "lg:border-b border-[var(--border-soft)]"
+        "group/feature relative flex min-h-[250px] flex-col border-b border-r border-[var(--border-soft)] px-6 py-8 transition-colors duration-300 hover:bg-[rgba(157,165,255,0.035)] sm:px-8 lg:px-10",
+        index < 2 && "lg:col-span-6 lg:row-span-2 lg:min-h-[430px]",
+        index >= 2 && "lg:col-span-4 lg:min-h-[210px]",
+        index === 6 && "sm:border-b-0",
+        index >= 5 && "lg:border-b-0",
+        index === 7 && "sm:border-b-0"
       )}
     >
-      {index < 4 && (
-        <div className="opacity-0 group-hover/feature:opacity-100 transition duration-200 absolute inset-0 h-full w-full bg-gradient-to-t from-[rgba(157,165,255,0.08)] to-transparent pointer-events-none" />
-      )}
-      {index >= 4 && (
-        <div className="opacity-0 group-hover/feature:opacity-100 transition duration-200 absolute inset-0 h-full w-full bg-gradient-to-b from-[rgba(157,165,255,0.08)] to-transparent pointer-events-none" />
-      )}
-      <div className="mb-4 relative z-10 px-10 text-[var(--text-secondary)]">
+      <div className="relative z-10 mb-8 text-[var(--text-secondary)]">
         {icon}
       </div>
-      <div className="text-lg font-bold mb-2 relative z-10 px-10">
-        <div className="absolute left-0 inset-y-0 h-6 group-hover/feature:h-8 w-1 rounded-tr-full rounded-br-full bg-[var(--border-strong)] group-hover/feature:bg-[var(--accent)] transition-all duration-200 origin-center" />
-        <span className="group-hover/feature:translate-x-2 transition duration-200 inline-block text-[var(--text-primary)]">
+      <div className="relative z-10 mb-3 text-lg font-bold">
+        <div className="absolute -left-6 inset-y-0 h-6 w-0.5 bg-[var(--border-strong)] transition-all duration-200 group-hover/feature:h-8 group-hover/feature:bg-[var(--accent)] sm:-left-8 lg:-left-10" />
+        <span className="inline-block text-[var(--text-primary)] transition duration-200 group-hover/feature:translate-x-1">
           {title}
         </span>
       </div>
-      <p className="text-sm text-[var(--text-secondary)] max-w-xs relative z-10 px-10 leading-relaxed">
+      <p className="relative z-10 max-w-xl text-sm leading-relaxed text-[var(--text-secondary)]">
         {description}
       </p>
     </div>

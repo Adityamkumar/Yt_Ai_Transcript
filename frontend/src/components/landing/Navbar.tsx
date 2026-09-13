@@ -121,19 +121,19 @@ export function Navbar() {
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5, ease: 'easeOut' }}
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+        className={`fixed inset-x-0 top-0 z-50 border-b border-[var(--border-soft)] bg-[#07080c] transition-all duration-500 ${
           scrolled
-            ? 'bg-[var(--canvas)]/85 backdrop-blur-xl shadow-lg border-b border-[var(--border-soft)]'
-            : 'bg-transparent'
+            ? 'bg-[#07080c]/90 backdrop-blur-xl shadow-lg'
+            : ''
         }`}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16 sm:h-18">
+        <div className="mx-auto max-w-[1216px] border-x border-[var(--border-soft)] px-4 sm:px-6 lg:px-8">
+          <div className="relative flex h-16 items-center justify-between sm:h-[72px]">
             <Link to="/" onClick={handleLogoClick} className="flex items-center flex-shrink-0">
               <LumoraLogo size="md" />
             </Link>
 
-            <nav className="hidden md:flex items-center gap-1">
+            <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-1 md:flex">
               {navLinks.map((link) => (
                 link.external ? (
                   <a

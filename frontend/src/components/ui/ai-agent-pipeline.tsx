@@ -58,24 +58,12 @@ export function AIAgentPipeline() {
   }, [reduceMotion]);
 
   return (
-    <div className="relative w-full overflow-hidden rounded-[1.5rem] border border-[rgba(157,165,255,0.2)] bg-[linear-gradient(145deg,rgba(20,25,40,0.9),rgba(7,9,15,0.96)_44%,rgba(9,12,20,0.94))] shadow-[0_34px_100px_rgba(0,0,0,0.4),0_0_0_1px_rgba(255,255,255,0.025)_inset] backdrop-blur-xl">
+    <div className="relative w-full overflow-hidden bg-[#07080c]">
       <div className="pointer-events-none absolute inset-x-[18%] top-0 h-px bg-[linear-gradient(90deg,transparent,rgba(157,165,255,0.65),transparent)]" />
-      <div className="flex items-center justify-between border-b border-white/[0.07] px-4 py-3 sm:px-5">
-        <div className="flex items-center gap-2">
-          <motion.span
-            className="inline-block h-2 w-2 rounded-full bg-emerald-400"
-            animate={reduceMotion ? undefined : { opacity: [1, 0.3, 1] }}
-            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-          />
-          <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--text-secondary)]">RAG pipeline live</span>
-        </div>
-        <span className="font-mono text-[10px] text-[var(--text-muted)]">Grounded mode</span>
-      </div>
-
       <div className="relative overflow-hidden px-2 py-5 sm:px-5 sm:py-7">
         <div className="pointer-events-none absolute inset-0 opacity-40 [background-image:linear-gradient(rgba(157,165,255,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(157,165,255,0.045)_1px,transparent_1px)] [background-size:28px_28px]" />
         <div className="pointer-events-none absolute left-1/2 top-1/2 h-52 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(113,135,255,0.18),transparent_70%)] blur-2xl" />
-        <svg viewBox="0 0 680 204" className="relative block w-full min-w-[620px]" role="img" aria-label="Lumora retrieval augmented generation pipeline">
+        <svg viewBox="0 0 680 204" className="relative block w-full" role="img" aria-label="Lumora retrieval augmented generation pipeline">
           <defs>
             <marker id="pipeline-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto">
               <path d="M2 1.5L7.5 5L2 8.5" fill="none" stroke="rgba(157,165,255,0.5)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
@@ -104,7 +92,6 @@ export function AIAgentPipeline() {
 
           <rect x="370" y="62" width="130" height="80" rx="12" fill="#0d1228" stroke="rgba(157,165,255,0.9)" strokeWidth="1.2" />
           <rect x="385" y="62.5" width="100" height="1" rx="0.5" fill="rgba(180,192,255,0.85)" />
-          <text x="435" y="90" textAnchor="middle" fontSize="9" fill="rgba(157,165,255,0.8)" fontFamily="monospace" letterSpacing="1">LUMORA</text>
           <text x="435" y="111" textAnchor="middle" fontSize="14" fill="#fff" fontFamily="system-ui" fontWeight="600">Retrieving context</text>
           <Pulse cx={423} cy={126} />
           <Pulse cx={435} cy={126} delay={0.4} />

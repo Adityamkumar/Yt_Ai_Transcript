@@ -11,6 +11,7 @@ dist
 markdown
 .env.*
 dist-ssr
+dist
 *.local
 
 # Editor directories and files
