@@ -59,14 +59,10 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
   const handleSelect = useCallback(
     (result: SearchResult) => {
-      if (["jwt", "redis", "docker", "pdf"].includes(result.id)) {
-        setQuery(result.title);
-      } else {
-        navigate(`/workspace/${result.id}`);
-        onClose();
-      }
+      navigate(`/workspace/${result.id}`);
+      onClose();
     },
-    [navigate, onClose, setQuery],
+    [navigate, onClose],
   );
 
   const handleClose = useCallback(() => {
@@ -117,10 +113,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
           animate="visible"
           exit="exit"
         >
-          <motion.div
-            className="search-modal-backdrop"
-            onClick={handleClose}
-          />
+          <motion.div className="search-modal-backdrop" onClick={handleClose} />
 
           <motion.div
             variants={modalVariants}
@@ -140,9 +133,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
               loading={loading}
             />
 
-            {results.length > 0 && (
-              <div className="search-modal-divider" />
-            )}
+            {results.length > 0 && <div className="search-modal-divider" />}
 
             <SearchResultList
               results={results}

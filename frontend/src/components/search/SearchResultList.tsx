@@ -1,4 +1,4 @@
-import { SearchX } from "lucide-react";
+import { SearchX} from "lucide-react";
 import type { SearchResult } from "./search.types";
 import { SearchResultItem } from "./SearchResultItem";
 import {
@@ -103,6 +103,7 @@ export function SearchResultList({
           Recent Conversations
         </div>
       )}
+
       <div className="search-results-list" role="listbox" aria-label="Search results">
         {results.map((result, index) => (
           <SearchResultItem

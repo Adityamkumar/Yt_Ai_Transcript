@@ -37,36 +37,7 @@ export function useSearch(): UseSearchReturn {
 
   const { conversations } = useConversations();
 
-  const fallbackResults: SearchResult[] = [
-    {
-      id: "jwt",
-      title: "JWT Authentication",
-      preview: "Video workspace",
-      updatedAt: new Date().toISOString(),
-      type: "conversation",
-    },
-    {
-      id: "redis",
-      title: "Redis Caching",
-      preview: "Video workspace",
-      updatedAt: new Date().toISOString(),
-      type: "conversation",
-    },
-    {
-      id: "docker",
-      title: "Docker Deployment",
-      preview: "Video workspace",
-      updatedAt: new Date().toISOString(),
-      type: "conversation",
-    },
-    {
-      id: "pdf",
-      title: "PDF Chat",
-      preview: "PDF workspace",
-      updatedAt: new Date().toISOString(),
-      type: "conversation",
-    },
-  ];
+  
 
   const formatConversation = (conv: any): SearchResult => ({
     id: conv._id,
@@ -86,11 +57,11 @@ export function useSearch(): UseSearchReturn {
 
   if (last7DaysConversations.length > 0) {
     activeRecentResults = last7DaysConversations.slice(0, 5).map(formatConversation);
-  } else if (conversations.length > 0) {
+  } else if(conversations.length > 0) {
     activeRecentResults = conversations.slice(0, 5).map(formatConversation);
-  } else {
-    activeRecentResults = fallbackResults;
-  }
+  }else{
+    activeRecentResults = []
+  } 
 
   const isRecent = query.trim().length === 0;
   const results = isRecent ? activeRecentResults : searchResults;
