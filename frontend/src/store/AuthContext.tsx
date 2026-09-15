@@ -102,20 +102,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const loginWithGoogle = useCallback(async (code: string) => {
-    const userData = await authService.verifyGoogleCode(code);
-    setUser({
-      id: userData.id || userData._id,
-      name: userData.name,
-      email: userData.email,
-      avatar: userData.avatar || undefined,
-      provider: userData.provider || "google",
-      isEmailVerified: Boolean(userData.isEmailVerified),
-      hasPassword: userData.hasPassword,
-      preferences: userData.preferences,
-    });
+    await authService.verifyGoogleCode(code);
+    await refreshUser()
     setAuthStatus("authenticated");
     navigate("/app");
-  }, [navigate]);
+  }, [navigate, refreshUser]);
 
   const logout = async () => {
     try {
