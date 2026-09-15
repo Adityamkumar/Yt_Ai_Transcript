@@ -4,14 +4,24 @@ import { motion } from "framer-motion";
 import { ArrowRight, AlertCircle } from "lucide-react";
 import { useAuth } from "@/store/AuthContext";
 import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton";
-import { AuthSplitLayout, Input, PasswordInput, Button, Label } from "@/components/ui/auth-ui";
+import {
+  AuthSplitLayout,
+  Input,
+  PasswordInput,
+  Button,
+  Label,
+} from "@/components/ui/auth-ui";
 import { useAuthRedirect } from "@/hooks/useAuthRedirect";
 
-const passwordStrengthLabel = (pw: string): { label: string; color: string; width: string } => {
+const passwordStrengthLabel = (
+  pw: string,
+): { label: string; color: string; width: string } => {
   if (pw.length === 0) return { label: "", color: "transparent", width: "0%" };
-  if (pw.length < 6) return { label: "Too weak", color: "#ef4444", width: "25%" };
+  if (pw.length < 6)
+    return { label: "Too weak", color: "#ef4444", width: "25%" };
   if (pw.length < 10) return { label: "Fair", color: "#f59e0b", width: "55%" };
-  if (!/[A-Z]/.test(pw) || !/[0-9]/.test(pw)) return { label: "Good", color: "#3b82f6", width: "75%" };
+  if (!/[A-Z]/.test(pw) || !/[0-9]/.test(pw))
+    return { label: "Good", color: "#3b82f6", width: "75%" };
   return { label: "Strong", color: "#22c55e", width: "100%" };
 };
 
@@ -41,7 +51,7 @@ export default function SignupPage() {
 
   const isOAuthReturn = sessionStorage.getItem("oauth_pending") === "true";
 
-  if (user || isOAuthReturn || (authStatus === 'checking' && localStorage.getItem("isAuthenticated") === "true")) {
+  if (user || isOAuthReturn || authStatus === "checking") {
     return (
       <div className="min-h-screen bg-[var(--canvas)] flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-[#7C5CFF] border-t-transparent rounded-full animate-spin" />
@@ -64,10 +74,14 @@ export default function SignupPage() {
 
       if (rateLimitError.status === 429) {
         setIsRateLimited(true);
-        const message = getErrorMessage(err, "Too many signup attempts. Please try again later.");
+        const message = getErrorMessage(
+          err,
+          "Too many signup attempts. Please try again later.",
+        );
 
         setError(
-          typeof rateLimitError.retryAfter === "number" && !/try again in/i.test(message)
+          typeof rateLimitError.retryAfter === "number" &&
+            !/try again in/i.test(message)
             ? `${message} Please try again in ${formatRetryAfter(rateLimitError.retryAfter)}.`
             : message,
         );
@@ -88,8 +102,12 @@ export default function SignupPage() {
     >
       <form onSubmit={handleSubmit} className="flex flex-col gap-5">
         <div className="flex flex-col items-center gap-1 text-center mb-1">
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Create an account</h1>
-          <p className="text-sm text-muted-foreground">Enter your details below to sign up</p>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+            Create an account
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Enter your details below to sign up
+          </p>
         </div>
 
         {error && (
@@ -113,7 +131,9 @@ export default function SignupPage() {
               required
               autoComplete="name"
               value={form.name}
-              onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
+              onChange={(e) =>
+                setForm((prev) => ({ ...prev, name: e.target.value }))
+              }
             />
           </div>
 
@@ -126,7 +146,9 @@ export default function SignupPage() {
               required
               autoComplete="email"
               value={form.email}
-              onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
+              onChange={(e) =>
+                setForm((prev) => ({ ...prev, email: e.target.value }))
+              }
             />
           </div>
 
@@ -138,7 +160,9 @@ export default function SignupPage() {
               required
               autoComplete="new-password"
               value={form.password}
-              onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
+              onChange={(e) =>
+                setForm((prev) => ({ ...prev, password: e.target.value }))
+              }
             />
 
             {form.password.length > 0 && (
@@ -156,7 +180,10 @@ export default function SignupPage() {
                     style={{ background: strength.color }}
                   />
                 </div>
-                <span className="text-[11px] font-medium" style={{ color: strength.color }}>
+                <span
+                  className="text-[11px] font-medium"
+                  style={{ color: strength.color }}
+                >
                   {strength.label}
                 </span>
               </motion.div>
@@ -173,20 +200,27 @@ export default function SignupPage() {
           </Button>
 
           <p className="text-[10px] text-muted-foreground text-center leading-relaxed mt-1">
-            By creating an account, you agree to our Terms of Service and Privacy Policy.
+            By creating an account, you agree to our Terms of Service and
+            Privacy Policy.
           </p>
         </div>
       </form>
 
       <div className="relative text-center text-xs my-2 after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-white/10">
-        <span className="relative z-10 bg-[#08090c] px-3 text-muted-foreground">Or continue with</span>
+        <span className="relative z-10 bg-[#08090c] px-3 text-muted-foreground">
+          Or continue with
+        </span>
       </div>
 
       <GoogleAuthButton label="Continue with Google" />
 
       <div className="text-center text-xs text-muted-foreground pt-2">
         Already have an account?{" "}
-        <Link to="/login" id="go-to-login" className="font-semibold text-foreground underline underline-offset-4 hover:text-indigo-300 transition-colors">
+        <Link
+          to="/login"
+          id="go-to-login"
+          className="font-semibold text-foreground underline underline-offset-4 hover:text-indigo-300 transition-colors"
+        >
           Sign in
         </Link>
       </div>

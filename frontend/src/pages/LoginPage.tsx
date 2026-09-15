@@ -4,7 +4,13 @@ import { motion } from "framer-motion";
 import { ArrowRight, AlertCircle } from "lucide-react";
 import { useAuth } from "@/store/AuthContext";
 import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton";
-import { AuthSplitLayout, Input, PasswordInput, Button, Label } from "@/components/ui/auth-ui";
+import {
+  AuthSplitLayout,
+  Input,
+  PasswordInput,
+  Button,
+  Label,
+} from "@/components/ui/auth-ui";
 import { useAuthRedirect } from "@/hooks/useAuthRedirect";
 
 export default function LoginPage() {
@@ -89,7 +95,7 @@ export default function LoginPage() {
 
   const isOAuthReturn = sessionStorage.getItem("oauth_pending") === "true";
 
-  if (user || isOAuthReturn || (authStatus === 'checking' && localStorage.getItem("isAuthenticated") === "true")) {
+  if (user || isOAuthReturn || authStatus === "checking") {
     return (
       <div className="min-h-screen bg-[var(--canvas)] flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-[#7C5CFF] border-t-transparent rounded-full animate-spin" />
@@ -129,8 +135,12 @@ export default function LoginPage() {
     >
       <form onSubmit={handleSubmit} className="flex flex-col gap-5">
         <div className="flex flex-col items-center gap-1 text-center mb-1">
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Sign in to your account</h1>
-          <p className="text-sm text-muted-foreground">Enter your email and password below to sign in</p>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+            Sign in to your account
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Enter your email and password below to sign in
+          </p>
         </div>
 
         {error && (
@@ -154,7 +164,9 @@ export default function LoginPage() {
               required
               autoComplete="email"
               value={form.email}
-              onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
+              onChange={(e) =>
+                setForm((prev) => ({ ...prev, email: e.target.value }))
+              }
               disabled={isLocked}
             />
           </div>
@@ -176,7 +188,9 @@ export default function LoginPage() {
               required
               autoComplete="current-password"
               value={form.password}
-              onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
+              onChange={(e) =>
+                setForm((prev) => ({ ...prev, password: e.target.value }))
+              }
               disabled={isLocked}
             />
           </div>
@@ -186,21 +200,31 @@ export default function LoginPage() {
             disabled={isLocked || isLoading}
             className="mt-1 w-full bg-white text-black font-semibold hover:bg-neutral-200"
           >
-            {isLoading ? "Signing in..." : isLocked ? `Try again in ${formatTime(remainingTime)}` : "Sign In"}
+            {isLoading
+              ? "Signing in..."
+              : isLocked
+                ? `Try again in ${formatTime(remainingTime)}`
+                : "Sign In"}
             {!isLocked && !isLoading && <ArrowRight size={15} />}
           </Button>
         </div>
       </form>
 
       <div className="relative text-center text-xs my-2 after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-white/10">
-        <span className="relative z-10 bg-[#08090c] px-3 text-muted-foreground">Or continue with</span>
+        <span className="relative z-10 bg-[#08090c] px-3 text-muted-foreground">
+          Or continue with
+        </span>
       </div>
 
       <GoogleAuthButton />
 
       <div className="text-center text-xs text-muted-foreground pt-2">
         Don't have an account?{" "}
-        <Link to="/signup" id="go-to-signup" className="font-semibold text-foreground underline underline-offset-4 hover:text-indigo-300 transition-colors">
+        <Link
+          to="/signup"
+          id="go-to-signup"
+          className="font-semibold text-foreground underline underline-offset-4 hover:text-indigo-300 transition-colors"
+        >
           Sign up
         </Link>
       </div>

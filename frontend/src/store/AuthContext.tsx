@@ -55,11 +55,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         hasPassword: userData.hasPassword,
         preferences: userData.preferences,
       });
-      localStorage.setItem("isAuthenticated", "true");
-      setAuthStatus("authenticated");
+      setAuthStatus('authenticated')
     } catch (err: any) {
       setUser(null);
-      localStorage.removeItem("isAuthenticated");
       if (err?.response?.status === 401) {
         setAuthStatus("unauthenticated");
       } else {
@@ -67,13 +65,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     }
   }, []);
+
   useEffect(() => {
-    if (localStorage.getItem("isAuthenticated") === "true") {
-      refreshUser();
-    } else {
-      setAuthStatus("unauthenticated");
-    }
-  }, [refreshUser]);
+  refreshUser();
+}, [refreshUser]);
 
   const login = async (email: string, password: string) => {
     const response = await axiosInstance.post("/api/v1/user/login", {
@@ -91,7 +86,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       hasPassword: userData.hasPassword,
       preferences: userData.preferences,
     });
-    localStorage.setItem("isAuthenticated", "true");
     setAuthStatus("authenticated");
     navigate("/app");
   };
@@ -119,7 +113,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       hasPassword: userData.hasPassword,
       preferences: userData.preferences,
     });
-    localStorage.setItem("isAuthenticated", "true");
     setAuthStatus("authenticated");
     navigate("/app");
   }, [navigate]);
@@ -129,7 +122,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await axiosInstance.post("/api/v1/user/logout");
     } finally {
       setUser(null);
-      localStorage.removeItem("isAuthenticated");
       setAuthStatus("unauthenticated");
       navigate("/");
     }
@@ -141,7 +133,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       data: { password },
     });
     setUser(null);
-    localStorage.removeItem("isAuthenticated");
     setAuthStatus("unauthenticated");
     navigate("/");
   };
