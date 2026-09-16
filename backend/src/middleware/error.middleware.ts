@@ -1,5 +1,6 @@
 import type { ErrorRequestHandler } from "express";
 import logger from "../lib/logger.js";
+import { ApiError } from "../utils/ApiError.js";
 
 export const globalErrorHandler: ErrorRequestHandler = (
   err,
@@ -7,11 +8,13 @@ export const globalErrorHandler: ErrorRequestHandler = (
   res,
   next
 ) => {
-  const statusCode =
-    typeof err?.statusCode === "number" ? err.statusCode : 500;
+  const isApiError = err instanceof ApiError;
 
-  const message =
-    err instanceof Error ? err.message : "Internal Server Error";
+  const statusCode = isApiError ? err.statusCode : 500;
+
+  const message = isApiError
+    ? err.message
+    : "Something went wrong. Please try again.";
 
   logger.error(
     {
@@ -23,14 +26,16 @@ export const globalErrorHandler: ErrorRequestHandler = (
       userId: req.user?._id,
       statusCode,
     },
-    message
+    isApiError ? err.message : "Unhandled internal server error"
   );
 
-  res.status(statusCode).json({
+  return res.status(statusCode).json({
     success: false,
     statusCode,
     message,
-    errors: err.errors || [],
-    ...(typeof err?.code === "string" ? { code: err.code } : {}),
+    ...(isApiError && err.errors ? { errors: err.errors } : {}),
+    ...(isApiError && typeof err.code === "string"
+      ? { code: err.code }
+      : {}),
   });
 };
