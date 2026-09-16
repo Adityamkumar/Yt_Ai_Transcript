@@ -1,5 +1,6 @@
 import User from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
+import { hashRefreshToken } from "../utils/token.utils.js";
 
 export const generateAccessTokenAndRefreshToken = async (userId: any, oldRefreshToken?: string) => {
   try {
@@ -9,7 +10,6 @@ export const generateAccessTokenAndRefreshToken = async (userId: any, oldRefresh
     }
     const accessToken = user.generateAccessToken();
     const refreshToken = user.generateRefreshToken();
-
     let currentTokens = Array.isArray(user.refreshToken)
       ? user.refreshToken
       : (user.refreshToken ? [user.refreshToken as string] : []);
@@ -18,7 +18,8 @@ export const generateAccessTokenAndRefreshToken = async (userId: any, oldRefresh
       currentTokens = currentTokens.filter((token) => token !== oldRefreshToken);
     }
 
-    currentTokens.push(refreshToken);
+   const refreshTokenHash = hashRefreshToken(refreshToken);
+    currentTokens.push(refreshTokenHash);
 
     if (currentTokens.length > 5) {
       currentTokens.shift();

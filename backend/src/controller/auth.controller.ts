@@ -21,6 +21,7 @@ import { authRequestRateLimiterService } from "../services/authRequestRateLimite
 import { signupRateLimiterService } from "../services/signupRateLimiter.service.js";
 import { normalizeEmail } from "../utils/email.util.js";
 import { checkEmailDomain } from "../services/disposable-email.service.js";
+import { hashRefreshToken } from "../utils/token.utils.js";
 
 export const userRegister = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body;
@@ -209,6 +210,8 @@ export const refreshAccessToken = asyncHandler(async (req, res) => {
     process.env.REFRESH_TOKEN_SECRET,
   ) as CustomJwtPayload;
 
+  const refreshTokenHash = hashRefreshToken(incomingRefreshToken);
+
   const user = await User.findById(decodedToken._id);
 
   if (!user) {
@@ -221,7 +224,7 @@ export const refreshAccessToken = asyncHandler(async (req, res) => {
       ? [user.refreshToken as string]
       : [];
 
-  if (!currentTokens.includes(incomingRefreshToken)) {
+  if (!currentTokens.includes(refreshTokenHash)) {
     throw new ApiError(401, "Refresh token is used or expired");
   }
 
@@ -240,11 +243,11 @@ export const refreshAccessToken = asyncHandler(async (req, res) => {
 
 export const userLogout = asyncHandler(async (req, res) => {
   const incomingRefreshToken = req.cookies.refreshToken;
-
   if (incomingRefreshToken) {
+    const refreshTokenHash = hashRefreshToken(incomingRefreshToken);
     await User.findByIdAndUpdate(req.authUserId, {
       $pull: {
-        refreshToken: incomingRefreshToken,
+        refreshToken: refreshTokenHash,
       },
     });
   } else {
@@ -504,8 +507,8 @@ export const forgotPassword = asyncHandler(async (req, res) => {
 
   const clientUrl =
     process.env.NODE_ENV === "production"
-        ? process.env.FRONTEND_CLOUDFLARE_URL
-        : "http://localhost:5173";
+      ? process.env.FRONTEND_CLOUDFLARE_URL
+      : "http://localhost:5173";
   const resetLink = `${clientUrl}/reset-password/${resetToken}`;
   const template = generateResetPasswordEmail(resetLink, user.name);
 
