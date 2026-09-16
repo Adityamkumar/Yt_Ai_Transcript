@@ -113,14 +113,20 @@ export default function LoginPage() {
       await login(form.email, form.password);
       localStorage.removeItem("loginLockedUntil");
     } catch (err: any) {
-      if (err.status === 429 && err.retryAfter) {
+      if (err.status === 409 || err?.response?.status === 409) {
+        setError(
+          err.message ||
+            err.response?.data?.message ||
+            "Maximum of 3 active sessions reached. Please sign out from another device."
+        );
+      } else if (err.status === 429 && err.retryAfter) {
         const retryAfterSeconds = err.retryAfter;
         const lockTime = Date.now() + retryAfterSeconds * 1000;
         localStorage.setItem("loginLockedUntil", lockTime.toString());
         setLockedUntil(lockTime);
         setError("Too many failed login attempts. Please try again later.");
       } else {
-        setError("Invalid email or password");
+        setError(err.message || "Invalid email or password");
       }
     } finally {
       setIsLoading(false);
@@ -216,7 +222,7 @@ export default function LoginPage() {
         </span>
       </div>
 
-      <GoogleAuthButton />
+      <GoogleAuthButton onError={setError} />
 
       <div className="text-center text-xs text-muted-foreground pt-2">
         Don't have an account?{" "}

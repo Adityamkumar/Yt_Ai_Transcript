@@ -22,6 +22,8 @@ import { signupRateLimiterService } from "../services/signupRateLimiter.service.
 import { normalizeEmail } from "../utils/email.util.js";
 import { checkEmailDomain } from "../services/disposable-email.service.js";
 import { hashRefreshToken } from "../utils/token.utils.js";
+import Session from "../models/session.model.js";
+import mongoose from "mongoose";
 
 export const userRegister = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body;
@@ -124,77 +126,94 @@ export const userRegister = asyncHandler(async (req, res) => {
 export const userLogin = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
   const ip = req.ip || req.socket.remoteAddress || "";
+  const userAgent = req.get("user-agent") || "";
 
-  try {
-    if (
-      typeof email !== "string" ||
-      typeof password !== "string" ||
-      !email.trim() ||
-      !password.trim()
-    ) {
-      throw new ApiError(400, "Invalid email or password");
+  if (
+    typeof email !== "string" ||
+    typeof password !== "string" ||
+    !email.trim() ||
+    !password.trim()
+  ) {
+    throw new ApiError(400, "Invalid email or password");
+  }
+
+  const user = await User.findOne({ email });
+
+  if (!user || !user.password) {
+    authRateLimiterService.recordFailure(ip, "login");
+    if (authRateLimiterService.isBlocked(ip, "login")) {
+      const retryAfter = authRateLimiterService.getRetryAfter(ip, "login");
+      return res.status(429).json({
+        success: false,
+        message: "Too many failed login attempts. Please try again later.",
+        retryAfter,
+      });
     }
+    throw new ApiError(401, "Invalid email or password");
+  }
 
-    const user = await User.findOne({ email });
+  const isPasswordMatched = await user.isPasswordCorrect(password);
 
-    if (!user || !user.password) {
-      authRateLimiterService.recordFailure(ip, "login");
-      if (authRateLimiterService.isBlocked(ip, "login")) {
-        const retryAfter = authRateLimiterService.getRetryAfter(ip, "login");
-        return res.status(429).json({
-          success: false,
-          message: "Too many failed login attempts. Please try again later.",
-          retryAfter,
-        });
-      }
-      throw new ApiError(401, "Invalid email or password");
+  if (!isPasswordMatched) {
+    authRateLimiterService.recordFailure(ip, "login");
+    if (authRateLimiterService.isBlocked(ip, "login")) {
+      const retryAfter = authRateLimiterService.getRetryAfter(ip, "login");
+      return res.status(429).json({
+        success: false,
+        message: "Too many failed login attempts. Please try again later.",
+        retryAfter,
+      });
     }
+    throw new ApiError(401, "Invalid email or password");
+  }
 
-    const isPasswordMatched = await user.isPasswordCorrect(password);
+  const activeSessionCount = await Session.countDocuments({
+    user: user._id,
+    revokedAt: null,
+    expiresAt: { $gt: new Date() },
+  });
 
-    if (!isPasswordMatched) {
-      authRateLimiterService.recordFailure(ip, "login");
-      if (authRateLimiterService.isBlocked(ip, "login")) {
-        const retryAfter = authRateLimiterService.getRetryAfter(ip, "login");
-        return res.status(429).json({
-          success: false,
-          message: "Too many failed login attempts. Please try again later.",
-          retryAfter,
-        });
-      }
-      throw new ApiError(401, "Invalid email or password");
-    }
-
-    const { accessToken, refreshToken } =
-      await generateAccessTokenAndRefreshToken(user._id);
-
-    const loggedInUser = await User.findById(user._id).select(
-      "-password -refreshToken",
+  if (activeSessionCount >= 3) {
+    throw new ApiError(
+      409,
+      "Maximum of 3 active sessions reached. Please sign out from another device.",
     );
+  }
 
-    // Reset rate limiter on successful login
-    authRateLimiterService.reset(ip, "login");
+  const { accessToken, refreshToken } =
+    await generateAccessTokenAndRefreshToken(user._id);
 
-    res.cookie("accessToken", accessToken, accessCookieOptions);
-    res.cookie("refreshToken", refreshToken, refreshCookieOptions);
+  const refreshTokenHash = hashRefreshToken(refreshToken);
 
-    res.status(200).json({
-      message: "User Logged In successfully",
-      user: {
+  await Session.create({
+    user: user._id,
+    refreshTokenHash,
+    userAgent: userAgent,
+    ipAddress: ip,
+    provider: "local",
+    expiresAt: new Date(Date.now() + Number(process.env.REFRESH_TOKEN_EXPIRY)),
+  });
+
+  const loggedInUser = await User.findById(user._id).select(
+    "-password -refreshToken",
+  );
+
+  // Reset rate limiter on successful login
+  authRateLimiterService.reset(ip, "login");
+
+  res.cookie("accessToken", accessToken, accessCookieOptions);
+  res.cookie("refreshToken", refreshToken, refreshCookieOptions);
+
+  res.status(200).json(
+    new ApiResponse(
+      200,
+      {
         user: { ...loggedInUser!.toObject(), hasPassword: !!user.password },
         accessToken,
-        refreshToken,
       },
-    });
-  } catch (error) {
-    if (
-      error instanceof ApiError ||
-      (error && typeof error === "object" && "statusCode" in error)
-    ) {
-      throw error;
-    }
-    throw new ApiError(500, "Internal server error");
-  }
+      "User Logged In successfully",
+    ),
+  );
 });
 
 export const refreshAccessToken = asyncHandler(async (req, res) => {
@@ -212,25 +231,28 @@ export const refreshAccessToken = asyncHandler(async (req, res) => {
 
   const refreshTokenHash = hashRefreshToken(incomingRefreshToken);
 
+  const session = await Session.findOne({
+    user: decodedToken._id,
+    refreshTokenHash,
+    revokedAt: null,
+    expiresAt: { $gt: new Date() },
+  });
+
+  if (!session) {
+    throw new ApiError(401, "Refresh token is invalid or expired");
+  }
+
   const user = await User.findById(decodedToken._id);
 
   if (!user) {
     throw new ApiError(401, "Invalid refreshToken");
   }
 
-  const currentTokens = Array.isArray(user.refreshToken)
-    ? user.refreshToken
-    : user.refreshToken
-      ? [user.refreshToken as string]
-      : [];
-
-  if (!currentTokens.includes(refreshTokenHash)) {
-    throw new ApiError(401, "Refresh token is used or expired");
-  }
-
   const { accessToken, refreshToken } =
-    await generateAccessTokenAndRefreshToken(user._id, incomingRefreshToken);
+    await generateAccessTokenAndRefreshToken(user._id);
 
+  session.refreshTokenHash = hashRefreshToken(refreshToken);
+  await session.save();
   res.cookie("accessToken", accessToken, accessCookieOptions);
   res.cookie("refreshToken", refreshToken, refreshCookieOptions);
 
@@ -245,17 +267,18 @@ export const userLogout = asyncHandler(async (req, res) => {
   const incomingRefreshToken = req.cookies.refreshToken;
   if (incomingRefreshToken) {
     const refreshTokenHash = hashRefreshToken(incomingRefreshToken);
-    await User.findByIdAndUpdate(req.authUserId, {
-      $pull: {
-        refreshToken: refreshTokenHash,
+    await Session.findOneAndUpdate(
+      {
+        user: req.authUserId,
+        refreshTokenHash,
+        revokedAt: null,
       },
-    });
-  } else {
-    await User.findByIdAndUpdate(req.authUserId, {
-      $unset: {
-        refreshToken: 1,
+      {
+        $set: {
+          revokedAt: new Date(),
+        },
       },
-    });
+    );
   }
 
   res
@@ -265,6 +288,82 @@ export const userLogout = asyncHandler(async (req, res) => {
     .json({
       message: "user logged out successfully",
     });
+});
+
+export const logoutAllDevices = asyncHandler(async (req, res) => {
+  await Session.updateMany(
+    {
+      user: req.authUserId,
+      revokedAt: null,
+    },
+    {
+      $set: {
+        revokedAt: new Date(),
+      },
+    },
+  );
+
+  res
+    .status(200)
+    .clearCookie("accessToken", accessCookieOptions)
+    .clearCookie("refreshToken", refreshCookieOptions)
+    .json({
+      message: "Logged out from all devices successfully",
+    });
+});
+
+export const getActiveSessions = asyncHandler(async (req, res) => {
+  const sessions = await Session.find({
+    user: req.authUserId,
+    revokedAt: null,
+    expiresAt: { $gt: new Date() },
+  })
+    .select("_id userAgent provider createdAt expiresAt")
+    .sort({ createdAt: -1 });
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      { sessions },
+      "Active sessions fetched successfully"
+    )
+  );
+});
+
+export const logoutSession = asyncHandler(async (req, res) => {
+  const { sessionId } = req.params;
+
+  if(!mongoose.isValidObjectId(sessionId) || !sessionId){
+     throw new ApiError(400, "Invalid session ID")
+  }
+
+  const session = await Session.findOneAndUpdate(
+    {
+      _id: sessionId,
+      user: req.authUserId,
+      revokedAt: null,
+    },
+    {
+      $set: {
+        revokedAt: new Date(),
+      },
+    },
+    {
+      new: true,
+    }
+  );
+
+  if (!session) {
+    throw new ApiError(404, "Session not found");
+  }
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      null,
+      "Session logged out successfully"
+    )
+  );
 });
 
 export const getCurrentUser = asyncHandler(async (req, res) => {
@@ -317,97 +416,111 @@ export const deleteUser = asyncHandler(async (req, res) => {
 export const googleVerifyController = asyncHandler(async (req, res) => {
   const { code } = req.body;
 
+  const ip = req.ip || req.socket.remoteAddress || "";
+  const userAgent = req.get("user-agent") || "";
+
   if (!code) {
     throw new ApiError(400, "Authorization code is required");
   }
 
-  try {
-    // Exchange authorization code for tokens
-    const { tokens } = await googleClient.getToken(code);
+  const { tokens } = await googleClient.getToken(code);
 
-    if (!tokens.id_token) {
-      throw new ApiError(400, "Failed to retrieve id_token from Google");
-    }
-
-    // Verify ID Token
-    const ticket = await googleClient.verifyIdToken({
-      idToken: tokens.id_token,
-      audience: process.env.GOOGLE_CLIENT_ID!,
-    });
-
-    const payload = ticket.getPayload();
-    if (!payload) {
-      throw new ApiError(400, "Failed to verify ID token payload");
-    }
-
-    const googleId = payload.sub;
-    const name = payload.name;
-    const email = payload.email;
-    const avatar = payload.picture;
-
-    if (!email || !payload.email_verified) {
-      throw new ApiError(400, "Google account does not have an email address");
-    }
-
-    let user = await User.findOne({ email });
-
-    if (!user) {
-      user = await User.create({
-        name: name || "",
-        email,
-        avatar: avatar || "",
-        googleId,
-        provider: "google",
-      });
-
-      userEvent.emit("user.created", {
-        userId: user._id,
-        name: user.name,
-        email: user.email,
-      });
-    } else {
-      if (user.googleId && user.googleId !== googleId) {
-        throw new ApiError(
-          401,
-          "This email is linked to a different Google account",
-        );
-      }
-    }
-
-    if (user.provider === "local" && !user.googleId) {
-      user.googleId = googleId;
-      if (avatar) {
-        user.avatar = avatar;
-      }
-      await user.save();
-    }
-
-    const { accessToken, refreshToken } =
-      await generateAccessTokenAndRefreshToken(user._id);
-
-    res.cookie("accessToken", accessToken, accessCookieOptions);
-    res.cookie("refreshToken", refreshToken, refreshCookieOptions);
-
-    return res.status(200).json({
-      user: {
-        id: user._id || user.id,
-        name: user.name,
-        email: user.email,
-        avatar: user.avatar,
-        provider: user.provider,
-        hasPassword: !!user.password,
-      },
-    });
-  } catch (error: any) {
-    logger.error({ error }, "Google authentication error");
-    if (
-      error instanceof ApiError ||
-      (error && typeof error === "object" && "statusCode" in error)
-    ) {
-      throw error;
-    }
-    throw new ApiError(401, error.message || "Google authentication failed");
+  if (!tokens.id_token) {
+    throw new ApiError(400, "Failed to retrieve id_token from Google");
   }
+
+  const ticket = await googleClient.verifyIdToken({
+    idToken: tokens.id_token,
+    audience: process.env.GOOGLE_CLIENT_ID!,
+  });
+
+  const payload = ticket.getPayload();
+  if (!payload) {
+    throw new ApiError(400, "Failed to verify ID token payload");
+  }
+
+  const googleId = payload.sub;
+  const name = payload.name;
+  const email = payload.email;
+  const avatar = payload.picture;
+
+  if (!email || !payload.email_verified) {
+    throw new ApiError(400, "Google account does not have an email address");
+  }
+
+  let user = await User.findOne({ email });
+
+  if (!user) {
+    user = await User.create({
+      name: name || "",
+      email,
+      avatar: avatar || "",
+      googleId,
+      provider: "google",
+    });
+
+    userEvent.emit("user.created", {
+      userId: user._id,
+      name: user.name,
+      email: user.email,
+    });
+  } else {
+    if (user.googleId && user.googleId !== googleId) {
+      throw new ApiError(
+        401,
+        "This email is linked to a different Google account",
+      );
+    }
+  }
+
+  if (user.provider === "local" && !user.googleId) {
+    user.googleId = googleId;
+    if (avatar) {
+      user.avatar = avatar;
+    }
+    await user.save();
+  }
+
+  const activeSessionCount = await Session.countDocuments({
+    user: user._id,
+    revokedAt: null,
+    expiresAt: { $gt: new Date() },
+  });
+
+  if (activeSessionCount >= 3) {
+    throw new ApiError(
+      409,
+      "Maximum of 3 active sessions reached. Please sign out from another device.",
+    );
+  }
+
+  const { accessToken, refreshToken } =
+    await generateAccessTokenAndRefreshToken(user._id);
+
+  const refreshTokenHash = hashRefreshToken(refreshToken);
+
+  await Session.create({
+    user: user._id,
+    refreshTokenHash,
+    userAgent,
+    ipAddress: ip,
+    provider: "google",
+    expiresAt: new Date(Date.now() + Number(process.env.REFRESH_TOKEN_EXPIRY)),
+  });
+
+  res.cookie("accessToken", accessToken, accessCookieOptions);
+  res.cookie("refreshToken", refreshToken, refreshCookieOptions);
+
+  return res.status(200).json({
+    user: {
+      id: user._id || user.id,
+      name: user.name,
+      email: user.email,
+      avatar: user.avatar,
+      provider: user.provider,
+      hasPassword: !!user.password,
+    },
+  });
 });
 
 export const avatarProxyController = asyncHandler(async (req, res) => {

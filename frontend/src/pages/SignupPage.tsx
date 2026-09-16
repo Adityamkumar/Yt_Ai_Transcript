@@ -212,7 +212,7 @@ export default function SignupPage() {
         </span>
       </div>
 
-      <GoogleAuthButton label="Continue with Google" />
+      <GoogleAuthButton label="Continue with Google" onError={setError} />
 
       <div className="text-center text-xs text-muted-foreground pt-2">
         Already have an account?{" "}

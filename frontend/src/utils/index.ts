@@ -57,4 +57,7 @@ export function deriveTitle(message: string): string {
   return truncate(message, 42);
 }
 
+export * from './userAgent';
+
+
 

@@ -1,8 +1,7 @@
 import User from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
-import { hashRefreshToken } from "../utils/token.utils.js";
 
-export const generateAccessTokenAndRefreshToken = async (userId: any, oldRefreshToken?: string) => {
+export const generateAccessTokenAndRefreshToken = async (userId: any) => {
   try {
     const user = await User.findById(userId);
      if (!user) {
@@ -10,24 +9,6 @@ export const generateAccessTokenAndRefreshToken = async (userId: any, oldRefresh
     }
     const accessToken = user.generateAccessToken();
     const refreshToken = user.generateRefreshToken();
-    let currentTokens = Array.isArray(user.refreshToken)
-      ? user.refreshToken
-      : (user.refreshToken ? [user.refreshToken as string] : []);
-
-    if (oldRefreshToken) {
-      currentTokens = currentTokens.filter((token) => token !== oldRefreshToken);
-    }
-
-   const refreshTokenHash = hashRefreshToken(refreshToken);
-    currentTokens.push(refreshTokenHash);
-
-    if (currentTokens.length > 5) {
-      currentTokens.shift();
-    }
-
-    user.refreshToken = currentTokens;
-
-    await user.save({ validateBeforeSave: false });
 
     return { accessToken, refreshToken };
   } catch (error) {

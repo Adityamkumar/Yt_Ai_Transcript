@@ -31,6 +31,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  logoutAllDevices: () => Promise<void>;
   refreshUser: () => Promise<void>;
   deleteAccount: (password?: string) => Promise<void>;
   loginWithGoogle: (code: string) => Promise<void>;
@@ -118,6 +119,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const logoutAllDevices = async () => {
+    try {
+      await authService.logoutAllDevices();
+    } finally {
+      setUser(null);
+      setAuthStatus("unauthenticated");
+      navigate("/");
+    }
+  };
+
   const deleteAccount = async (password?: string) => {
     if (!user) throw new Error("Not authenticated");
     await axiosInstance.delete(`/api/v1/user/delete/${user.id}`, {
@@ -136,6 +147,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         login,
         register,
         logout,
+        logoutAllDevices,
         refreshUser,
         deleteAccount,
         loginWithGoogle,

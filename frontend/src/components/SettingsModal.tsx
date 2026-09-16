@@ -20,7 +20,8 @@ import {
   Image as ImageIcon,
   Edit2,
   LogOut,
-  LayoutDashboard
+  LayoutDashboard,
+  Loader2,
 } from "lucide-react";
 import { useAuth } from "@/store/AuthContext";
 import { useState, useEffect, useRef } from "react";
@@ -32,6 +33,8 @@ import { settingsService, type ResponseLanguage } from "@/services/settings.serv
 import { authService } from "@/services/auth.service";
 import { EMAIL_NOT_VERIFIED_CODE } from "@/lib/axios";
 import { useResendEmailVerificationRateLimit } from "@/hooks/useResendEmailVerificationRateLimit";
+import type { Session } from "@/types";
+import { parseUserAgent, formatRelativeTime } from "@/utils";
 
 interface Props {
   isOpen: boolean;
@@ -480,46 +483,152 @@ function WorkspaceTab({ prefs, updatePref }: any) {
   );
 }
 
-function SecurityTab() {
+function SecurityTab({ onClose }: { onClose?: () => void }) {
+  const { logoutAllDevices } = useAuth();
+  const [sessions, setSessions] = useState<Session[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [revokingSessionId, setRevokingSessionId] = useState<string | null>(null);
+  const [isSigningOutAll, setIsSigningOutAll] = useState(false);
+
+  const fetchSessions = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const data = await authService.getActiveSessions();
+      setSessions(data || []);
+    } catch (err: any) {
+      const msg = err?.message || err?.response?.data?.message || "Failed to load active sessions";
+      setError(msg);
+      toast.error(msg);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchSessions();
+  }, []);
+
+  const handleLogoutSession = async (sessionId: string) => {
+    if (revokingSessionId) return;
+    setRevokingSessionId(sessionId);
+    try {
+      await authService.logoutSession(sessionId);
+      setSessions((prev) => prev.filter((s) => s._id !== sessionId));
+      toast.success("Session signed out successfully");
+    } catch (err: any) {
+      const msg = err?.message || err?.response?.data?.message || "Failed to sign out session";
+      toast.error(msg);
+    } finally {
+      setRevokingSessionId(null);
+    }
+  };
+
+  const handleLogoutAll = async () => {
+    if (isSigningOutAll) return;
+    setIsSigningOutAll(true);
+    try {
+      if (onClose) onClose();
+      await logoutAllDevices();
+      toast.success("Signed out of all devices");
+    } catch (err: any) {
+      const msg = err?.message || err?.response?.data?.message || "Failed to sign out of all devices";
+      toast.error(msg);
+      setIsSigningOutAll(false);
+    }
+  };
+
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
       <div>
         <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--text-muted)]">
           Active Sessions
         </h3>
-        <div className="rounded-xl border border-[var(--border-soft)] bg-[var(--surface-3)] divide-y divide-white/[0.04]">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between p-5 gap-4">
-            <div className="flex items-center gap-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-400">
-                <MonitorSmartphone size={20} />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <p className="text-sm font-medium text-white">Chrome on Windows</p>
-                  <span className="rounded bg-indigo-500/20 px-1.5 py-0.5 text-[10px] font-medium text-indigo-300">Current</span>
+        <div className="rounded-xl border border-[var(--border-soft)] bg-[var(--surface-3)] divide-y divide-white/[0.04] overflow-hidden">
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 size={24} className="animate-spin text-indigo-400" />
+            </div>
+          ) : error && sessions.length === 0 ? (
+            <div className="p-8 text-center">
+              <p className="text-sm text-red-400">{error}</p>
+              <button
+                type="button"
+                onClick={fetchSessions}
+                className="mt-3 text-xs font-medium text-indigo-400 hover:text-indigo-300 transition-colors"
+              >
+                Try again
+              </button>
+            </div>
+          ) : sessions.length === 0 ? (
+            <div className="p-8 text-center text-sm text-[var(--text-muted)]">
+              No active sessions found.
+            </div>
+          ) : (
+            sessions.map((session) => {
+              const deviceName = parseUserAgent(session.userAgent);
+              const relativeTime = formatRelativeTime(session.createdAt);
+              const isRevoking = revokingSessionId === session._id;
+
+              return (
+                <div
+                  key={session._id}
+                  className="flex flex-col sm:flex-row sm:items-center justify-between p-5 gap-4"
+                >
+                  <div className="flex items-center gap-4 min-w-0">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/5 text-[var(--text-muted)]">
+                      <MonitorSmartphone size={20} />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-white truncate">{deviceName}</p>
+                      <p className="text-xs text-[var(--text-muted)] mt-0.5">
+                        {session.provider === "google" ? "Google" : "Email"} •{" "}
+                        {relativeTime ? `Signed in ${relativeTime}` : "Active session"}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleLogoutSession(session._id)}
+                    disabled={isRevoking || isSigningOutAll}
+                    className="shrink-0 text-sm font-medium text-white/60 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 self-start sm:self-auto"
+                  >
+                    {isRevoking ? (
+                      <>
+                        <Loader2 size={13} className="animate-spin" />
+                        <span>Signing out...</span>
+                      </>
+                    ) : (
+                      "Sign out"
+                    )}
+                  </button>
                 </div>
-                <p className="text-xs text-[var(--text-muted)] mt-0.5">Active now</p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between p-5 gap-4">
-            <div className="flex items-center gap-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/5 text-[var(--text-muted)]">
-                <MonitorSmartphone size={20} />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-white">Safari on iPhone</p>
-                <p className="text-xs text-[var(--text-muted)] mt-0.5">Last active 2 hours ago</p>
-              </div>
-            </div>
-            <button className="text-sm font-medium text-white/60 hover:text-white transition-colors">Sign out</button>
-          </div>
+              );
+            })
+          )}
         </div>
       </div>
 
       <div className="flex justify-end">
-        <SettingAction icon={LogOut} label="Sign out of all other devices" />
+        <button
+          type="button"
+          onClick={handleLogoutAll}
+          disabled={isSigningOutAll || isLoading || sessions.length === 0}
+          className="flex items-center gap-2 rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-1.5 text-sm font-medium text-red-400 transition-colors hover:bg-red-500/20 hover:border-red-500/30 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-[#111] disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isSigningOutAll ? (
+            <>
+              <Loader2 size={14} className="animate-spin" />
+              <span>Signing out...</span>
+            </>
+          ) : (
+            <>
+              <LogOut size={14} />
+              <span>Sign out of all devices</span>
+            </>
+          )}
+        </button>
       </div>
     </div>
   );
@@ -782,7 +891,7 @@ export function SettingsModal({ isOpen, onClose }: Props) {
                     )}
                     {activeTab === 'ai' && <AiTab prefs={prefs} updatePref={updatePref} />}
                     {activeTab === 'workspace' && <WorkspaceTab prefs={prefs} updatePref={updatePref} />}
-                    {activeTab === 'security' && <SecurityTab />}
+                    {activeTab === 'security' && <SecurityTab onClose={onClose} />}
                     {activeTab === 'data' && <DataTab />}
                   </div>
                 </div>

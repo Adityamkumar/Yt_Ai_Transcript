@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { useAuth } from '@/store/AuthContext';
 
 const GoogleIcon = () => (
@@ -32,9 +33,10 @@ const GoogleIcon = () => (
 
 interface GoogleAuthButtonProps {
   label?: string;
+  onError?: (error: string) => void;
 }
 
-export function GoogleAuthButton({ label = 'Continue with Google' }: GoogleAuthButtonProps) {
+export function GoogleAuthButton({ label = 'Continue with Google', onError }: GoogleAuthButtonProps) {
   const { loginWithGoogle } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -61,10 +63,18 @@ export function GoogleAuthButton({ label = 'Continue with Google' }: GoogleAuthB
           if (response.code) {
             try {
               await loginWithGoogle(response.code);
-            } catch (err) {
+            } catch (err: any) {
               console.error("Verification failed:", err);
               setIsLoading(false);
-              alert("Authentication failed. Please try again.");
+              const message =
+                err?.message ||
+                err?.response?.data?.message ||
+                "Authentication failed. Please try again.";
+              if (onError) {
+                onError(message);
+              } else {
+                toast.error(message);
+              }
             }
           } else {
             setIsLoading(false);
@@ -76,7 +86,12 @@ export function GoogleAuthButton({ label = 'Continue with Google' }: GoogleAuthB
     } catch (error: any) {
       console.error("Google client init failed:", error);
       setIsLoading(false);
-      alert(error.message || "Failed to launch Google login.");
+      const message = error?.message || "Failed to launch Google login.";
+      if (onError) {
+        onError(message);
+      } else {
+        toast.error(message);
+      }
     }
   };
 

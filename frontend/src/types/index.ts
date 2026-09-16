@@ -15,6 +15,15 @@ export interface User {
   updatedAt: string;
 }
 
+export interface Session {
+  _id: string;
+  userAgent?: string;
+  provider: 'local' | 'google';
+  createdAt: string;
+  expiresAt: string;
+}
+
+
 export interface ITranscriptChunk {
   text: string;
   start: number;
