@@ -1,8 +1,3 @@
-/**
- * Lightweight userAgent parser to format raw userAgent into human-readable descriptions
- * e.g., "Chrome on Windows", "Safari on iPhone", "Firefox on Linux".
- * Gracefully falls back to shortened raw string if specific patterns aren't identified.
- */
 export function parseUserAgent(userAgent?: string): string {
   if (!userAgent || typeof userAgent !== 'string' || !userAgent.trim()) {
     return 'Unknown Device';

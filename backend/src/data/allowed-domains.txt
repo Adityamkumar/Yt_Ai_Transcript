@@ -17,9 +17,6 @@ dr.com
 mindless.com
 i.ua
 com.ar
-proton.me
-protonmail.com
-pm.me
 
 # https://github.com/disposable/disposable/issues/41
 brainonfire.net
