@@ -76,7 +76,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       email,
       password,
     });
-    const userData = response.data.user.user;
+    const userData = response.data.data.user
+    console.log(userData)
     setUser({
       id: userData._id || userData.id,
       name: userData.name,

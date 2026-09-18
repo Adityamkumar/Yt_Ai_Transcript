@@ -4,6 +4,8 @@ import { motion } from "framer-motion";
 import { ArrowRight, AlertCircle } from "lucide-react";
 import { useAuth } from "@/store/AuthContext";
 import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton";
+import { SessionManagementPanel } from "@/components/auth/SessionManagementPanel";
+import type { PreAuthSessionManagementData } from "@/types";
 import {
   AuthSplitLayout,
   Input,
@@ -19,6 +21,11 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({ email: "", password: "" });
+  const [sessionManagement, setSessionManagement] =
+    useState<PreAuthSessionManagementData | null>(null);
+  const [sessionManagementProvider, setSessionManagementProvider] =
+    useState<"local" | "google" | null>(null);
+  const [googleAttempt, setGoogleAttempt] = useState(0);
 
   const [lockedUntil, setLockedUntil] = useState<number | null>(() => {
     const stored = localStorage.getItem("loginLockedUntil");
@@ -113,12 +120,15 @@ export default function LoginPage() {
       await login(form.email, form.password);
       localStorage.removeItem("loginLockedUntil");
     } catch (err: any) {
-      if (err.status === 409 || err?.response?.status === 409) {
-        setError(
-          err.message ||
-            err.response?.data?.message ||
-            "Maximum of 3 active sessions reached. Please sign out from another device."
-        );
+      if (
+        err?.status === 409 &&
+        err?.code === "MAX_SESSIONS_REACHED" &&
+        err?.data?.sessionManagementToken &&
+        Array.isArray(err.data.sessions)
+      ) {
+        setSessionManagement(err.data);
+        setSessionManagementProvider("local");
+        setError(null);
       } else if (err.status === 429 && err.retryAfter) {
         const retryAfterSeconds = err.retryAfter;
         const lockTime = Date.now() + retryAfterSeconds * 1000;
@@ -149,80 +159,109 @@ export default function LoginPage() {
           </p>
         </div>
 
-        {error && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center gap-2.5 text-red-400 text-xs font-medium"
-          >
-            <AlertCircle size={15} className="shrink-0" />
-            <span>{error}</span>
-          </motion.div>
-        )}
-
-        <div className="grid gap-4">
-          <div className="grid gap-1.5">
-            <Label htmlFor="login-email">Email</Label>
-            <Input
-              id="login-email"
-              type="email"
-              placeholder="you@example.com"
-              required
-              autoComplete="email"
-              value={form.email}
-              onChange={(e) =>
-                setForm((prev) => ({ ...prev, email: e.target.value }))
+        {sessionManagement ? (
+          <SessionManagementPanel
+            sessions={sessionManagement.sessions}
+            sessionManagementToken={sessionManagement.sessionManagementToken}
+            onContinue={() => {
+              setSessionManagement(null);
+              if (sessionManagementProvider === "google") {
+                setGoogleAttempt((attempt) => attempt + 1);
               }
-              disabled={isLocked}
-            />
-          </div>
-
-          <div className="grid gap-1.5">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="login-password">Password</Label>
-              <Link
-                to="/forgot-password"
-                id="forgot-password-link"
-                className="text-xs font-medium text-indigo-400 hover:text-indigo-300 transition-colors"
+              setSessionManagementProvider(null);
+              setError(null);
+            }}
+          />
+        ) : (
+          <>
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center gap-2.5 text-red-400 text-xs font-medium"
               >
-                Forgot password?
-              </Link>
-            </div>
-            <PasswordInput
-              id="login-password"
-              placeholder="Enter your password"
-              required
-              autoComplete="current-password"
-              value={form.password}
-              onChange={(e) =>
-                setForm((prev) => ({ ...prev, password: e.target.value }))
-              }
-              disabled={isLocked}
-            />
-          </div>
+                <AlertCircle size={15} className="shrink-0" />
+                <span>{error}</span>
+              </motion.div>
+            )}
 
-          <Button
-            type="submit"
-            disabled={isLocked || isLoading}
-            className="mt-1 w-full bg-white text-black font-semibold hover:bg-neutral-200"
-          >
-            {isLoading
-              ? "Signing in..."
-              : isLocked
-                ? `Try again in ${formatTime(remainingTime)}`
-                : "Sign In"}
-            {!isLocked && !isLoading && <ArrowRight size={15} />}
-          </Button>
-        </div>
+            <div className="grid gap-4">
+              <div className="grid gap-1.5">
+                <Label htmlFor="login-email">Email</Label>
+                <Input
+                  id="login-email"
+                  type="email"
+                  placeholder="you@example.com"
+                  required
+                  autoComplete="email"
+                  value={form.email}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, email: e.target.value }))
+                  }
+                  disabled={isLocked}
+                />
+              </div>
+
+              <div className="grid gap-1.5">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="login-password">Password</Label>
+                  <Link
+                    to="/forgot-password"
+                    id="forgot-password-link"
+                    className="text-xs font-medium text-indigo-400 hover:text-indigo-300 transition-colors"
+                  >
+                    Forgot password?
+                  </Link>
+                </div>
+                <PasswordInput
+                  id="login-password"
+                  placeholder="Enter your password"
+                  required
+                  autoComplete="current-password"
+                  value={form.password}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, password: e.target.value }))
+                  }
+                  disabled={isLocked}
+                />
+              </div>
+
+              <Button
+                type="submit"
+                disabled={isLocked || isLoading}
+                className="mt-1 w-full bg-white text-black font-semibold hover:bg-neutral-200"
+              >
+                {isLoading
+                  ? "Signing in..."
+                  : isLocked
+                    ? `Try again in ${formatTime(remainingTime)}`
+                    : "Sign In"}
+                {!isLocked && !isLoading && <ArrowRight size={15} />}
+              </Button>
+            </div>
+          </>
+        )}
       </form>
 
-      <div className="relative text-center text-xs my-2 after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-white/10">
-        <span className="relative z-10 bg-[#08090c] px-3 text-muted-foreground">
-          Or continue with
-        </span>
-      </div>
+      {!sessionManagement && (
+        <>
+          <div className="relative text-center text-xs my-2 after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-white/10">
+            <span className="relative z-10 bg-[#08090c] px-3 text-muted-foreground">
+              Or continue with
+            </span>
+          </div>
 
-      <GoogleAuthButton onError={setError} />
+          <GoogleAuthButton
+            key={googleAttempt}
+            onError={setError}
+            onSessionManagement={(data) => {
+              setError(null);
+              setSessionManagement(data);
+              setSessionManagementProvider("google");
+            }}
+          />
+        </>
+      )}
 
       <div className="text-center text-xs text-muted-foreground pt-2">
         Don't have an account?{" "}

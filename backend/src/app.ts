@@ -61,6 +61,7 @@ app.use(
       "Authorization",
       "X-Requested-With",
       "Accept",
+      "X-Session-Management-Token"
     ],
   })
 );

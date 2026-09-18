@@ -20,6 +20,22 @@ export const authService = {
     return response.data;
   },
 
+  revokePreAuthSession: async (
+    sessionId: string,
+    sessionManagementToken: string,
+  ): Promise<ApiResponse<null>> => {
+    const response = await axiosInstance.post<ApiResponse<null>>(
+      `/api/v1/user/session-management/sessions/${sessionId}/logout`,
+      {},
+      {
+        headers: {
+          'X-Session-Management-Token': sessionManagementToken,
+        },
+      },
+    );
+    return response.data;
+  },
+
   logoutAllDevices: async (): Promise<{ message: string }> => {
     const response = await axiosInstance.post<{ message: string }>('/api/v1/user/logout-all');
     return response.data;
@@ -61,4 +77,3 @@ export const authService = {
     return response.data;
   },
 };
-

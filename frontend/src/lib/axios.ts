@@ -1,6 +1,7 @@
 import axios from "axios";
 
 export const EMAIL_NOT_VERIFIED_CODE = "EMAIL_NOT_VERIFIED";
+export const MAX_SESSIONS_REACHED_CODE = "MAX_SESSIONS_REACHED";
 export const EMAIL_VERIFICATION_REQUIRED_EVENT =
   "lumora:email-verification-required";
 
@@ -119,14 +120,17 @@ axiosInstance.interceptors.response.use(
         processQueue(refreshError, null);
         isRefreshing = false;
 
-       if(!isCurrentUserRequest){
+        if (!isCurrentUserRequest) {
           window.location.href = "/";
-       }
+        }
         return Promise.reject(refreshError);
       }
     }
 
-    if (errorCode !== EMAIL_NOT_VERIFIED_CODE) {
+    if (
+      errorCode !== EMAIL_NOT_VERIFIED_CODE &&
+      errorCode !== MAX_SESSIONS_REACHED_CODE
+    ) {
       console.error("Axios request failed:", error);
     }
     let message =
@@ -144,6 +148,9 @@ axiosInstance.interceptors.response.use(
     const customError = new Error(message) as any;
     customError.status = error.response?.status;
     customError.code = errorCode;
+    if (errorCode === MAX_SESSIONS_REACHED_CODE) {
+      customError.data = error.response?.data?.data;
+    }
     customError.isEmailVerificationRequired =
       errorCode === EMAIL_NOT_VERIFIED_CODE;
     customError.retryAfter =

@@ -24,6 +24,7 @@ import { checkEmailDomain } from "../services/disposable-email.service.js";
 import { hashRefreshToken } from "../utils/token.utils.js";
 import Session from "../models/session.model.js";
 import mongoose from "mongoose";
+import { createSessionManagementChallenge, getValidSessionManagementChallenge } from "../services/session-management.service.js";
 
 export const userRegister = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body;
@@ -173,12 +174,30 @@ export const userLogin = asyncHandler(async (req, res) => {
     expiresAt: { $gt: new Date() },
   });
 
-  if (activeSessionCount >= 3) {
-    throw new ApiError(
-      409,
-      "Maximum of 3 active sessions reached. Please sign out from another device.",
-    );
-  }
+if (activeSessionCount >= 3) {
+  const managementToken =
+    await createSessionManagementChallenge(user._id.toString());
+
+  const sessions = await Session.find({
+    user: user._id,
+    revokedAt: null,
+    expiresAt: { $gt: new Date() },
+  })
+    .select("_id userAgent provider createdAt expiresAt")
+    .sort({ createdAt: -1 })
+    .lean();
+
+  return res.status(409).json({
+    success: false,
+    statusCode: 409,
+    code: "MAX_SESSIONS_REACHED",
+    message: "Maximum of 3 active sessions reached.",
+    data: {
+      sessionManagementToken: managementToken,
+      sessions,
+    },
+  });
+}
 
   const { accessToken, refreshToken } =
     await generateAccessTokenAndRefreshToken(user._id);
@@ -321,20 +340,22 @@ export const getActiveSessions = asyncHandler(async (req, res) => {
     .select("_id userAgent provider createdAt expiresAt")
     .sort({ createdAt: -1 });
 
-  return res.status(200).json(
-    new ApiResponse(
-      200,
-      { sessions },
-      "Active sessions fetched successfully"
-    )
-  );
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        { sessions },
+        "Active sessions fetched successfully",
+      ),
+    );
 });
 
 export const logoutSession = asyncHandler(async (req, res) => {
   const { sessionId } = req.params;
 
-  if(!mongoose.isValidObjectId(sessionId) || !sessionId){
-     throw new ApiError(400, "Invalid session ID")
+  if (!mongoose.isValidObjectId(sessionId) || !sessionId) {
+    throw new ApiError(400, "Invalid session ID");
   }
 
   const session = await Session.findOneAndUpdate(
@@ -350,20 +371,16 @@ export const logoutSession = asyncHandler(async (req, res) => {
     },
     {
       new: true,
-    }
+    },
   );
 
   if (!session) {
     throw new ApiError(404, "Session not found");
   }
 
-  return res.status(200).json(
-    new ApiResponse(
-      200,
-      null,
-      "Session logged out successfully"
-    )
-  );
+  return res
+    .status(200)
+    .json(new ApiResponse(200, null, "Session logged out successfully"));
 });
 
 export const getCurrentUser = asyncHandler(async (req, res) => {
@@ -487,12 +504,30 @@ export const googleVerifyController = asyncHandler(async (req, res) => {
     expiresAt: { $gt: new Date() },
   });
 
-  if (activeSessionCount >= 3) {
-    throw new ApiError(
-      409,
-      "Maximum of 3 active sessions reached. Please sign out from another device.",
-    );
-  }
+ if (activeSessionCount >= 3) {
+  const managementToken =
+    await createSessionManagementChallenge(user._id.toString());
+
+  const sessions = await Session.find({
+    user: user._id,
+    revokedAt: null,
+    expiresAt: { $gt: new Date() },
+  })
+    .select("_id userAgent provider createdAt expiresAt")
+    .sort({ createdAt: -1 })
+    .lean();
+
+  return res.status(409).json({
+    success: false,
+    statusCode: 409,
+    code: "MAX_SESSIONS_REACHED",
+    message: "Maximum of 3 active sessions reached.",
+    data: {
+      sessionManagementToken: managementToken,
+      sessions,
+    },
+  });
+}
 
   const { accessToken, refreshToken } =
     await generateAccessTokenAndRefreshToken(user._id);
@@ -861,4 +896,40 @@ export const resendEmailVerification = asyncHandler(async (req, res) => {
         "If the request can be processed, a verification email will be sent.",
       ),
     );
+});
+
+export const logoutSessionWithChallenge = asyncHandler(async (req, res) => {
+  const managementToken = req.get("X-Session-Management-Token");
+
+  const challenge = await getValidSessionManagementChallenge(managementToken);
+
+  const { sessionId } = req.params;
+  if (!mongoose.isValidObjectId(sessionId) || !sessionId) {
+    throw new ApiError(400, "Invalid sessionId");
+  }
+
+  const session = await Session.findOneAndUpdate(
+    {
+      _id: sessionId,
+      user: challenge.user,
+      revokedAt: null,
+      expiresAt: { $gt: new Date() },
+    },
+    {
+      $set: {
+        revokedAt: new Date(),
+      },
+    },
+    {
+      new: true,
+    },
+  );
+
+  if (!session) {
+    throw new ApiError(404, "Session not found or is no longer active");
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, null, "Session logged out successfully"));
 });

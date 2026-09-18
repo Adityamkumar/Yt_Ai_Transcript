@@ -16,6 +16,7 @@ import {
   logoutAllDevices,
   getActiveSessions,
   logoutSession,
+  logoutSessionWithChallenge,
 } from "../controller/auth.controller.js";
 import { authMiddleware } from "../middleware/auth.middleware.js";
 import { authIdentityMiddleware } from "../middleware/authIdentity.middleware.js";
@@ -35,6 +36,11 @@ router.post(
   "/sessions/:sessionId/logout",
   authIdentityMiddleware,
   logoutSession,
+);
+
+router.post(
+  "/session-management/sessions/:sessionId/logout",
+  logoutSessionWithChallenge,
 );
 
 router.post("/refresh-token", refreshAccessToken);

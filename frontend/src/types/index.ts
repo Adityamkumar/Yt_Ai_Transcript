@@ -23,6 +23,11 @@ export interface Session {
   expiresAt: string;
 }
 
+export interface PreAuthSessionManagementData {
+  sessionManagementToken: string;
+  sessions: Session[];
+}
+
 
 export interface ITranscriptChunk {
   text: string;
@@ -134,5 +139,4 @@ export interface NotesResponse {
   actionableTakeaways: string[];
   examples: string[];
 }
-
 

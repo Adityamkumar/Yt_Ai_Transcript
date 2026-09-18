@@ -6,7 +6,7 @@ export const globalErrorHandler: ErrorRequestHandler = (
   err,
   req,
   res,
-  next
+  _next
 ) => {
   const isApiError = err instanceof ApiError;
 

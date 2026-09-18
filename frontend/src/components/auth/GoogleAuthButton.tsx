@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/store/AuthContext';
+import type { PreAuthSessionManagementData } from '@/types';
 
 const GoogleIcon = () => (
   <svg
@@ -34,9 +35,10 @@ const GoogleIcon = () => (
 interface GoogleAuthButtonProps {
   label?: string;
   onError?: (error: string) => void;
+  onSessionManagement?: (data: PreAuthSessionManagementData) => void;
 }
 
-export function GoogleAuthButton({ label = 'Continue with Google', onError }: GoogleAuthButtonProps) {
+export function GoogleAuthButton({ label = 'Continue with Google', onError, onSessionManagement }: GoogleAuthButtonProps) {
   const { loginWithGoogle } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -56,7 +58,7 @@ export function GoogleAuthButton({ label = 'Continue with Google', onError }: Go
         callback: async (response: any) => {
           if (response.error) {
             setIsLoading(false);
-            console.error("Google OAuth Error:", response.error);
+            onError?.("Google authentication was cancelled or could not be completed.");
             return;
           }
 
@@ -64,11 +66,15 @@ export function GoogleAuthButton({ label = 'Continue with Google', onError }: Go
             try {
               await loginWithGoogle(response.code);
             } catch (err: any) {
-              console.error("Verification failed:", err);
               setIsLoading(false);
+              if (err?.code === "MAX_SESSIONS_REACHED" && err.data?.sessionManagementToken) {
+                if (onSessionManagement) {
+                  onSessionManagement(err.data);
+                  return;
+                }
+              }
               const message =
                 err?.message ||
-                err?.response?.data?.message ||
                 "Authentication failed. Please try again.";
               if (onError) {
                 onError(message);
@@ -84,7 +90,6 @@ export function GoogleAuthButton({ label = 'Continue with Google', onError }: Go
 
       client.requestCode();
     } catch (error: any) {
-      console.error("Google client init failed:", error);
       setIsLoading(false);
       const message = error?.message || "Failed to launch Google login.";
       if (onError) {
@@ -135,4 +140,3 @@ export function GoogleAuthButton({ label = 'Continue with Google', onError }: Go
     </motion.button>
   );
 }
-
