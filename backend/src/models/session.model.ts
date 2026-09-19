@@ -12,6 +12,8 @@ export interface ISession extends Document {
   updatedAt: Date;
 }
 
+const SESSION_RETENTION_TTL = 60 * 60 * 24;
+
 const sessionSchema = new Schema<ISession>(
   {
     user: {
@@ -56,6 +58,24 @@ const sessionSchema = new Schema<ISession>(
     timestamps: true,
   },
 );
+
+
+sessionSchema.index(
+  { expiresAt: 1 },
+  {
+    expireAfterSeconds: SESSION_RETENTION_TTL,
+    name: "expiresAt_ttl",
+  }
+);
+
+sessionSchema.index(
+  { revokedAt: 1 },
+  {
+    expireAfterSeconds: SESSION_RETENTION_TTL,
+    name: "revokedAt_ttl",
+  }
+);
+
 
 const Session = mongoose.model<ISession>("Session", sessionSchema);
 export default Session

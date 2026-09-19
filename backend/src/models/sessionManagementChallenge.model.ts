@@ -36,12 +36,12 @@ const sessionManagementChallengeSchema =
     }
   );
 
-export default mongoose.model<ISessionManagementChallenge>(
-  "SessionManagementChallenge",
-  sessionManagementChallengeSchema
-);
-
 sessionManagementChallengeSchema.index(
   { expiresAt: 1 },
   { expireAfterSeconds: 0 }
+);
+
+export default mongoose.model<ISessionManagementChallenge>(
+  "SessionManagementChallenge",
+  sessionManagementChallengeSchema
 );
