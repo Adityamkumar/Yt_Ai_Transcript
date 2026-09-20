@@ -581,28 +581,37 @@ function SecurityTab({ onClose }: { onClose?: () => void }) {
                       <MonitorSmartphone size={20} />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-white truncate">{deviceName}</p>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="truncate text-sm font-medium text-white">{deviceName}</p>
+                        {session.isCurrent && (
+                          <span className="inline-flex shrink-0 items-center rounded-full border border-indigo-400/25 bg-indigo-400/10 px-2 py-0.5 text-[10px] font-medium text-indigo-200">
+                            Current session
+                          </span>
+                        )}
+                      </div>
                       <p className="text-xs text-[var(--text-muted)] mt-0.5">
                         {session.provider === "google" ? "Google" : "Email"} •{" "}
                         {relativeTime ? `Signed in ${relativeTime}` : "Active session"}
                       </p>
                     </div>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => handleLogoutSession(session._id)}
-                    disabled={isRevoking || isSigningOutAll}
-                    className="shrink-0 text-sm font-medium text-white/60 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 self-start sm:self-auto"
-                  >
-                    {isRevoking ? (
-                      <>
-                        <Loader2 size={13} className="animate-spin" />
-                        <span>Signing out...</span>
-                      </>
-                    ) : (
-                      "Sign out"
-                    )}
-                  </button>
+                  {!session.isCurrent && (
+                    <button
+                      type="button"
+                      onClick={() => handleLogoutSession(session._id)}
+                      disabled={isRevoking || isSigningOutAll}
+                      className="shrink-0 text-sm font-medium text-white/60 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 self-start sm:self-auto"
+                    >
+                      {isRevoking ? (
+                        <>
+                          <Loader2 size={13} className="animate-spin" />
+                          <span>Signing out...</span>
+                        </>
+                      ) : (
+                        "Sign out"
+                      )}
+                    </button>
+                  )}
                 </div>
               );
             })

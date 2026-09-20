@@ -83,9 +83,16 @@ export function SessionManagementPanel({
             >
               <Monitor size={17} className="shrink-0 text-indigo-300" />
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium text-white">
-                  {parseUserAgent(session.userAgent)}
-                </p>
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="truncate text-sm font-medium text-white">
+                    {parseUserAgent(session.userAgent)}
+                  </p>
+                  {session.isCurrent && (
+                    <span className="inline-flex shrink-0 items-center rounded-full border border-indigo-400/25 bg-indigo-400/10 px-2 py-0.5 text-[10px] font-medium text-indigo-200">
+                      Current session
+                    </span>
+                  )}
+                </div>
                 <div className="mt-0.5 flex items-center gap-2 text-[11px] text-white/50">
                   <span className="capitalize">{session.provider}</span>
                   <span aria-hidden="true">•</span>
@@ -95,19 +102,21 @@ export function SessionManagementPanel({
                   </span>
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={() => handleRevoke(session._id)}
-                disabled={Boolean(revokingSessionId)}
-                className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-white/15 px-2.5 py-1.5 text-xs font-medium text-white/80 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {revokingSessionId === session._id ? (
-                  <Loader2 size={13} className="animate-spin" />
-                ) : (
-                  <LogOut size={13} />
-                )}
-                Sign out
-              </button>
+              {!session.isCurrent && (
+                <button
+                  type="button"
+                  onClick={() => handleRevoke(session._id)}
+                  disabled={Boolean(revokingSessionId)}
+                  className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-white/15 px-2.5 py-1.5 text-xs font-medium text-white/80 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {revokingSessionId === session._id ? (
+                    <Loader2 size={13} className="animate-spin" />
+                  ) : (
+                    <LogOut size={13} />
+                  )}
+                  Sign out
+                </button>
+              )}
             </div>
           ))}
         </div>
@@ -129,4 +138,3 @@ export function SessionManagementPanel({
     </div>
   );
 }
-

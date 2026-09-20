@@ -24,11 +24,15 @@ import { checkEmailDomain } from "../services/disposable-email.service.js";
 import { hashRefreshToken } from "../utils/token.utils.js";
 import Session from "../models/session.model.js";
 import mongoose from "mongoose";
-import { createSessionManagementChallenge, getValidSessionManagementChallenge } from "../services/session-management.service.js";
+import {
+  createSessionManagementChallenge,
+  getValidSessionManagementChallenge,
+} from "../services/session-management.service.js";
 
 export const userRegister = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body;
   const ip = req.ip || req.socket.remoteAddress || "";
+  const userAgent = req.get("user-agent") || "";
 
   const normalizedEmail = normalizeEmail(email);
   const domainCheck = checkEmailDomain(normalizedEmail);
@@ -100,8 +104,20 @@ export const userRegister = asyncHandler(async (req, res) => {
 
   signupRateLimiterService.recordSuccessfulSignup(ip);
 
+  const session = new Session({
+    user: user._id,
+    userAgent,
+    ipAddress: ip,
+    provider: "local",
+    expiresAt: new Date(Date.now() + Number(process.env.REFRESH_TOKEN_EXPIRY)),
+  });
+
   const { accessToken, refreshToken } =
-    await generateAccessTokenAndRefreshToken(user._id);
+    await generateAccessTokenAndRefreshToken(
+      user._id.toString(),
+      session._id.toString(),
+    );
+  session.refreshTokenHash = hashRefreshToken(refreshToken);
 
   res.cookie("accessToken", accessToken, accessCookieOptions);
   res.cookie("refreshToken", refreshToken, refreshCookieOptions);
@@ -174,45 +190,49 @@ export const userLogin = asyncHandler(async (req, res) => {
     expiresAt: { $gt: new Date() },
   });
 
-if (activeSessionCount >= 3) {
-  const managementToken =
-    await createSessionManagementChallenge(user._id.toString());
+  if (activeSessionCount >= 3) {
+    const managementToken = await createSessionManagementChallenge(
+      user._id.toString(),
+    );
 
-  const sessions = await Session.find({
+    const sessions = await Session.find({
+      user: user._id,
+      revokedAt: null,
+      expiresAt: { $gt: new Date() },
+    })
+      .select("_id userAgent provider createdAt expiresAt")
+      .sort({ createdAt: -1 })
+      .lean();
+
+    return res.status(409).json({
+      success: false,
+      statusCode: 409,
+      code: "MAX_SESSIONS_REACHED",
+      message: "Maximum of 3 active sessions reached.",
+      data: {
+        sessionManagementToken: managementToken,
+        sessions,
+      },
+    });
+  }
+
+  const session = new Session({
     user: user._id,
-    revokedAt: null,
-    expiresAt: { $gt: new Date() },
-  })
-    .select("_id userAgent provider createdAt expiresAt")
-    .sort({ createdAt: -1 })
-    .lean();
-
-  return res.status(409).json({
-    success: false,
-    statusCode: 409,
-    code: "MAX_SESSIONS_REACHED",
-    message: "Maximum of 3 active sessions reached.",
-    data: {
-      sessionManagementToken: managementToken,
-      sessions,
-    },
-  });
-}
-
-  const { accessToken, refreshToken } =
-    await generateAccessTokenAndRefreshToken(user._id);
-
-  const refreshTokenHash = hashRefreshToken(refreshToken);
-
-  await Session.create({
-    user: user._id,
-    refreshTokenHash,
-    userAgent: userAgent,
+    userAgent,
     ipAddress: ip,
     provider: "local",
     expiresAt: new Date(Date.now() + Number(process.env.REFRESH_TOKEN_EXPIRY)),
   });
 
+  const { accessToken, refreshToken } =
+    await generateAccessTokenAndRefreshToken(
+      user._id.toString(),
+      session._id.toString(),
+    );
+
+  session.refreshTokenHash = hashRefreshToken(refreshToken);
+
+  await session.save();
   const loggedInUser = await User.findById(user._id).select(
     "-password -refreshToken",
   );
@@ -268,7 +288,10 @@ export const refreshAccessToken = asyncHandler(async (req, res) => {
   }
 
   const { accessToken, refreshToken } =
-    await generateAccessTokenAndRefreshToken(user._id);
+    await generateAccessTokenAndRefreshToken(
+      user._id.toString(),
+      session._id.toString(),
+    );
 
   session.refreshTokenHash = hashRefreshToken(refreshToken);
   await session.save();
@@ -278,7 +301,6 @@ export const refreshAccessToken = asyncHandler(async (req, res) => {
   res.status(200).json({
     message: "access token refreshed",
     accessToken,
-    refreshToken,
   });
 });
 
@@ -338,14 +360,20 @@ export const getActiveSessions = asyncHandler(async (req, res) => {
     expiresAt: { $gt: new Date() },
   })
     .select("_id userAgent provider createdAt expiresAt")
-    .sort({ createdAt: -1 });
+    .sort({ createdAt: -1 })
+    .lean();
+
+  const sessionsWithCurrent = sessions.map((session) => ({
+    ...session,
+    isCurrent: session._id.toString() === req.authSessionId,
+  }));
 
   return res
     .status(200)
     .json(
       new ApiResponse(
         200,
-        { sessions },
+        { sessions: sessionsWithCurrent },
         "Active sessions fetched successfully",
       ),
     );
@@ -504,44 +532,50 @@ export const googleVerifyController = asyncHandler(async (req, res) => {
     expiresAt: { $gt: new Date() },
   });
 
- if (activeSessionCount >= 3) {
-  const managementToken =
-    await createSessionManagementChallenge(user._id.toString());
+  if (activeSessionCount >= 3) {
+    const managementToken = await createSessionManagementChallenge(
+      user._id.toString(),
+    );
 
-  const sessions = await Session.find({
+    const sessions = await Session.find({
+      user: user._id,
+      revokedAt: null,
+      expiresAt: { $gt: new Date() },
+    })
+      .select("_id userAgent provider createdAt expiresAt")
+      .sort({ createdAt: -1 })
+      .lean();
+
+    return res.status(409).json({
+      success: false,
+      statusCode: 409,
+      code: "MAX_SESSIONS_REACHED",
+      message: "Maximum of 3 active sessions reached.",
+      data: {
+        sessionManagementToken: managementToken,
+        sessions,
+      },
+    });
+  }
+
+  const session = new Session({
     user: user._id,
-    revokedAt: null,
-    expiresAt: { $gt: new Date() },
-  })
-    .select("_id userAgent provider createdAt expiresAt")
-    .sort({ createdAt: -1 })
-    .lean();
-
-  return res.status(409).json({
-    success: false,
-    statusCode: 409,
-    code: "MAX_SESSIONS_REACHED",
-    message: "Maximum of 3 active sessions reached.",
-    data: {
-      sessionManagementToken: managementToken,
-      sessions,
-    },
-  });
-}
-
-  const { accessToken, refreshToken } =
-    await generateAccessTokenAndRefreshToken(user._id);
-
-  const refreshTokenHash = hashRefreshToken(refreshToken);
-
-  await Session.create({
-    user: user._id,
-    refreshTokenHash,
     userAgent,
     ipAddress: ip,
     provider: "google",
     expiresAt: new Date(Date.now() + Number(process.env.REFRESH_TOKEN_EXPIRY)),
   });
+
+  const { accessToken, refreshToken } =
+    await generateAccessTokenAndRefreshToken(
+      user._id.toString(),
+      session._id.toString(),
+    );
+
+  const refreshTokenHash = hashRefreshToken(refreshToken);
+
+  session.refreshTokenHash = refreshTokenHash;
+  await session.save();
 
   res.cookie("accessToken", accessToken, accessCookieOptions);
   res.cookie("refreshToken", refreshToken, refreshCookieOptions);

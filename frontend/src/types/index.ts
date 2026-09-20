@@ -21,6 +21,7 @@ export interface Session {
   provider: 'local' | 'google';
   createdAt: string;
   expiresAt: string;
+  isCurrent: boolean;
 }
 
 export interface PreAuthSessionManagementData {
@@ -139,4 +140,3 @@ export interface NotesResponse {
   actionableTakeaways: string[];
   examples: string[];
 }
-

@@ -22,7 +22,7 @@ export interface IUser extends Document {
   emailVerificationExpiry: Date | undefined;
   verificationExpiresAt:Date;
   isPasswordCorrect(password: string): Promise<boolean>;
-  generateAccessToken(): string;
+  generateAccessToken(sessionId:string): string;
   generateRefreshToken(): string;
   generateResetPasswordToken(): string;
   generateTemporaryToken():{
@@ -105,10 +105,11 @@ userSchema.methods.isPasswordCorrect = async function (password: string) {
   return await bcrypt.compare(password, this.password);
 };
 
-userSchema.methods.generateAccessToken = function () {
+userSchema.methods.generateAccessToken = function (sessionId:string) {
   return jwt.sign(
     {
       _id: this._id,
+      sessionId,
     },
     process.env.ACCESS_TOKEN_SECRET,
     {
