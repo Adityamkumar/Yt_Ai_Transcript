@@ -210,7 +210,7 @@ const GeminiNotesSchema = {
   ],
 };
 
-const GeminiSummarySchema = {
+const SummaryResponseSchema  = {
   type: "object",
   properties: {
     summary: {
@@ -222,11 +222,13 @@ const GeminiSummarySchema = {
           timestamp: { type: "number" },
           endTimestamp: { type: "number" },
         },
-        required: ["text", "timestamp"],
+        required: ["text", "timestamp", "endTimestamp"],
+        additionalProperties: false,
       },
     },
   },
   required: ["summary"],
+  additionalProperties: false,
 };
 
 const toNearestTranscriptStart = (
@@ -393,7 +395,7 @@ export const askAiAboutTranscript = async (
     );
 
     if (type === "notes") {
-      const schema = type === "notes" ? GeminiNotesSchema : GeminiSummarySchema;
+      const schema = type === "notes" ? GeminiNotesSchema : SummaryResponseSchema ;
       const validator = type === "notes" ? NotesSchema : SummarySchema;
 
       const rawText = await aiProviderService.generateStructuredResponse(
@@ -481,7 +483,7 @@ ${summaries}
 
     const rawText = await aiProviderService.generateStructuredResponse(
       prompt,
-      GeminiSummarySchema,
+      SummaryResponseSchema ,
       undefined,
       (text) => extractAndValidateJson(text, SummarySchema),
     );
@@ -678,7 +680,7 @@ export const askAiAboutPdf = async (
     );
 
     if (type === "notes" || type === "summary") {
-      const schema = type === "notes" ? GeminiNotesSchema : GeminiSummarySchema;
+      const schema = type === "notes" ? GeminiNotesSchema : SummaryResponseSchema ;
       const validator = type === "notes" ? NotesSchema : SummarySchema;
 
       const rawText = await aiProviderService.generateStructuredResponse(

@@ -71,9 +71,7 @@ export interface PdfDocument {
   pageCount: number;
   totalChunks: number;
   status: "processing" | "ready" | "failed";
-  /** AI pipeline readiness — authoritative for enabling AI features */
   ragStatus?: "processing" | "ready" | "failed";
-  /** Total ingestion attempts made (auto + manual). Used to gate retry button. */
   retryCount?: number;
   cooldownUntil?: string;
   uploadedBy: string;

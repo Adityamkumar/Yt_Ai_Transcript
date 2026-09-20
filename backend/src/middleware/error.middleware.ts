@@ -14,8 +14,7 @@ export const globalErrorHandler: ErrorRequestHandler = (
 
   const message = isApiError
     ? err.message
-    : "Something went wrong. Please try again.";
-
+    : "Something went wrong. Please try again";
   logger.error(
     {
       err,

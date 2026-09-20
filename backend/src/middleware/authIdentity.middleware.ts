@@ -59,7 +59,7 @@ export const authIdentityMiddleware = asyncHandler(
 
 export const requireVerifiedEmail = asyncHandler(
   async (req: Request, _res: Response, next: NextFunction) => {
-    if (!req.user) {
+    if (!req.authUserId) {
       throw new ApiError(
         401,
         "Authentication required",
@@ -69,7 +69,7 @@ export const requireVerifiedEmail = asyncHandler(
       );
     }
 
-    const user = await User.findById(req.user._id)
+    const user = await User.findById(req.authUserId)
       .select("_id isEmailVerified")
       .lean();
 
