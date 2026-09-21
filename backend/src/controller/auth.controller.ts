@@ -365,7 +365,7 @@ export const getActiveSessions = asyncHandler(async (req, res) => {
     revokedAt: null,
     expiresAt: { $gt: new Date() },
   })
-    .select("_id userAgent provider createdAt expiresAt")
+    .select("_id userAgent provider location createdAt expiresAt")
     .sort({ createdAt: -1 })
     .lean();
 
