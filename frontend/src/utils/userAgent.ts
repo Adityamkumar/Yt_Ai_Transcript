@@ -1,3 +1,19 @@
+export type UserAgentDeviceType = 'mobile' | 'tablet' | 'desktop';
+
+export function getUserAgentDeviceType(userAgent?: string): UserAgentDeviceType {
+  const ua = typeof userAgent === 'string' ? userAgent : '';
+
+  if (/ipad|tablet/i.test(ua) || (/android/i.test(ua) && !/mobile/i.test(ua))) {
+    return 'tablet';
+  }
+
+  if (/iphone|ipod|android.*mobile|mobile/i.test(ua)) {
+    return 'mobile';
+  }
+
+  return 'desktop';
+}
+
 export function parseUserAgent(userAgent?: string): string {
   if (!userAgent || typeof userAgent !== 'string' || !userAgent.trim()) {
     return 'Unknown Device';

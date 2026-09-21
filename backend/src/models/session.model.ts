@@ -5,6 +5,11 @@ export interface ISession extends Document {
   refreshTokenHash: string;
   userAgent?: string;
   ipAddress?: string;
+  location: {
+    city: string | null;
+    region: string | null;
+    country: string | null;
+  };
   provider: "local" | "google";
   expiresAt: Date;
   revokedAt?: Date | null;
@@ -38,6 +43,12 @@ const sessionSchema = new Schema<ISession>(
       default: null,
     },
 
+    location: {
+      city: { type: String, default: null },
+      region: { type: String, default: null },
+      country: { type: String, default: null },
+    },
+
     provider: {
       type: String,
       enum: ["local", "google"],
@@ -59,13 +70,12 @@ const sessionSchema = new Schema<ISession>(
   },
 );
 
-
 sessionSchema.index(
   { expiresAt: 1 },
   {
     expireAfterSeconds: SESSION_RETENTION_TTL,
     name: "expiresAt_ttl",
-  }
+  },
 );
 
 sessionSchema.index(
@@ -73,9 +83,8 @@ sessionSchema.index(
   {
     expireAfterSeconds: SESSION_RETENTION_TTL,
     name: "revokedAt_ttl",
-  }
+  },
 );
 
-
 const Session = mongoose.model<ISession>("Session", sessionSchema);
-export default Session
+export default Session;

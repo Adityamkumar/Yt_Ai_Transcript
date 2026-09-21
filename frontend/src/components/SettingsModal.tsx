@@ -13,7 +13,9 @@ import {
   Sparkles,
   Lock,
   Database,
-  MonitorSmartphone,
+  Monitor,
+  Smartphone,
+  Tablet,
   Download,
   MessageSquareOff,
   Files,
@@ -34,7 +36,12 @@ import { authService } from "@/services/auth.service";
 import { EMAIL_NOT_VERIFIED_CODE } from "@/lib/axios";
 import { useResendEmailVerificationRateLimit } from "@/hooks/useResendEmailVerificationRateLimit";
 import type { Session } from "@/types";
-import { parseUserAgent, formatRelativeTime } from "@/utils";
+import {
+  formatDateTime,
+  formatRelativeTime,
+  getUserAgentDeviceType,
+  parseUserAgent,
+} from "@/utils";
 
 interface Props {
   isOpen: boolean;
@@ -569,18 +576,26 @@ function SecurityTab({ onClose }: { onClose?: () => void }) {
             sessions.map((session) => {
               const deviceName = parseUserAgent(session.userAgent);
               const relativeTime = formatRelativeTime(session.createdAt);
+              const signedInAt = formatDateTime(session.createdAt);
+              const deviceType = getUserAgentDeviceType(session.userAgent);
               const isRevoking = revokingSessionId === session._id;
+              const DeviceIcon =
+                deviceType === "mobile"
+                  ? Smartphone
+                  : deviceType === "tablet"
+                    ? Tablet
+                    : Monitor;
 
               return (
                 <div
                   key={session._id}
-                  className="flex flex-col sm:flex-row sm:items-center justify-between p-5 gap-4"
+                  className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:p-5"
                 >
-                  <div className="flex items-center gap-4 min-w-0">
+                  <div className="flex min-w-0 items-start gap-3 sm:items-center sm:gap-4">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/5 text-[var(--text-muted)]">
-                      <MonitorSmartphone size={20} />
+                      <DeviceIcon size={20} />
                     </div>
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
                         <p className="truncate text-sm font-medium text-white">{deviceName}</p>
                         {session.isCurrent && (
@@ -593,6 +608,9 @@ function SecurityTab({ onClose }: { onClose?: () => void }) {
                         {session.provider === "google" ? "Google" : "Email"} •{" "}
                         {relativeTime ? `Signed in ${relativeTime}` : "Active session"}
                       </p>
+                      <p className="mt-0.5 text-xs text-[var(--text-muted)]">
+                        {signedInAt}
+                      </p>
                     </div>
                   </div>
                   {!session.isCurrent && (
@@ -600,7 +618,7 @@ function SecurityTab({ onClose }: { onClose?: () => void }) {
                       type="button"
                       onClick={() => handleLogoutSession(session._id)}
                       disabled={isRevoking || isSigningOutAll}
-                      className="shrink-0 text-sm font-medium text-white/60 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 self-start sm:self-auto"
+                      className="flex shrink-0 items-center gap-1.5 self-start text-sm font-medium text-white/60 transition-colors hover:text-white disabled:cursor-not-allowed disabled:opacity-50 sm:self-auto"
                     >
                       {isRevoking ? (
                         <>

@@ -28,6 +28,7 @@ import {
   createSessionManagementChallenge,
   getValidSessionManagementChallenge,
 } from "../services/session-management.service.js";
+import { getSessionLocation } from "../services/ip-geolocation.service.js";
 
 export const userRegister = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body;
@@ -104,10 +105,12 @@ export const userRegister = asyncHandler(async (req, res) => {
 
   signupRateLimiterService.recordSuccessfulSignup(ip);
 
+  const location = await getSessionLocation(ip);
   const session = new Session({
     user: user._id,
     userAgent,
     ipAddress: ip,
+    location,
     provider: "local",
     expiresAt: new Date(Date.now() + Number(process.env.REFRESH_TOKEN_EXPIRY)),
   });
@@ -118,6 +121,7 @@ export const userRegister = asyncHandler(async (req, res) => {
       session._id.toString(),
     );
   session.refreshTokenHash = hashRefreshToken(refreshToken);
+    await session.save();
 
   res.cookie("accessToken", accessToken, accessCookieOptions);
   res.cookie("refreshToken", refreshToken, refreshCookieOptions);
@@ -216,10 +220,12 @@ export const userLogin = asyncHandler(async (req, res) => {
     });
   }
 
+  const location = await getSessionLocation(ip);
   const session = new Session({
     user: user._id,
     userAgent,
     ipAddress: ip,
+    location,
     provider: "local",
     expiresAt: new Date(Date.now() + Number(process.env.REFRESH_TOKEN_EXPIRY)),
   });
@@ -558,10 +564,12 @@ export const googleVerifyController = asyncHandler(async (req, res) => {
     });
   }
 
+  const location = await getSessionLocation(ip);
   const session = new Session({
     user: user._id,
     userAgent,
     ipAddress: ip,
+    location,
     provider: "google",
     expiresAt: new Date(Date.now() + Number(process.env.REFRESH_TOKEN_EXPIRY)),
   });

@@ -49,6 +49,19 @@ export function formatRelativeTime(date: Date | string): string {
   return `${years}y ago`;
 }
 
+export function formatDateTime(date: Date | string): string {
+  const parsed = new Date(date);
+  if (isNaN(parsed.getTime())) return 'Unknown date';
+
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  }).format(parsed).replace(', ', ', ').replace(/, (\d{1,2}:\d{2})/, ' at $1');
+}
+
 export function truncate(str: string, max: number): string {
   return str.length > max ? `${str.slice(0, max).trim()}...` : str;
 }
@@ -58,6 +71,5 @@ export function deriveTitle(message: string): string {
 }
 
 export * from './userAgent';
-
 
 
