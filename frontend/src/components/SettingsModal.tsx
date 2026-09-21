@@ -577,6 +577,10 @@ function SecurityTab({ onClose }: { onClose?: () => void }) {
               const deviceName = parseUserAgent(session.userAgent);
               const relativeTime = formatRelativeTime(session.createdAt);
               const signedInAt = formatDateTime(session.createdAt);
+              const location =
+                session.location?.city && session.location.region
+                  ? `${session.location.city}, ${session.location.region}`
+                  : null;
               const deviceType = getUserAgentDeviceType(session.userAgent);
               const isRevoking = revokingSessionId === session._id;
               const DeviceIcon =
@@ -595,7 +599,7 @@ function SecurityTab({ onClose }: { onClose?: () => void }) {
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/5 text-[var(--text-muted)]">
                       <DeviceIcon size={20} />
                     </div>
-                    <div className="min-w-0 flex-1">
+                    <div className="min-w-0 flex-1 space-y-1">
                       <div className="flex flex-wrap items-center gap-2">
                         <p className="truncate text-sm font-medium text-white">{deviceName}</p>
                         {session.isCurrent && (
@@ -604,13 +608,18 @@ function SecurityTab({ onClose }: { onClose?: () => void }) {
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-[var(--text-muted)] mt-0.5">
+                      <p className="text-xs text-[var(--text-muted)]">
                         {session.provider === "google" ? "Google" : "Email"} •{" "}
                         {relativeTime ? `Signed in ${relativeTime}` : "Active session"}
                       </p>
-                      <p className="mt-0.5 text-xs text-[var(--text-muted)]">
+                      <p className="text-xs text-[var(--text-muted)]">
                         {signedInAt}
                       </p>
+                      {location && (
+                        <p className="text-xs text-[var(--text-muted)]">
+                          {location}
+                        </p>
+                      )}
                     </div>
                   </div>
                   {!session.isCurrent && (

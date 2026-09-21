@@ -22,6 +22,11 @@ export interface Session {
   createdAt: string;
   expiresAt: string;
   isCurrent: boolean;
+  location?: {
+    city: string | null;
+    region: string | null;
+    country: string | null;
+  } | null;
 }
 
 export interface PreAuthSessionManagementData {
