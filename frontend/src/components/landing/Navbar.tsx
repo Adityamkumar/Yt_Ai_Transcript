@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Github, LayoutDashboard, LogOut, ChevronDown } from 'lucide-react';
+import { Menu, X, Github, LayoutDashboard, LogOut, ChevronDown, ArrowUpRight } from 'lucide-react';
 import { useAuth } from '@/store/AuthContext';
 import { UserAvatar } from '@/components/auth/UserAvatar';
 import { LogoutModal } from '@/components/LogoutModal';
@@ -66,16 +66,24 @@ function UserDropdown({ name, email, avatar, onLogout, onClose }: UserDropdownPr
 export function Navbar() {
   const { user, logout } = useAuth();
   const [scrolled, setScrolled] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [logoutOpen, setLogoutOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
+  const navbarScrolled = scrolled && !isMobile;
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
   }, []);
 
   useEffect(() => {
@@ -120,20 +128,31 @@ export function Navbar() {
       <motion.header
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.5, ease: 'easeOut' }}
-        className={`fixed inset-x-0 top-0 z-50 border-b border-[var(--border-soft)] bg-[#07080c] transition-all duration-500 ${
-          scrolled
-            ? 'bg-[#07080c]/90 backdrop-blur-xl shadow-lg'
-            : ''
-        }`}
+        transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+        className="fixed inset-x-0 top-0 z-50 bg-[#07080c]"
       >
-        <div className="mx-auto max-w-[1216px] border-x border-[var(--border-soft)] px-4 sm:px-6 lg:px-8">
-          <div className="relative flex h-16 items-center justify-between sm:h-[72px]">
-            <Link to="/" onClick={handleLogoClick} className="flex items-center flex-shrink-0">
-              <LumoraLogo size="md" />
+        <div className="mx-auto h-16 w-full max-w-[1216px] border-x border-b border-[var(--border-soft)] px-4 sm:h-[72px] sm:w-[calc(100%-2rem)] sm:px-6 lg:px-8">
+          <motion.div
+            animate={{
+              width: navbarScrolled ? 'calc(100% - 4rem)' : '100%',
+              maxWidth: navbarScrolled ? 940 : 1216,
+              y: navbarScrolled ? 10 : 0,
+            }}
+            transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+            className={`mx-auto ${
+              navbarScrolled ? 'rounded-full border border-[var(--border-soft)] bg-[rgba(8,9,12,0.84)] shadow-[0_18px_50px_rgba(0,0,0,0.32)] backdrop-blur-2xl' : ''
+            }`}
+          >
+            <div className={`relative flex items-center justify-between px-3 transition-[height,padding] duration-200 sm:px-4 lg:px-5 ${
+              navbarScrolled ? 'h-14 sm:h-16' : 'h-16 sm:h-[72px]'
+            }`}>
+            <Link to="/" onClick={handleLogoClick} className="group flex flex-shrink-0 items-center">
+              <LumoraLogo size={navbarScrolled ? 'sm' : 'md'} />
             </Link>
 
-            <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-1 md:flex">
+            <nav className={`absolute left-1/2 hidden -translate-x-1/2 items-center rounded-full border border-[var(--border-soft)] bg-[rgba(255,255,255,0.025)] md:flex ${
+              navbarScrolled ? 'gap-0 p-0.5' : 'gap-0.5 p-1'
+            }`}>
               {navLinks.map((link) => (
                 link.external ? (
                   <a
@@ -141,7 +160,9 @@ export function Navbar() {
                     href={link.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 px-3.5 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors duration-200 rounded-lg hover:bg-[var(--surface-3)]"
+                    className={`flex items-center gap-1 rounded-full font-medium text-[var(--text-secondary)] transition-all duration-200 hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] ${
+                      navbarScrolled ? 'px-3 py-1.5 text-xs' : 'gap-1.5 px-3.5 py-2 text-[13px]'
+                    }`}
                   >
                     {link.icon && <link.icon size={14} />}
                     {link.label}
@@ -150,7 +171,9 @@ export function Navbar() {
                   <button
                     key={link.label}
                     onClick={() => navigateSection(link.href)}
-                    className="px-3.5 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors duration-200 rounded-lg hover:bg-[var(--surface-3)]"
+                    className={`rounded-full font-medium text-[var(--text-secondary)] transition-all duration-200 hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] ${
+                      navbarScrolled ? 'px-3 py-1.5 text-xs' : 'px-3.5 py-2 text-[13px]'
+                    }`}
                   >
                     {link.label}
                   </button>
@@ -158,7 +181,7 @@ export function Navbar() {
               ))}
             </nav>
 
-            <div className="hidden md:flex items-center gap-4">
+            <div className={`hidden items-center md:flex ${navbarScrolled ? 'gap-1' : 'gap-2'}`}>
               
               {user ? (
                 <div ref={dropdownRef} className="relative">
@@ -197,17 +220,20 @@ export function Navbar() {
                 <>
                   <Link
                     to="/login"
-                    className="px-4 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors duration-200 rounded-lg hover:bg-[var(--surface-3)]"
+                    className={`rounded-full font-medium text-[var(--text-secondary)] transition-all duration-200 hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] ${
+                      navbarScrolled ? 'px-3 py-1.5 text-xs' : 'px-4 py-2 text-sm'
+                    }`}
                   >
                     Login
                   </Link>
                   <Link
                     to="/signup"
-                    className="relative px-4 py-2 text-sm font-medium text-white rounded-lg overflow-hidden group"
+                    className={`group relative inline-flex items-center overflow-hidden rounded-full border border-[rgba(199,204,255,0.22)] bg-[var(--accent)] font-semibold text-[#08090c] shadow-[0_8px_24px_rgba(157,165,255,0.2)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[var(--accent-strong)] hover:shadow-[0_12px_30px_rgba(157,165,255,0.3)] ${
+                      navbarScrolled ? 'gap-1 px-3 py-1.5 text-xs' : 'gap-1.5 px-4 py-2 text-sm'
+                    }`}
                   >
-                    <span className="absolute inset-0 bg-gradient-to-r from-[#7C5CFF] to-[#4DA2FF] opacity-100 group-hover:opacity-90 transition-opacity duration-200" />
-                    <span className="absolute inset-0 bg-gradient-to-r from-[#7C5CFF] to-[#4DA2FF] blur-md opacity-0 group-hover:opacity-60 transition-opacity duration-300" />
-                    <span className="relative">Get Started</span>
+                    <span className="relative">Get started</span>
+                    <ArrowUpRight size={navbarScrolled ? 12 : 14} className="relative transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                   </Link>
                 </>
               )}
@@ -216,7 +242,7 @@ export function Navbar() {
             <button
               id="mobile-menu-btn"
               onClick={() => setMobileOpen(!mobileOpen)}
-              className="md:hidden p-2 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-3)] transition-colors duration-200"
+              className="rounded-full border border-[var(--border-soft)] p-2 text-[var(--text-secondary)] transition-colors duration-200 hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] md:hidden"
               aria-label="Toggle menu"
             >
               <AnimatePresence mode="wait">
@@ -231,7 +257,8 @@ export function Navbar() {
                 )}
               </AnimatePresence>
             </button>
-          </div>
+            </div>
+          </motion.div>
         </div>
       </motion.header>
 
@@ -251,14 +278,11 @@ export function Navbar() {
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-              className="fixed top-0 right-0 bottom-0 z-50 w-72 bg-[var(--canvas)] border-l border-[var(--border-medium)] flex flex-col"
+              className="fixed bottom-0 right-0 top-0 z-50 flex w-80 max-w-[calc(100vw-1rem)] flex-col border-l border-[var(--border-medium)] bg-[rgba(8,9,12,0.96)] shadow-2xl backdrop-blur-2xl"
             >
-              <div className="flex items-center justify-between px-5 h-16 border-b border-[var(--border-soft)]">
-                <span className="text-[var(--text-primary)] font-semibold text-sm">
-                  <LumoraLogo size="sm" />
-                </span>
+              <div className="flex h-16 items-center justify-between border-b border-[var(--border-soft)] px-5">
                 <div className="flex items-center gap-2">
-                  <button onClick={() => setMobileOpen(false)} className="p-2 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--surface-3)] transition-colors">
+                  <button onClick={() => setMobileOpen(false)} className="rounded-full p-2 text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]">
                     <X size={18} />
                   </button>
                 </div>
@@ -274,7 +298,7 @@ export function Navbar() {
                 </div>
               )}
 
-              <nav className="flex flex-col gap-1 p-4 flex-1">
+              <nav className="flex flex-1 flex-col gap-1 p-4">
                 {navLinks.map((link, i) => (
                   <motion.div
                     key={link.label}
@@ -287,7 +311,7 @@ export function Navbar() {
                         href={link.href}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-2.5 px-4 py-3 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-3)] rounded-lg transition-colors duration-200"
+                        className="flex items-center gap-2.5 rounded-xl px-4 py-3 text-sm text-[var(--text-secondary)] transition-colors duration-200 hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
                       >
                         {link.icon && <link.icon size={15} />}
                         {link.label}
@@ -295,7 +319,7 @@ export function Navbar() {
                     ) : (
                       <button
                         onClick={() => navigateSection(link.href)}
-                        className="w-full text-left flex items-center px-4 py-3 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-3)] rounded-lg transition-colors duration-200"
+                        className="flex w-full items-center rounded-xl px-4 py-3 text-left text-sm text-[var(--text-secondary)] transition-colors duration-200 hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
                       >
                         {link.label}
                       </button>
@@ -304,18 +328,18 @@ export function Navbar() {
                 ))}
               </nav>
 
-              <div className="p-4 border-t border-[var(--border-soft)] flex flex-col gap-2">
+              <div className="flex flex-col gap-2 border-t border-[var(--border-soft)] p-4">
                 {user ? (
                   <>
                     <Link
                       to="/app"
-                      className="w-full text-center py-2.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border-medium)] hover:bg-[var(--surface-3)] rounded-lg transition-all duration-200"
+                      className="w-full rounded-xl border border-[var(--border-medium)] py-2.5 text-center text-sm text-[var(--text-secondary)] transition-all duration-200 hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
                     >
                       Dashboard
                     </Link>
                     <button
                       onClick={() => { setLogoutOpen(true); setMobileOpen(false); }}
-                      className="w-full text-center py-2.5 text-sm text-red-400 hover:text-red-300 border border-red-500/20 hover:bg-red-500/[0.04] rounded-lg transition-all duration-200"
+                      className="w-full rounded-xl border border-red-500/20 py-2.5 text-center text-sm text-red-400 transition-all duration-200 hover:bg-red-500/[0.04] hover:text-red-300"
                     >
                       Sign out
                     </button>
@@ -324,16 +348,16 @@ export function Navbar() {
                   <>
                     <Link
                       to="/login"
-                      className="w-full text-center py-2.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border-medium)] hover:bg-[var(--surface-3)] rounded-lg transition-all duration-200"
+                      className="w-full rounded-xl border border-[var(--border-medium)] py-2.5 text-center text-sm text-[var(--text-secondary)] transition-all duration-200 hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
                     >
                       Login
                     </Link>
                     <Link
                       to="/signup"
-                      className="relative w-full text-center py-2.5 text-sm font-medium text-white rounded-lg overflow-hidden group"
+                      className="group relative flex w-full items-center justify-center gap-1.5 overflow-hidden rounded-xl border border-[rgba(199,204,255,0.22)] bg-[var(--accent)] py-2.5 text-center text-sm font-semibold text-[#08090c] transition-all duration-200 hover:bg-[var(--accent-strong)]"
                     >
-                      <span className="absolute inset-0 bg-gradient-to-r from-[#7C5CFF] to-[#4DA2FF]" />
-                      <span className="relative">Get Started Free</span>
+                      <span className="relative">Get started free</span>
+                      <ArrowUpRight size={14} className="relative transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                     </Link>
                   </>
                 )}

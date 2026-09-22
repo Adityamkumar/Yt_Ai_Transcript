@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { SonarGrid } from '@/components/ui/sonar-grid';
+import { ContainerTextFlip } from '@/components/ui/container-text-flip';
 import { MascotWalker } from '@/components/landing/MascotWalker';
 
 export function HeroSection() {
@@ -43,11 +44,15 @@ export function HeroSection() {
           transition={{ duration: 0.6, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
           className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-[3.5rem] font-normal tracking-[-0.025em] text-[#f0f2f7] leading-[1.15] max-w-3xl"
         >
-          Turn YouTube videos and documents into{' '}
+            Turn YouTube videos and documents into{' '}
           <span className="bg-gradient-to-r from-[#ffffff] via-[#c7ccff] to-[#9da5ff] bg-clip-text text-transparent">
-            grounded conversations
+            grounded{' '}
+            <ContainerTextFlip
+              words={["conversations", "summaries", "insights", "notes"]}
+              className="mx-auto sm:mx-0"
+              textClassName="text-3xl font-normal tracking-[-0.025em] text-[#b8beff] sm:text-4xl md:text-5xl lg:text-[3.5rem]"
+            />
           </span>
-          .
         </motion.h1>
 
         {/* Short, elegant project explanation subtitle */}
