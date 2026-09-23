@@ -31,7 +31,10 @@ import { useNavigate } from "react-router-dom";
 import { DeleteAccountModal } from "./DeleteAccountModal";
 import { UserAvatar } from "@/components/auth/UserAvatar";
 import toast from "react-hot-toast";
-import { settingsService, type ResponseLanguage } from "@/services/settings.service";
+import {
+  settingsService,
+  type ResponseLanguage,
+} from "@/services/settings.service";
 import { authService } from "@/services/auth.service";
 import { EMAIL_NOT_VERIFIED_CODE } from "@/lib/axios";
 import { useResendEmailVerificationRateLimit } from "@/hooks/useResendEmailVerificationRateLimit";
@@ -42,6 +45,7 @@ import {
   getUserAgentDeviceType,
   parseUserAgent,
 } from "@/utils";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface Props {
   isOpen: boolean;
@@ -83,83 +87,125 @@ const GoogleIcon = () => (
     height="14"
     aria-hidden="true"
   >
-    <path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z" />
-    <path fill="#FF3D00" d="m6.306 14.691 6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 16.318 4 9.656 8.337 6.306 14.691z" />
-    <path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238A11.91 11.91 0 0 1 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z" />
-    <path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303a12.04 12.04 0 0 1-4.087 5.571l.003-.002 6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z" />
+    <path
+      fill="#FFC107"
+      d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"
+    />
+    <path
+      fill="#FF3D00"
+      d="m6.306 14.691 6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 16.318 4 9.656 8.337 6.306 14.691z"
+    />
+    <path
+      fill="#4CAF50"
+      d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238A11.91 11.91 0 0 1 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"
+    />
+    <path
+      fill="#1976D2"
+      d="M43.611 20.083H42V20H24v8h11.303a12.04 12.04 0 0 1-4.087 5.571l.003-.002 6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z"
+    />
   </svg>
 );
 
-const ToggleSwitch = ({ checked, onChange }: { checked: boolean; onChange: (val: boolean) => void }) => (
+const ToggleSwitch = ({
+  checked,
+  onChange,
+}: {
+  checked: boolean;
+  onChange: (val: boolean) => void;
+}) => (
   <button
     type="button"
     onClick={() => onChange(!checked)}
     className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full transition-colors duration-200 ease-in-out focus:outline-none ${
-      checked ? 'bg-indigo-500' : 'bg-white/10'
+      checked ? "bg-indigo-500" : "bg-white/10"
     }`}
   >
     <span
       className={`pointer-events-none inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-        checked ? 'translate-x-2' : '-translate-x-2'
+        checked ? "translate-x-2" : "-translate-x-2"
       }`}
     />
   </button>
 );
 
-const SettingRow = ({ title, description, children, danger = false }: { title: string; description: string; children: React.ReactNode, danger?: boolean }) => (
+const SettingRow = ({
+  title,
+  description,
+  children,
+  danger = false,
+}: {
+  title: string;
+  description: string;
+  children: React.ReactNode;
+  danger?: boolean;
+}) => (
   <div className="flex items-center justify-between py-4 border-b border-white/[0.04] last:border-0 group gap-4">
     <div className="pr-4 flex-1">
-      <p className={`text-sm font-medium transition-colors ${danger ? 'text-red-400' : 'text-white group-hover:text-white/90'}`}>{title}</p>
-      <p className="text-xs text-[var(--text-muted)] mt-0.5 leading-relaxed">{description}</p>
+      <p
+        className={`text-sm font-medium transition-colors ${danger ? "text-red-400" : "text-white group-hover:text-white/90"}`}
+      >
+        {title}
+      </p>
+      <p className="text-xs text-[var(--text-muted)] mt-0.5 leading-relaxed">
+        {description}
+      </p>
     </div>
     <div className="shrink-0">{children}</div>
   </div>
 );
 
-const SettingSelect = ({ 
-  value, 
-  options, 
-  onChange 
-}: { 
-  value: string; 
-  options: { label: string; value: string }[]; 
-  onChange: (val: string) => void 
+const SettingSelect = ({
+  value,
+  options,
+  onChange,
+}: {
+  value: string;
+  options: { label: string; value: string }[];
+  onChange: (val: string) => void;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setIsOpen(false);
+      if (e.key === "Escape") setIsOpen(false);
     };
 
     if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      document.addEventListener('keydown', handleEscape);
+      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("keydown", handleEscape);
     }
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('keydown', handleEscape);
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEscape);
     };
   }, [isOpen]);
 
-  const selectedLabel = options.find(o => o.value === value)?.label || value;
+  const selectedLabel = options.find((o) => o.value === value)?.label || value;
 
   return (
     <div className="relative" ref={dropdownRef}>
-      <button 
+      <button
         onClick={() => setIsOpen(!isOpen)}
         className={`flex items-center gap-2 rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none ${
-          isOpen ? 'border-white/20 bg-white/10 text-white' : 'border-white/10 bg-white/[0.02] text-white hover:bg-white/10'
+          isOpen
+            ? "border-white/20 bg-white/10 text-white"
+            : "border-white/10 bg-white/[0.02] text-white hover:bg-white/10"
         }`}
       >
         {selectedLabel}
-        <ChevronRight size={14} className={`text-[var(--text-muted)] transition-transform duration-200 ${isOpen ? 'rotate-90' : ''}`} />
+        <ChevronRight
+          size={14}
+          className={`text-[var(--text-muted)] transition-transform duration-200 ${isOpen ? "rotate-90" : ""}`}
+        />
       </button>
 
       <AnimatePresence>
@@ -181,12 +227,14 @@ const SettingSelect = ({
                   }}
                   className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm text-left transition-colors ${
                     value === opt.value
-                      ? 'bg-indigo-500/10 text-indigo-400 font-medium'
-                      : 'text-white hover:bg-white/[0.06]'
+                      ? "bg-indigo-500/10 text-indigo-400 font-medium"
+                      : "text-white hover:bg-white/[0.06]"
                   }`}
                 >
                   {opt.label}
-                  {value === opt.value && <Check size={14} className="text-indigo-400" />}
+                  {value === opt.value && (
+                    <Check size={14} className="text-indigo-400" />
+                  )}
                 </button>
               ))}
             </div>
@@ -197,23 +245,39 @@ const SettingSelect = ({
   );
 };
 
-const SettingAction = ({ icon: Icon, label, danger }: { icon: any, label: string, danger?: boolean }) => (
-  <button className={`flex items-center gap-2 rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#111] ${
-    danger 
-      ? 'border-red-500/20 bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:border-red-500/30 focus:ring-red-500' 
-      : 'border-white/10 bg-white/[0.02] text-white hover:bg-white/10 focus:ring-indigo-500'
-  }`}>
+const SettingAction = ({
+  icon: Icon,
+  label,
+  danger,
+}: {
+  icon: any;
+  label: string;
+  danger?: boolean;
+}) => (
+  <button
+    className={`flex items-center gap-2 rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#111] ${
+      danger
+        ? "border-red-500/20 bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:border-red-500/30 focus:ring-red-500"
+        : "border-white/10 bg-white/[0.02] text-white hover:bg-white/10 focus:ring-indigo-500"
+    }`}
+  >
     <Icon size={14} />
     {label}
   </button>
 );
 
-
 // Tabs content components
 function ProfileTab({ user, onShowDeleteModal }: any) {
   const isGoogle = user?.provider === "google";
   const navigate = useNavigate();
-  const { resendState, cooldownSeconds, isDisabled, setLoading, reset, handleRateLimitError } = useResendEmailVerificationRateLimit();
+  const {
+    resendState,
+    cooldownSeconds,
+    isDisabled,
+    setLoading,
+    reset,
+    handleRateLimitError,
+  } = useResendEmailVerificationRateLimit();
 
   const handleVerifyEmail = async () => {
     if (!user?.email || isDisabled) return;
@@ -221,10 +285,14 @@ function ProfileTab({ user, onShowDeleteModal }: any) {
     setLoading();
     try {
       await authService.resendEmailVerification(user.email);
-      navigate("/verify-email", { state: { email: user.email, resendCooldownUntil: Date.now() + 60_000 } });
+      navigate("/verify-email", {
+        state: { email: user.email, resendCooldownUntil: Date.now() + 60_000 },
+      });
     } catch (error) {
       if (!handleRateLimitError(error)) {
-        toast.error("We couldn't send another verification email. Please try again.");
+        toast.error(
+          "We couldn't send another verification email. Please try again.",
+        );
         reset();
       }
     }
@@ -236,11 +304,17 @@ function ProfileTab({ user, onShowDeleteModal }: any) {
         <h3 className="mb-4 text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--text-muted)]">
           Profile Information
         </h3>
-        
+
         <div className="flex items-center gap-4 mb-6">
-          <UserAvatar name={user?.name || "Guest"} avatar={user?.avatar} size={64} />
+          <UserAvatar
+            name={user?.name || "Guest"}
+            avatar={user?.avatar}
+            size={64}
+          />
           <div>
-            <p className="text-lg font-semibold text-white">{user?.name || "Guest"}</p>
+            <p className="text-lg font-semibold text-white">
+              {user?.name || "Guest"}
+            </p>
             <p className="text-sm text-[var(--text-muted)]">{user?.email}</p>
             <button className="mt-2 text-xs font-medium text-indigo-400 hover:text-indigo-300 transition-colors">
               Change avatar
@@ -251,17 +325,23 @@ function ProfileTab({ user, onShowDeleteModal }: any) {
         <div className="rounded-xl border border-[var(--border-soft)] bg-[var(--surface-3)] px-5">
           <div className="flex items-center justify-between py-4 border-b border-white/[0.04]">
             <div>
-              <p className="text-xs text-[var(--text-muted)] mb-1">Display name</p>
-              <p className="text-sm font-medium text-white">{user?.name || "Guest"}</p>
+              <p className="text-xs text-[var(--text-muted)] mb-1">
+                Display name
+              </p>
+              <p className="text-sm font-medium text-white">
+                {user?.name || "Guest"}
+              </p>
             </div>
             <button className="text-sm font-medium text-indigo-400 hover:text-indigo-300 transition-colors">
               Edit
             </button>
           </div>
-          
+
           <div className="flex items-center justify-between py-4">
             <div>
-              <p className="text-xs text-[var(--text-muted)] mb-1">Email address</p>
+              <p className="text-xs text-[var(--text-muted)] mb-1">
+                Email address
+              </p>
               <div className="flex flex-wrap items-center gap-2">
                 <p className="text-sm font-medium text-white">{user?.email}</p>
                 {user?.isEmailVerified ? (
@@ -278,15 +358,29 @@ function ProfileTab({ user, onShowDeleteModal }: any) {
               {!user?.isEmailVerified && (
                 <div>
                   <button
-                  type="button"
-                  onClick={handleVerifyEmail}
-                  disabled={isDisabled}
-                  className="mt-2 text-xs font-medium text-indigo-400 transition-colors hover:text-indigo-300 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {resendState === "loading" ? "Sending verification email..." : "Verify email"}
+                    type="button"
+                    onClick={handleVerifyEmail}
+                    disabled={isDisabled}
+                    className="mt-2 text-xs font-medium text-indigo-400 transition-colors hover:text-indigo-300 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {resendState === "loading"
+                      ? "Sending verification email..."
+                      : "Verify email"}
                   </button>
-                  {resendState === "cooldown" && <p className="mt-1 text-xs text-[var(--text-muted)]">Available again in {cooldownSeconds}s</p>}
-                  {resendState === "hourly_limit" && <p className="mt-1 text-xs font-medium" style={{ color: "#ff4d4f" }}>Too many Email verification attempts. Please try again in 1 hour.</p>}
+                  {resendState === "cooldown" && (
+                    <p className="mt-1 text-xs text-[var(--text-muted)]">
+                      Available again in {cooldownSeconds}s
+                    </p>
+                  )}
+                  {resendState === "hourly_limit" && (
+                    <p
+                      className="mt-1 text-xs font-medium"
+                      style={{ color: "#ff4d4f" }}
+                    >
+                      Too many Email verification attempts. Please try again in
+                      1 hour.
+                    </p>
+                  )}
                 </div>
               )}
               {isGoogle && (
@@ -311,9 +405,12 @@ function ProfileTab({ user, onShowDeleteModal }: any) {
                 <Trash2 size={16} strokeWidth={1.7} />
               </span>
               <div>
-                <p className="text-sm font-medium tracking-[-0.01em] text-white">Delete your account</p>
+                <p className="text-sm font-medium tracking-[-0.01em] text-white">
+                  Delete your account
+                </p>
                 <p className="mt-1.5 max-w-md text-xs leading-5 text-[var(--text-muted)]">
-                  Permanently remove your profile and all data associated with it.
+                  Permanently remove your profile and all data associated with
+                  it.
                 </p>
               </div>
             </div>
@@ -333,33 +430,33 @@ function ProfileTab({ user, onShowDeleteModal }: any) {
 
 function LearningTab({ prefs, updatePref, updateResponseLanguage }: any) {
   const languageOptions = [
-    { label: 'English', value: 'en' },
-    { label: 'Hindi', value: 'hi' },
-    { label: 'Tamil', value: 'ta' },
-    { label: 'Telugu', value: 'te' },
-    { label: 'Kannada', value: 'kn' },
-    { label: 'Malayalam', value: 'ml' },
-    { label: 'Bengali', value: 'bn' },
-    { label: 'Marathi', value: 'mr' },
+    { label: "English", value: "en" },
+    { label: "Hindi", value: "hi" },
+    { label: "Tamil", value: "ta" },
+    { label: "Telugu", value: "te" },
+    { label: "Kannada", value: "kn" },
+    { label: "Malayalam", value: "ml" },
+    { label: "Bengali", value: "bn" },
+    { label: "Marathi", value: "mr" },
   ];
 
   const styleOptions = [
-    { label: 'Concise', value: 'concise' },
-    { label: 'Balanced', value: 'balanced' },
-    { label: 'Detailed', value: 'detailed' },
+    { label: "Concise", value: "concise" },
+    { label: "Balanced", value: "balanced" },
+    { label: "Detailed", value: "detailed" },
   ];
 
   const levelOptions = [
-    { label: 'Beginner', value: 'beginner' },
-    { label: 'Intermediate', value: 'intermediate' },
-    { label: 'Advanced', value: 'advanced' },
+    { label: "Beginner", value: "beginner" },
+    { label: "Intermediate", value: "intermediate" },
+    { label: "Advanced", value: "advanced" },
   ];
 
   const toneOptions = [
-    { label: 'Supportive', value: 'supportive' },
-    { label: 'Direct', value: 'direct' },
-    { label: 'Socratic', value: 'socratic' },
-    { label: 'Academic', value: 'academic' },
+    { label: "Supportive", value: "supportive" },
+    { label: "Direct", value: "direct" },
+    { label: "Socratic", value: "socratic" },
+    { label: "Academic", value: "academic" },
   ];
 
   return (
@@ -369,18 +466,24 @@ function LearningTab({ prefs, updatePref, updateResponseLanguage }: any) {
           Output Preferences
         </h3>
         <div className="rounded-xl border border-[var(--border-soft)] bg-[var(--surface-3)] px-5">
-          <SettingRow title="Response language" description="Choose the language Lumora uses for AI-generated responses.">
-            <SettingSelect 
-              value={prefs.responseLanguage} 
+          <SettingRow
+            title="Response language"
+            description="Choose the language Lumora uses for AI-generated responses."
+          >
+            <SettingSelect
+              value={prefs.responseLanguage}
               options={languageOptions}
               onChange={updateResponseLanguage}
             />
           </SettingRow>
-          <SettingRow title="Answer style" description="Choose how Lumora should structure explanations and answers.">
-            <SettingSelect 
-              value={prefs.answerStyle} 
+          <SettingRow
+            title="Answer style"
+            description="Choose how Lumora should structure explanations and answers."
+          >
+            <SettingSelect
+              value={prefs.answerStyle}
               options={styleOptions}
-              onChange={(v) => updatePref('answerStyle', v)} 
+              onChange={(v) => updatePref("answerStyle", v)}
             />
           </SettingRow>
         </div>
@@ -391,18 +494,24 @@ function LearningTab({ prefs, updatePref, updateResponseLanguage }: any) {
           Educational Focus
         </h3>
         <div className="rounded-xl border border-[var(--border-soft)] bg-[var(--surface-3)] px-5">
-          <SettingRow title="Explanation level" description="Tailor explanations to your current level of understanding.">
-            <SettingSelect 
-              value={prefs.explanationLevel} 
+          <SettingRow
+            title="Explanation level"
+            description="Tailor explanations to your current level of understanding."
+          >
+            <SettingSelect
+              value={prefs.explanationLevel}
               options={levelOptions}
-              onChange={(v) => updatePref('explanationLevel', v)} 
+              onChange={(v) => updatePref("explanationLevel", v)}
             />
           </SettingRow>
-          <SettingRow title="Educational tone" description="Adjust the teaching style of your learning assistant.">
-            <SettingSelect 
-              value={prefs.educationalTone} 
+          <SettingRow
+            title="Educational tone"
+            description="Adjust the teaching style of your learning assistant."
+          >
+            <SettingSelect
+              value={prefs.educationalTone}
               options={toneOptions}
-              onChange={(v) => updatePref('educationalTone', v)} 
+              onChange={(v) => updatePref("educationalTone", v)}
             />
           </SettingRow>
         </div>
@@ -413,9 +522,9 @@ function LearningTab({ prefs, updatePref, updateResponseLanguage }: any) {
 
 function AiTab({ prefs, updatePref }: any) {
   const groundingOptions = [
-    { label: 'Strict', value: 'strict' },
-    { label: 'Balanced', value: 'balanced' },
-    { label: 'Open', value: 'open' },
+    { label: "Strict", value: "strict" },
+    { label: "Balanced", value: "balanced" },
+    { label: "Open", value: "open" },
   ];
 
   return (
@@ -425,17 +534,23 @@ function AiTab({ prefs, updatePref }: any) {
           Retrieval & Generation
         </h3>
         <div className="rounded-xl border border-[var(--border-soft)] bg-[var(--surface-3)] px-5">
-          <SettingRow title="Answer grounding" description="Prioritize uploaded sources and use general knowledge when it helps explain the topic.">
-            <SettingSelect 
-              value={prefs.answerGrounding} 
+          <SettingRow
+            title="Answer grounding"
+            description="Prioritize uploaded sources and use general knowledge when it helps explain the topic."
+          >
+            <SettingSelect
+              value={prefs.answerGrounding}
               options={groundingOptions}
-              onChange={(v) => updatePref('answerGrounding', v)} 
+              onChange={(v) => updatePref("answerGrounding", v)}
             />
           </SettingRow>
-          <SettingRow title="Automatically summarize new documents" description="Generate a summary after document indexing completes.">
-            <ToggleSwitch 
-              checked={prefs.autoSummarizeDocuments} 
-              onChange={(v) => updatePref('autoSummarizeDocuments', v)} 
+          <SettingRow
+            title="Automatically summarize new documents"
+            description="Generate a summary after document indexing completes."
+          >
+            <ToggleSwitch
+              checked={prefs.autoSummarizeDocuments}
+              onChange={(v) => updatePref("autoSummarizeDocuments", v)}
             />
           </SettingRow>
         </div>
@@ -446,16 +561,22 @@ function AiTab({ prefs, updatePref }: any) {
           Context & Citations
         </h3>
         <div className="rounded-xl border border-[var(--border-soft)] bg-[var(--surface-3)] px-5">
-          <SettingRow title="Show source references" description="Display citations from your uploaded content.">
-            <ToggleSwitch 
-              checked={prefs.showSourceReferences} 
-              onChange={(v) => updatePref('showSourceReferences', v)} 
+          <SettingRow
+            title="Show source references"
+            description="Display citations from your uploaded content."
+          >
+            <ToggleSwitch
+              checked={prefs.showSourceReferences}
+              onChange={(v) => updatePref("showSourceReferences", v)}
             />
           </SettingRow>
-          <SettingRow title="Show timestamps" description="Include YouTube timestamps when available.">
-            <ToggleSwitch 
-              checked={prefs.showTimestamps} 
-              onChange={(v) => updatePref('showTimestamps', v)} 
+          <SettingRow
+            title="Show timestamps"
+            description="Include YouTube timestamps when available."
+          >
+            <ToggleSwitch
+              checked={prefs.showTimestamps}
+              onChange={(v) => updatePref("showTimestamps", v)}
             />
           </SettingRow>
         </div>
@@ -472,16 +593,22 @@ function WorkspaceTab({ prefs, updatePref }: any) {
           Startup Behavior
         </h3>
         <div className="rounded-xl border border-[var(--border-soft)] bg-[var(--surface-3)] px-5">
-          <SettingRow title="Continue where I left off" description="Return to your most recent workspace when Lumora opens.">
-            <ToggleSwitch 
-              checked={prefs.continueWhereLeftOff} 
-              onChange={(v) => updatePref('continueWhereLeftOff', v)} 
+          <SettingRow
+            title="Continue where I left off"
+            description="Return to your most recent workspace when Lumora opens."
+          >
+            <ToggleSwitch
+              checked={prefs.continueWhereLeftOff}
+              onChange={(v) => updatePref("continueWhereLeftOff", v)}
             />
           </SettingRow>
-          <SettingRow title="Remember last workspace" description="Open the workspace you were using most recently.">
-            <ToggleSwitch 
-              checked={prefs.rememberLastWorkspace} 
-              onChange={(v) => updatePref('rememberLastWorkspace', v)} 
+          <SettingRow
+            title="Remember last workspace"
+            description="Open the workspace you were using most recently."
+          >
+            <ToggleSwitch
+              checked={prefs.rememberLastWorkspace}
+              onChange={(v) => updatePref("rememberLastWorkspace", v)}
             />
           </SettingRow>
         </div>
@@ -491,41 +618,47 @@ function WorkspaceTab({ prefs, updatePref }: any) {
 }
 
 function SecurityTab({ onClose }: { onClose?: () => void }) {
-  const { logoutAllDevices } = useAuth();
-  const [sessions, setSessions] = useState<Session[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { logoutAllDevices, user } = useAuth();
   const [error, setError] = useState<string | null>(null);
-  const [revokingSessionId, setRevokingSessionId] = useState<string | null>(null);
+  const [revokingSessionId, setRevokingSessionId] = useState<string | null>(
+    null,
+  );
   const [isSigningOutAll, setIsSigningOutAll] = useState(false);
-
-  const fetchSessions = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      const data = await authService.getActiveSessions();
-      setSessions(data || []);
-    } catch (err: any) {
-      const msg = err?.message || err?.response?.data?.message || "Failed to load active sessions";
-      setError(msg);
-      toast.error(msg);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchSessions();
-  }, []);
+  const queryClient = useQueryClient();
+  const userId = user?.id;
+  const {
+    data: sessions = [],
+    isLoading,
+    error: sessionsError,
+    refetch,
+  } = useQuery({
+    queryKey: ["sessions", userId],
+    queryFn: authService.getActiveSessions,
+    staleTime: 60 * 1000,
+    enabled:Boolean(userId)
+  });
 
   const handleLogoutSession = async (sessionId: string) => {
     if (revokingSessionId) return;
+
     setRevokingSessionId(sessionId);
+
     try {
       await authService.logoutSession(sessionId);
-      setSessions((prev) => prev.filter((s) => s._id !== sessionId));
+
+      queryClient.setQueryData<Session[]>(
+        ["sessions", userId],
+        (currentSessions) =>
+          currentSessions?.filter((session) => session._id !== sessionId) ?? [],
+      );
+
       toast.success("Session signed out successfully");
     } catch (err: any) {
-      const msg = err?.message || err?.response?.data?.message || "Failed to sign out session";
+      const msg =
+        err?.message ||
+        err?.response?.data?.message ||
+        "Failed to sign out session";
+
       toast.error(msg);
     } finally {
       setRevokingSessionId(null);
@@ -538,9 +671,15 @@ function SecurityTab({ onClose }: { onClose?: () => void }) {
     try {
       if (onClose) onClose();
       await logoutAllDevices();
+      queryClient.removeQueries({
+        queryKey: ["sessions", userId],
+      });
       toast.success("Signed out of all devices");
     } catch (err: any) {
-      const msg = err?.message || err?.response?.data?.message || "Failed to sign out of all devices";
+      const msg =
+        err?.message ||
+        err?.response?.data?.message ||
+        "Failed to sign out of all devices";
       toast.error(msg);
       setIsSigningOutAll(false);
     }
@@ -562,7 +701,7 @@ function SecurityTab({ onClose }: { onClose?: () => void }) {
               <p className="text-sm text-red-400">{error}</p>
               <button
                 type="button"
-                onClick={fetchSessions}
+                onClick={() => refetch()}
                 className="mt-3 text-xs font-medium text-indigo-400 hover:text-indigo-300 transition-colors"
               >
                 Try again
@@ -601,7 +740,9 @@ function SecurityTab({ onClose }: { onClose?: () => void }) {
                     </div>
                     <div className="min-w-0 flex-1 space-y-1">
                       <div className="flex flex-wrap items-center gap-2">
-                        <p className="truncate text-sm font-medium text-white">{deviceName}</p>
+                        <p className="truncate text-sm font-medium text-white">
+                          {deviceName}
+                        </p>
                         {session.isCurrent && (
                           <span className="inline-flex shrink-0 items-center rounded-full border border-indigo-400/25 bg-indigo-400/10 px-2 py-0.5 text-[10px] font-medium text-indigo-200">
                             Current session
@@ -610,7 +751,9 @@ function SecurityTab({ onClose }: { onClose?: () => void }) {
                       </div>
                       <p className="text-xs text-[var(--text-muted)]">
                         {session.provider === "google" ? "Google" : "Email"} •{" "}
-                        {relativeTime ? `Signed in ${relativeTime}` : "Active session"}
+                        {relativeTime
+                          ? `Signed in ${relativeTime}`
+                          : "Active session"}
                       </p>
                       <p className="text-xs text-[var(--text-muted)]">
                         {signedInAt}
@@ -678,10 +821,16 @@ function DataTab() {
           Your Data
         </h3>
         <div className="rounded-xl border border-[var(--border-soft)] bg-[var(--surface-3)] px-5">
-          <SettingRow title="Download Account Data" description="Get a copy of your preferences, history, and metadata.">
+          <SettingRow
+            title="Download Account Data"
+            description="Get a copy of your preferences, history, and metadata."
+          >
             <SettingAction icon={Download} label="Export" />
           </SettingRow>
-          <SettingRow title="Manage Uploaded Documents" description="Review or delete files you've uploaded to Lumora.">
+          <SettingRow
+            title="Manage Uploaded Documents"
+            description="Review or delete files you've uploaded to Lumora."
+          >
             <SettingAction icon={Files} label="Manage" />
           </SettingRow>
         </div>
@@ -692,10 +841,20 @@ function DataTab() {
           History & Privacy
         </h3>
         <div className="rounded-xl border border-[var(--border-soft)] bg-[var(--surface-3)] px-5">
-          <SettingRow title="Clear Chat History" description="This permanently removes your conversations.">
-            <SettingAction icon={MessageSquareOff} label="Clear History" danger />
+          <SettingRow
+            title="Clear Chat History"
+            description="This permanently removes your conversations."
+          >
+            <SettingAction
+              icon={MessageSquareOff}
+              label="Clear History"
+              danger
+            />
           </SettingRow>
-          <SettingRow title="Delete All Documents" description="Removes all original files, metadata, generated chunks, and vector records.">
+          <SettingRow
+            title="Delete All Documents"
+            description="Removes all original files, metadata, generated chunks, and vector records."
+          >
             <SettingAction icon={Trash2} label="Delete Documents" danger />
           </SettingRow>
         </div>
@@ -704,32 +863,47 @@ function DataTab() {
   );
 }
 
-
-type TabId = 'profile' | 'learning' | 'ai' | 'workspace' | 'security' | 'data';
+type TabId = "profile" | "learning" | "ai" | "workspace" | "security" | "data";
 
 const TABS = [
-  { id: 'profile', label: 'Profile', icon: User, category: 'ACCOUNT' },
-  { id: 'learning', label: 'Learning Preferences', icon: GraduationCap, category: 'LEARNING' },
-  { id: 'ai', label: 'AI Preferences', icon: Sparkles, category: 'LEARNING' },
-  { id: 'workspace', label: 'Workspace', icon: LayoutDashboard, category: 'WORKSPACE' },
-  { id: 'security', label: 'Security & Sessions', icon: Lock, category: 'SECURITY' },
-  { id: 'data', label: 'Privacy & Data', icon: Database, category: 'DATA' },
+  { id: "profile", label: "Profile", icon: User, category: "ACCOUNT" },
+  {
+    id: "learning",
+    label: "Learning Preferences",
+    icon: GraduationCap,
+    category: "LEARNING",
+  },
+  { id: "ai", label: "AI Preferences", icon: Sparkles, category: "LEARNING" },
+  {
+    id: "workspace",
+    label: "Workspace",
+    icon: LayoutDashboard,
+    category: "WORKSPACE",
+  },
+  {
+    id: "security",
+    label: "Security & Sessions",
+    icon: Lock,
+    category: "SECURITY",
+  },
+  { id: "data", label: "Privacy & Data", icon: Database, category: "DATA" },
 ] as const;
 
 export function SettingsModal({ isOpen, onClose }: Props) {
   const { user } = useAuth();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [activeTab, setActiveTab] = useState<TabId>('profile');
+  const [activeTab, setActiveTab] = useState<TabId>("profile");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(true);
-  const [isUpdatingResponseLanguage, setIsUpdatingResponseLanguage] = useState(false);
+  const [isUpdatingResponseLanguage, setIsUpdatingResponseLanguage] =
+    useState(false);
 
   // Other settings remain local-only until their backend integrations are added.
   const [prefs, setPrefs] = useState({
-    responseLanguage: 'en',
-    answerStyle: 'balanced',
-    explanationLevel: 'intermediate',
-    educationalTone: 'supportive',
-    answerGrounding: 'balanced',
+    responseLanguage: "en",
+    answerStyle: "balanced",
+    explanationLevel: "intermediate",
+    educationalTone: "supportive",
+    answerGrounding: "balanced",
     showSourceReferences: true,
     showTimestamps: true,
     autoSummarizeDocuments: false,
@@ -738,14 +912,16 @@ export function SettingsModal({ isOpen, onClose }: Props) {
   });
 
   const updatePref = (key: keyof typeof prefs, value: any) => {
-    setPrefs(p => ({ ...p, [key]: value }));
+    setPrefs((p) => ({ ...p, [key]: value }));
   };
 
   useEffect(() => {
-    const savedLanguage = user?.preferences?.responseLanguage || (user?.id && localStorage.getItem(`responseLanguage:${user.id}`));
+    const savedLanguage =
+      user?.preferences?.responseLanguage ||
+      (user?.id && localStorage.getItem(`responseLanguage:${user.id}`));
 
     if (savedLanguage) {
-      setPrefs(p => ({ ...p, responseLanguage: savedLanguage }));
+      setPrefs((p) => ({ ...p, responseLanguage: savedLanguage }));
     }
   }, [user?.id, user?.preferences?.responseLanguage]);
 
@@ -758,22 +934,26 @@ export function SettingsModal({ isOpen, onClose }: Props) {
     }
 
     const previousResponseLanguage = prefs.responseLanguage;
-    setPrefs(p => ({ ...p, responseLanguage }));
+    setPrefs((p) => ({ ...p, responseLanguage }));
     setIsUpdatingResponseLanguage(true);
 
     try {
       const savedLanguage = await settingsService.updateResponseLanguage(
         responseLanguage as ResponseLanguage,
       );
-      setPrefs(p => ({ ...p, responseLanguage: savedLanguage }));
+      setPrefs((p) => ({ ...p, responseLanguage: savedLanguage }));
 
       if (user?.id) {
         localStorage.setItem(`responseLanguage:${user.id}`, savedLanguage);
       }
     } catch (error) {
-      setPrefs(p => ({ ...p, responseLanguage: previousResponseLanguage }));
+      setPrefs((p) => ({ ...p, responseLanguage: previousResponseLanguage }));
       if ((error as { code?: string })?.code !== EMAIL_NOT_VERIFIED_CODE) {
-        toast.error(error instanceof Error ? error.message : 'Failed to update response language');
+        toast.error(
+          error instanceof Error
+            ? error.message
+            : "Failed to update response language",
+        );
       }
     } finally {
       setIsUpdatingResponseLanguage(false);
@@ -782,23 +962,26 @@ export function SettingsModal({ isOpen, onClose }: Props) {
   // -------------------------------------
 
   // Group tabs by category
-  const categories = TABS.reduce((acc, tab) => {
-    if (!acc[tab.category]) acc[tab.category] = [];
-    acc[tab.category].push(tab);
-    return acc;
-  }, {} as Record<string, typeof TABS[number][]>);
+  const categories = TABS.reduce(
+    (acc, tab) => {
+      if (!acc[tab.category]) acc[tab.category] = [];
+      acc[tab.category].push(tab);
+      return acc;
+    },
+    {} as Record<string, (typeof TABS)[number][]>,
+  );
 
   // Reset state when opened
   useEffect(() => {
     if (!isOpen) {
       setTimeout(() => {
-        setActiveTab('profile');
+        setActiveTab("profile");
         setIsMobileMenuOpen(true);
       }, 200);
     }
   }, [isOpen]);
 
-  const activeTabDef = TABS.find(t => t.id === activeTab);
+  const activeTabDef = TABS.find((t) => t.id === activeTab);
 
   return (
     <>
@@ -848,59 +1031,80 @@ export function SettingsModal({ isOpen, onClose }: Props) {
               </div>
 
               {/* Sidebar Navigation */}
-              <div className={`flex w-full shrink-0 flex-col border-r border-[var(--border-soft)] bg-[var(--surface-2)] sm:w-64 sm:flex ${isMobileMenuOpen ? 'flex' : 'hidden sm:flex'}`}>
+              <div
+                className={`flex w-full shrink-0 flex-col border-r border-[var(--border-soft)] bg-[var(--surface-2)] sm:w-64 sm:flex ${isMobileMenuOpen ? "flex" : "hidden sm:flex"}`}
+              >
                 {/* Desktop Header */}
                 <div className="hidden items-center justify-between px-6 py-6 sm:flex">
                   <div>
                     <h2 className="flex items-center gap-2 text-base font-semibold text-white">
-                      <Settings size={16} className="text-[var(--text-muted)]" />
+                      <Settings
+                        size={16}
+                        className="text-[var(--text-muted)]"
+                      />
                       Settings
                     </h2>
                   </div>
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-4 sm:px-4 sm:py-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
-                  {Object.entries(categories).map(([category, categoryTabs]) => (
-                    <div key={category} className="mb-6 last:mb-0">
-                      <h4 className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)]/70">
-                        {category}
-                      </h4>
-                      <div className="space-y-0.5">
-                        {categoryTabs.map((tab) => {
-                          const isActive = activeTab === tab.id;
-                          return (
-                            <button
-                              key={tab.id}
-                              onClick={() => {
-                                setActiveTab(tab.id);
-                                setIsMobileMenuOpen(false);
-                              }}
-                              className={`flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
-                                isActive
-                                  ? 'bg-white/10 text-white shadow-sm'
-                                  : 'text-[var(--text-muted)] hover:bg-white/[0.04] hover:text-white'
-                              }`}
-                            >
-                              <div className="flex items-center gap-3">
-                                <tab.icon size={16} className={isActive ? "text-indigo-400" : "text-white/40"} />
-                                {tab.label}
-                              </div>
-                              <ChevronRight size={14} className={`sm:hidden ${isActive ? "text-white/60" : "text-transparent"}`} />
-                            </button>
-                          );
-                        })}
+                  {Object.entries(categories).map(
+                    ([category, categoryTabs]) => (
+                      <div key={category} className="mb-6 last:mb-0">
+                        <h4 className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)]/70">
+                          {category}
+                        </h4>
+                        <div className="space-y-0.5">
+                          {categoryTabs.map((tab) => {
+                            const isActive = activeTab === tab.id;
+                            return (
+                              <button
+                                key={tab.id}
+                                onClick={() => {
+                                  setActiveTab(tab.id);
+                                  setIsMobileMenuOpen(false);
+                                }}
+                                className={`flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
+                                  isActive
+                                    ? "bg-white/10 text-white shadow-sm"
+                                    : "text-[var(--text-muted)] hover:bg-white/[0.04] hover:text-white"
+                                }`}
+                              >
+                                <div className="flex items-center gap-3">
+                                  <tab.icon
+                                    size={16}
+                                    className={
+                                      isActive
+                                        ? "text-indigo-400"
+                                        : "text-white/40"
+                                    }
+                                  />
+                                  {tab.label}
+                                </div>
+                                <ChevronRight
+                                  size={14}
+                                  className={`sm:hidden ${isActive ? "text-white/60" : "text-transparent"}`}
+                                />
+                              </button>
+                            );
+                          })}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ),
+                  )}
                 </div>
               </div>
 
               {/* Content Area */}
-              <div className={`flex flex-1 flex-col bg-[var(--surface-1)] ${!isMobileMenuOpen ? 'flex' : 'hidden sm:flex'}`}>
+              <div
+                className={`flex flex-1 flex-col bg-[var(--surface-1)] ${!isMobileMenuOpen ? "flex" : "hidden sm:flex"}`}
+              >
                 {/* Desktop Content Header */}
                 <div className="hidden shrink-0 items-center justify-between border-b border-[var(--border-soft)] px-8 py-5 sm:flex">
                   <div>
-                    <h2 className="text-lg font-semibold text-white">{activeTabDef?.label}</h2>
+                    <h2 className="text-lg font-semibold text-white">
+                      {activeTabDef?.label}
+                    </h2>
                   </div>
                   <button
                     onClick={onClose}
@@ -909,26 +1113,42 @@ export function SettingsModal({ isOpen, onClose }: Props) {
                     <X size={18} />
                   </button>
                 </div>
-                
+
                 {/* Mobile Content Header */}
                 <div className="flex shrink-0 items-center justify-between border-b border-[var(--border-soft)] px-5 py-4 sm:hidden">
-                  <h2 className="text-base font-semibold text-white">{activeTabDef?.label}</h2>
+                  <h2 className="text-base font-semibold text-white">
+                    {activeTabDef?.label}
+                  </h2>
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-5 sm:p-8 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
                   <div className="mx-auto max-w-2xl pb-8">
-                    {activeTab === 'profile' && <ProfileTab user={user} onShowDeleteModal={() => { onClose(); setShowDeleteModal(true); }} />}
-                    {activeTab === 'learning' && (
+                    {activeTab === "profile" && (
+                      <ProfileTab
+                        user={user}
+                        onShowDeleteModal={() => {
+                          onClose();
+                          setShowDeleteModal(true);
+                        }}
+                      />
+                    )}
+                    {activeTab === "learning" && (
                       <LearningTab
                         prefs={prefs}
                         updatePref={updatePref}
                         updateResponseLanguage={updateResponseLanguage}
                       />
                     )}
-                    {activeTab === 'ai' && <AiTab prefs={prefs} updatePref={updatePref} />}
-                    {activeTab === 'workspace' && <WorkspaceTab prefs={prefs} updatePref={updatePref} />}
-                    {activeTab === 'security' && <SecurityTab onClose={onClose} />}
-                    {activeTab === 'data' && <DataTab />}
+                    {activeTab === "ai" && (
+                      <AiTab prefs={prefs} updatePref={updatePref} />
+                    )}
+                    {activeTab === "workspace" && (
+                      <WorkspaceTab prefs={prefs} updatePref={updatePref} />
+                    )}
+                    {activeTab === "security" && (
+                      <SecurityTab onClose={onClose} />
+                    )}
+                    {activeTab === "data" && <DataTab />}
                   </div>
                 </div>
               </div>

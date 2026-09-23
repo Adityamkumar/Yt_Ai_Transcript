@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import axiosInstance from "@/lib/axios";
 import { authService } from "@/services/auth.service";
 import type { ResponseLanguage } from "@/services/settings.service";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface User {
   id: string;
@@ -110,10 +111,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     navigate("/app");
   }, [navigate, refreshUser]);
 
+  const queryClient = useQueryClient();
   const logout = async () => {
     try {
       await axiosInstance.post("/api/v1/user/logout");
     } finally {
+      if (user?.id) {
+      queryClient.removeQueries({
+        queryKey: ["sessions", user.id],
+      });
+    }
       setUser(null);
       setAuthStatus("unauthenticated");
       navigate("/");
