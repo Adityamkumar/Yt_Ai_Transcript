@@ -28,7 +28,6 @@ const sessionManagementChallengeSchema =
       expiresAt: {
         type: Date,
         required: true,
-        index: true,
       },
     },
     {

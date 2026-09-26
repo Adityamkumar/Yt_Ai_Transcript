@@ -19,7 +19,7 @@ export class GeminiProvider implements IAIProvider {
   readonly name = "Gemini";
 
   private getModel(): string {
-    return process.env.GEMINI_MODEL || "gemini-2.5-flash";
+    return process.env.GEMINI_MODEL || "gemini-3.8-flash";
   }
 
   async generateResponse(prompt: string, systemPrompt?: string): Promise<string> {

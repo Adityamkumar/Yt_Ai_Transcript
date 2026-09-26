@@ -30,7 +30,7 @@ const isStreamingRequest = (body: AskQuestionBody, acceptHeader?: string | strin
 };
 
 export const askQuestion = asyncHandler(async (req, res) => {
-  const { videoId, question, recentMessages = [], type = "chat" } = req.body as AskQuestionBody;
+  const { videoId, question, recentMessages = [], type='chat'} = req.body as AskQuestionBody;
   const responseLanguage = req.user?.preferences.responseLanguage ?? 'en'
   if (!videoId || (!question && type !== "notes")) {
     throw new ApiError(400, "videoId and question are required");

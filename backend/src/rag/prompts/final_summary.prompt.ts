@@ -1,78 +1,100 @@
 export const FINAL_SUMMARY_SYSTEM_PROMPT = `
-You are given summaries from multiple consecutive sections of the same video.
+
+You are given summaries from consecutive sections of the same video.
 
 Each section contains:
 
-- Title
-- Timestamp
+- Start Seconds
+- End Seconds
 - Summary
 
-Merge them into one coherent final summary.
+The Start Seconds and End Seconds values come from the original timestamped
+transcript and are authoritative source metadata.
 
-Rules:
+Your task is to create a final structured summary while preserving the
+timestamp information for every section.
+
+For each input section:
+
+- Generate a short, clear, descriptive title based ONLY on that section's summary.
+- The title must describe the main topic covered within that timestamp range.
+- Do not invent a topic that is not supported by the section summary.
+- Preserve the section's original summary meaning.
+- Preserve the exact Start Seconds and End Seconds provided for that section.
+
+IMPORTANT TIMESTAMP RULES:
+
+- Treat Start Seconds and End Seconds as authoritative.
+- Copy the provided timestamp values exactly into the output.
+- Never invent timestamps.
+- Never estimate timestamps.
+- Never change, shift, round, or reconstruct timestamps.
+- Never merge timestamp ranges.
+- Never omit timestamp information.
+- Never claim that timestamps are unavailable when Start Seconds and End Seconds
+  are provided in the input.
+
+SECTION PRESERVATION RULES:
 
 - Preserve chronological order.
-- Preserve ALL timestamps.
-- Never invent timestamps.
-- Never merge timestamp ranges.
-- Remove duplicated information.
-- Keep important technical concepts.
-- Respond in the requested language.
+- Every input section MUST produce exactly one output item.
+- Do NOT remove, omit, merge, combine, or collapse sections.
+- Sections may contain overlapping or related concepts; keep them as separate
+  sections because each section represents its own timestamp range.
+- Remove only unnecessary repetition in the generated summary text when doing
+  so does not change the meaning of that individual section.
+- Keep important technical concepts and meaningful details.
 
-IMPORTANT
+TITLE RULES:
+
+- Generate one short descriptive title for every section.
+- Base the title only on the corresponding section's Summary.
+- Do not use information from another section when creating the title.
+- Avoid generic titles such as "Introduction", "Overview", or "Summary"
+  unless the section content genuinely supports that title.
+- If two consecutive sections discuss related but different concepts, give each
+  section a title that clearly distinguishes its specific topic.
+
+LANGUAGE:
+
+- Respond entirely in the requested language.
+- Keep technical terms accurate when they are commonly used in their original
+  form.
+
+OUTPUT FORMAT:
 
 Return ONLY valid JSON.
 
-Before returning the final JSON:
-
-Review all section titles.
-
-If two titles are nearly identical but discuss different concepts,
-rewrite them so each title clearly reflects its unique content.
-
-Do NOT change timestamps.
-Do NOT change summaries.
-Only improve duplicated or overly generic titles.
-
-Use EXACTLY this schema:
+For every input section, return exactly one object using this structure:
 
 {
-  "summary": [
-    {
-      "text": "Title: Summary",
-      "timestamp": <start_seconds>,
-      "endTimestamp": <end_seconds>
-    }
-  ]
+  "text": "Title: Summary",
+  "timestamp": <start_seconds>,
+  "endTimestamp": <end_seconds>
 }
 
 Requirements:
 
-- timestamp MUST be an integer.
-- endTimestamp MUST be an integer.
-- text MUST contain:
-    "Title: Summary"
+- "text" MUST contain the generated title followed by ": " and then the
+  corresponding section summary.
+- "timestamp" MUST contain the exact Start Seconds value from that section.
+- "endTimestamp" MUST contain the exact End Seconds value from that section.
+- Do not generate or modify timestamp values.
+- Do not add extra fields.
+- Do not omit required fields.
+- Do not wrap the JSON in markdown.
+- Do not explain anything.
+- Do not write any text before or after the JSON.
 
-Example:
+Before returning the final JSON, verify that:
 
-{
-  "summary": [
-    {
-      "text": "Building Real-Time Applications: This section introduces the communication between clients and servers.",
-      "timestamp": 2,
-      "endTimestamp": 236
-    },
-    {
-      "text": "Real-Time Application Challenges: This section discusses stale data and why WebSockets solve it.",
-      "timestamp": 236,
-      "endTimestamp": 425
-    }
-  ]
-}
+1. Every input section is represented exactly once.
+2. The output remains in chronological order.
+3. Every output timestamp exactly matches its corresponding Start Seconds.
+4. Every output endTimestamp exactly matches its corresponding End Seconds.
+5. Every section has a descriptive title generated from its own summary.
+6. No sections or timestamp ranges were merged or omitted.
+7. The output is valid JSON.
 
-Return ONLY JSON.
-
-Do NOT wrap JSON inside markdown.
-Do NOT explain anything.
-Do NOT write extra text.
+Return ONLY the JSON object.
 `;

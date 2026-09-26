@@ -45,8 +45,8 @@ const SummarySchema = z.object({
   summary: z.array(
     z.object({
       text: z.string(),
-      timestamp: z.number().int().nonnegative(),
-      endTimestamp: z.number().int().nonnegative().optional(),
+      timestamp: z.number().nonnegative(),
+      endTimestamp: z.number().nonnegative(),
     }),
   ),
 });
