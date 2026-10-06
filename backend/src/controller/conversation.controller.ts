@@ -75,6 +75,40 @@ export const getConversations = asyncHandler(async (req: any, res) => {
     );
 });
 
+export const updateConversationPin = asyncHandler(async (req: any, res) => {
+  const { conversationId } = req.params;
+  const { isPinned } = req.body;
+
+  if (!conversationId) {
+    throw new ApiError(400, "ConversationId is required");
+  }
+
+  if (typeof isPinned !== "boolean") {
+    throw new ApiError(400, "isPinned must be a boolean");
+  }
+
+  if (!req.authUserId) {
+    throw new ApiError(401, "Unauthorized request");
+  }
+
+  const updatedConversation = await Conversation.findOneAndUpdate(
+    {
+      _id: new mongoose.Types.ObjectId(conversationId as string),
+      userId: req.authUserId,
+    },
+    { isPinned },
+    { new: true, timestamps: false },
+  );
+
+  if (!updatedConversation) {
+    throw new ApiError(404, "Conversation not found or unauthorized");
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, updatedConversation, "Conversation pin updated successfully"));
+});
+
 export const deleteConversation = asyncHandler(async (req: any, res) => {
   const { conversationId } = req.params;
 

@@ -12,21 +12,21 @@ export class ProviderRegistry {
   }
 
   setOrder(order: string[]) {
-    this.order = order.map(o => o.toLowerCase());
+    this.order = order.map((o) => o.toLowerCase());
   }
 
-  getOrderedProviders(): IAIProvider[] {
-    return this.order
-      .map(name => this.providers.get(name))
-      .filter((p): p is IAIProvider => !!p);
+  getOrderedProviders(order: string[] = this.order): IAIProvider[] {
+    return order
+      .map((name) => this.providers.get(name.toLowerCase()))
+      .filter(
+        (p): p is IAIProvider => !!p,
+      );
   }
 }
 
 export const providerRegistry = new ProviderRegistry();
 
-
 providerRegistry.register(new GroqProvider());
 providerRegistry.register(new GeminiProvider());
-
 
 providerRegistry.setOrder(["groq", "gemini"]);

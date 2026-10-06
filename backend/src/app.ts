@@ -2,15 +2,15 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import videoRouter from "./routes/video.route.js";
-import chatRouter from './routes/chat.route.js'
-import authRouter from './routes/auth.route.js'
-import conversationRouter from './routes/conversation.route.js'
-import messageRouter from './routes/message.route.js'
-import bookmarkRouter from './routes/bookmark.route.js'
-import pdfRouter from './routes/pdf.route.js'
-import searchRouter from './search/search.routes.js'
-import settingsRouter from './routes/settings.route.js'
-import cookieParser from 'cookie-parser'
+import chatRouter from "./routes/chat.route.js";
+import authRouter from "./routes/auth.route.js";
+import conversationRouter from "./routes/conversation.route.js";
+import messageRouter from "./routes/message.route.js";
+import bookmarkRouter from "./routes/bookmark.route.js";
+import pdfRouter from "./routes/pdf.route.js";
+import searchRouter from "./search/search.routes.js";
+import settingsRouter from "./routes/settings.route.js";
+import cookieParser from "cookie-parser";
 import { globalErrorHandler } from "./middleware/error.middleware.js";
 
 const app = express();
@@ -19,7 +19,7 @@ app.set("trust proxy", true);
 const allowedOrigins = [
   process.env.FRONTEND_URL,
   process.env.FRONTEND_PROD_URL,
-  process.env.FRONTEND_CLOUDFLARE_URL
+  process.env.FRONTEND_CLOUDFLARE_URL,
 ].filter(Boolean);
 
 const isLocalOrigin = (url: string): boolean => {
@@ -27,10 +27,10 @@ const isLocalOrigin = (url: string): boolean => {
     const parsed = new URL(url);
     const hostname = parsed.hostname;
     return (
-      hostname === 'localhost' ||
-      hostname === '127.0.0.1' ||
-      hostname.startsWith('192.168.') ||
-      hostname.startsWith('10.') ||
+      hostname === "localhost" ||
+      hostname === "127.0.0.1" ||
+      hostname.startsWith("192.168.") ||
+      hostname.startsWith("10.") ||
       /^172\.(1[6-9]|2\d|3[01])\./.test(hostname)
     );
   } catch {
@@ -38,16 +38,13 @@ const isLocalOrigin = (url: string): boolean => {
   }
 };
 
-
-
 app.use(
   cors({
     origin: (origin, callback) => {
       if (
         !origin ||
         allowedOrigins.includes(origin) ||
-        (process.env.NODE_ENV === "development" &&
-          isLocalOrigin(origin))
+        (process.env.NODE_ENV === "development" && isLocalOrigin(origin))
       ) {
         callback(null, true);
       } else {
@@ -61,37 +58,32 @@ app.use(
       "Authorization",
       "X-Requested-With",
       "Accept",
-      "X-Session-Management-Token"
+      "X-Session-Management-Token",
     ],
-  })
+  }),
 );
 
-app.use(express.json({limit: "100kb"}));
-app.use(cookieParser())
-app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" }, }))
+app.use(express.json({ limit: "100kb" }));
+app.use(cookieParser());
+app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 
 app.use("/api/v1/video", videoRouter);
 app.use("/api/v1/chat", chatRouter);
-app.use("/api/v1/user", authRouter)
-app.use("/api/v1/conversations",conversationRouter);
-app.use("/api/v1/messages",messageRouter);
-app.use("/api/v1/bookmarks", bookmarkRouter)
+app.use("/api/v1/user", authRouter);
+app.use("/api/v1/conversations", conversationRouter);
+app.use("/api/v1/messages", messageRouter);
+app.use("/api/v1/bookmarks", bookmarkRouter);
 app.use("/api/v1/pdf", pdfRouter);
 app.use("/api/v1/search", searchRouter);
-app.use('/api/v1/settings', settingsRouter)
+app.use("/api/v1/settings", settingsRouter);
 
-
-app.use(globalErrorHandler)
+app.use(globalErrorHandler);
 
 app.get("/health", (_, res) => {
   res.status(200).json({
     status: "ok",
-    message: "Lumora backend is running✅"
+    message: "Lumora backend is running✅",
   });
 });
 
-
-
-
 export default app;
-

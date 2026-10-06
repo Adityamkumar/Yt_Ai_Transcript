@@ -1,17 +1,31 @@
 import { providerRegistry } from "./providerRegistry.js";
 import logger from "../../../lib/logger.js";
 
+export interface AIRequestOptions {
+  purpose?: "summary" | "long-summary" | "normal" | "followup";
+}
+
 export interface IAIProvider {
   readonly name: string;
-  generateResponse(prompt: string, systemPrompt?: string): Promise<string>;
+  countTokens?(prompt: string): Promise<number>;
+
+  generateResponse(
+    prompt: string,
+    systemPrompt?: string,
+    options?: AIRequestOptions,
+  ): Promise<string>;
+
   generateStructuredResponse(
     prompt: string,
     schema: any,
     systemPrompt?: string,
+    options?: AIRequestOptions,
   ): Promise<string>;
+
   generateStream(
     prompt: string,
     systemPrompt?: string,
+    options?: AIRequestOptions,
   ):
     | Promise<AsyncGenerator<string, void, unknown>>
     | AsyncGenerator<string, void, unknown>;
@@ -156,7 +170,6 @@ const isTransientProviderError = (error: any): boolean => {
 
 const getRetryAfterMs = (error: any): number | null => {
   const headers = error?.headers;
-
   if (headers) {
     let retryAfter: string | null = null;
 
@@ -386,8 +399,23 @@ export class AIProviderService {
   private async executeWithFallback<T>(
     actionName: string,
     actionFn: (provider: IAIProvider) => Promise<T>,
+    options?: AIRequestOptions,
   ): Promise<T> {
-    const providers = providerRegistry.getOrderedProviders();
+    const providers =
+      options?.purpose === "followup" || options?.purpose === "long-summary"
+        ? providerRegistry
+            .getOrderedProviders()
+            .filter((provider) => provider.name.toLowerCase() === "gemini")
+        : providerRegistry.getOrderedProviders();
+
+    logger.info(
+      {
+        actionName,
+        purpose: options?.purpose,
+        providers: providers.map((provider) => provider.name),
+      },
+      "[AI] Provider order selected",
+    );
 
     let lastError: any = null;
 
@@ -434,14 +462,18 @@ export class AIProviderService {
 
           logger.warn(
             {
-              error,
               providerName: provider.name,
               actionName,
               attempt,
-              maxAttempts: this.PROVIDER_MAX_ATTEMPTS,
               status,
               transient,
               retryAfterMs,
+              errorName: error?.name,
+              errorMessage: error?.message,
+              errorStatus: error?.status,
+              errorStatusText: error?.statusText,
+              errorDetails: error?.details,
+              errorCause: error?.cause,
             },
             "[AI] Provider failed during action",
           );
@@ -534,13 +566,27 @@ export class AIProviderService {
     throw new Error("Response generation temporarily unavailable.");
   }
 
+  async countTokens(providerName: string, prompt: string): Promise<number> {
+    const provider = providerRegistry
+      .getOrderedProviders()
+      .find((p) => p.name.toLowerCase() === providerName.toLowerCase());
+
+    if (!provider?.countTokens) {
+      throw new Error(`Token counting is not supported by ${providerName}.`);
+    }
+
+    return provider.countTokens(prompt);
+  }
+
   async generateResponse(
     prompt: string,
     systemPrompt?: string,
+    options?: AIRequestOptions,
   ): Promise<string> {
     const raw = await this.executeWithFallback("generateResponse", (provider) =>
-      provider.generateResponse(prompt, systemPrompt),
+      provider.generateResponse(prompt, systemPrompt, options),
     );
+    options;
     return sanitizeModelOutput(raw);
   }
 
@@ -549,6 +595,7 @@ export class AIProviderService {
     schema: any,
     systemPrompt?: string,
     validateFn?: (rawText: string) => boolean,
+    options?: AIRequestOptions,
   ): Promise<string> {
     const raw = await this.executeWithFallback(
       "generateStructuredResponse",
@@ -557,6 +604,7 @@ export class AIProviderService {
           prompt,
           schema,
           systemPrompt,
+          options,
         );
         if (validateFn && !validateFn(response)) {
           throw new Error(
@@ -565,6 +613,7 @@ export class AIProviderService {
         }
         return response;
       },
+      options,
     );
     return sanitizeModelOutput(raw);
   }

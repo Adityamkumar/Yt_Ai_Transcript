@@ -25,12 +25,18 @@ export function Header({ onNewChat, onSearchOpen, workspaceActions }: HeaderProp
           <button
             onClick={toggleSidebar}
             aria-label={sidebarOpen ? 'Collapse sidebar' : 'Open sidebar'}
-            className="grid h-9 w-9 shrink-0 place-items-center rounded-xl text-[var(--text-muted)] transition-colors hover:bg-[rgba(255,255,255,0.05)] hover:text-[var(--text-primary)]"
+            className="group relative grid h-9 w-9 shrink-0 cursor-ew-resize! place-items-center rounded-xl text-[var(--text-muted)] transition-colors hover:bg-[rgba(255,255,255,0.05)] hover:text-[var(--text-primary)]"
           >
             <PanelLeft
               size={17}
               className={cn('transition-transform duration-300', !sidebarOpen && 'rotate-180')}
             />
+            <span
+              role="tooltip"
+              className="pointer-events-none absolute left-[calc(100%+8px)] top-1/2 z-50 -translate-y-1/2 whitespace-nowrap rounded-lg border border-[var(--border-medium)] bg-[#171a25] px-2.5 py-1.5 text-[11px] font-medium text-[var(--text-primary)] opacity-0 shadow-lg shadow-black/30 transition-all duration-150 group-hover:opacity-100 group-focus-visible:opacity-100"
+            >
+              {sidebarOpen ? 'Collapse sidebar' : 'Open sidebar'}
+            </span>
           </button>
 
           <div className="hidden h-5 w-px bg-[var(--border-soft)] sm:block" />

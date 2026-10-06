@@ -13,7 +13,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import logger from "../lib/logger.js";
-import { generateHierarchicalSummary } from "../rag/services/summarization.service.js";
+import { generateSummary } from "../rag/services/summarization.service.js";
 import { detectSummaryLanguage } from "../rag/utils/languagePrompt.util.js";
 type AskQuestionBody = {
   videoId?: string;
@@ -23,15 +23,28 @@ type AskQuestionBody = {
   type?: "chat" | "notes" | "summary";
 };
 
-const isStreamingRequest = (body: AskQuestionBody, acceptHeader?: string | string[]) => {
+const isStreamingRequest = (
+  body: AskQuestionBody,
+  acceptHeader?: string | string[],
+) => {
   if (body.stream === true) return true;
-  const accept = Array.isArray(acceptHeader) ? acceptHeader.join(",") : acceptHeader ?? "";
-  return accept.includes("text/event-stream") || (accept.includes("text/plain") && !accept.includes("application/json"));
+  const accept = Array.isArray(acceptHeader)
+    ? acceptHeader.join(",")
+    : (acceptHeader ?? "");
+  return (
+    accept.includes("text/event-stream") ||
+    (accept.includes("text/plain") && !accept.includes("application/json"))
+  );
 };
 
 export const askQuestion = asyncHandler(async (req, res) => {
-  const { videoId, question, recentMessages = [], type='chat'} = req.body as AskQuestionBody;
-  const responseLanguage = req.user?.preferences.responseLanguage ?? 'en'
+  const {
+    videoId,
+    question,
+    recentMessages = [],
+    type = "chat",
+  } = req.body as AskQuestionBody;
+  const responseLanguage = req.user?.preferences.responseLanguage ?? "en";
   if (!videoId || (!question && type !== "notes")) {
     throw new ApiError(400, "videoId and question are required");
   }
@@ -44,19 +57,28 @@ export const askQuestion = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Video not found");
   }
 
-  let chunks = await TranscriptChunk.find({ videoDocumentId: video._id }).sort({ chunkIndex: 1 });
+  let chunks = await TranscriptChunk.find({ videoDocumentId: video._id }).sort({
+    chunkIndex: 1,
+  });
   if (chunks.length === 0) {
-    logger.info(`Transcript chunks empty for video ${videoId}, attempting dynamic re-ingestion...`);
+    logger.info(
+      `Transcript chunks empty for video ${videoId}, attempting dynamic re-ingestion...`,
+    );
     try {
       await ingestVideoForRag({ videoDocumentId: video._id });
-      chunks = await TranscriptChunk.find({ videoDocumentId: video._id }).sort({ chunkIndex: 1 });
+      chunks = await TranscriptChunk.find({ videoDocumentId: video._id }).sort({
+        chunkIndex: 1,
+      });
     } catch (err: any) {
       logger.error({ err }, "[Chat] Failed to auto-ingest video transcript");
     }
   }
 
   if (chunks.length === 0) {
-    throw new ApiError(400, "Transcript is currently being prepared. Please try again shortly.");
+    throw new ApiError(
+      400,
+      "Transcript is currently being prepared. Please try again shortly.",
+    );
   }
 
   let relevantChunks: any[] = chunks;
@@ -64,37 +86,39 @@ export const askQuestion = asyncHandler(async (req, res) => {
     if (isSimpleGreeting(question)) {
       relevantChunks = [];
     } else {
-      relevantChunks = await retrieveRelevantTranscriptChunks(video._id, question, 8);
+      relevantChunks = await retrieveRelevantTranscriptChunks(
+        video._id,
+        question,
+        8,
+      );
     }
   }
 
- const contextMessages = getRecentMessages(recentMessages, 10);
- const language = detectSummaryLanguage(question!);
-if (type === "summary") {
-  const summary = await generateHierarchicalSummary(chunks, language);
+  const contextMessages = getRecentMessages(recentMessages, 10);
+  const language = detectSummaryLanguage(question!);
+  if (type === "summary") {
+    const summary = await generateSummary(chunks, language);
+    return res
+      .status(200)
+      .json(new ApiResponse(200, summary, "Summary generated successfully"));
+  }
 
-  return res.status(200).json(
-    new ApiResponse(
-      200,
-      summary,
-      "Summary generated successfully",
-    ),
-  );
-}
+  if (
+    type === "notes" ||
+    !isStreamingRequest(req.body as AskQuestionBody, req.headers.accept)
+  ) {
+    const answer = await askAiAboutTranscript(
+      relevantChunks,
+      question || "",
+      contextMessages,
+      type,
+      responseLanguage,
+    );
 
-if (type === "notes" || !isStreamingRequest(req.body as AskQuestionBody, req.headers.accept)) {
-  const answer = await askAiAboutTranscript(
-    relevantChunks,
-    question || "",
-    contextMessages,
-    type,
-    responseLanguage
-  );
-
-  return res
-    .status(200)
-    .json(new ApiResponse(200, answer, "answer generated successfully"));
-}
+    return res
+      .status(200)
+      .json(new ApiResponse(200, answer, "answer generated successfully"));
+  }
 
   res.status(200);
   res.setHeader("Content-Type", "text/plain; charset=utf-8");
@@ -110,7 +134,13 @@ if (type === "notes" || !isStreamingRequest(req.body as AskQuestionBody, req.hea
   });
 
   try {
-    for await (const chunk of streamAiAboutTranscript(relevantChunks, question || "", contextMessages, type, responseLanguage)) {
+    for await (const chunk of streamAiAboutTranscript(
+      relevantChunks,
+      question || "",
+      contextMessages,
+      type,
+      responseLanguage,
+    )) {
       if (closed || res.destroyed) break;
       res.write(chunk);
     }
@@ -123,7 +153,9 @@ if (type === "notes" || !isStreamingRequest(req.body as AskQuestionBody, req.hea
       if (!res.headersSent) {
         res.status(500);
       }
-      const errorMessage = error?.message || "I encountered a brief technical issue. Please try asking your question again.";
+      const errorMessage =
+        error?.message ||
+        "I encountered a brief technical issue. Please try asking your question again.";
       res.write(`\n\nI'm sorry, ${errorMessage}`);
       res.end();
     }

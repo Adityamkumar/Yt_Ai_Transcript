@@ -1,5 +1,5 @@
 import Groq from "groq-sdk";
-import type { IAIProvider } from "./aiProvider.service.js";
+import type { IAIProvider, AIRequestOptions } from "./aiProvider.service.js";
 
 let groqClient: Groq | null = null;
 
@@ -21,64 +21,84 @@ export class GroqProvider implements IAIProvider {
     return process.env.GROQ_MODEL || "openai/gpt-oss-120b";
   }
 
-  async generateResponse(prompt: string, systemPrompt?: string): Promise<string> {
+  async generateResponse(
+    prompt: string,
+    systemPrompt?: string,
+    _options?: AIRequestOptions,
+  ): Promise<string> {
     const client = getGroqClient();
     const model = this.getModel();
     const messages: Groq.Chat.ChatCompletionMessageParam[] = [];
+
     if (systemPrompt) {
       messages.push({ role: "system", content: systemPrompt });
     }
     messages.push({ role: "user", content: prompt });
-
     const params: any = {
       model,
       messages,
       reasoning_effort: "low",
     };
 
-    const response = await client.chat.completions.create(
-      params,
-      {
-        timeout: 8000,
-      }
-    );
+    const { data: response } = await client.chat.completions
+      .create(params, { timeout: 8000, maxRetries: 0 })
+      .withResponse();
 
     return response.choices[0]?.message?.content?.trim() || "";
   }
 
-  async generateStructuredResponse(prompt: string, schema: any, systemPrompt?: string): Promise<string> {
+  async generateStructuredResponse(
+    prompt: string,
+    schema: any,
+    systemPrompt?: string,
+    _options?: AIRequestOptions,
+  ): Promise<string> {
     const client = getGroqClient();
     const model = this.getModel();
+
     const messages: Groq.Chat.ChatCompletionMessageParam[] = [];
+
     if (systemPrompt) {
-      messages.push({ role: "system", content: systemPrompt });
+      messages.push({
+        role: "system",
+        content: systemPrompt,
+      });
     }
-    messages.push({ role: "user", content: prompt });
+
+    messages.push({
+      role: "user",
+      content: prompt,
+    });
 
     const params: any = {
       model,
       messages,
       reasoning_effort: "low",
       response_format: {
-      type: "json_schema",
-      json_schema: {
-        name: "follow_up_questions",
-        strict: true,
-        schema,
+        type: "json_schema",
+        json_schema: {
+          name: "follow_up_questions",
+          strict: true,
+          schema,
+        },
       },
-    },
     };
-    const response = await client.chat.completions.create(
-      params,
-      {
+
+    const { data: response } = await client.chat.completions
+      .create(params, {
         timeout: 8000,
-      }
-    );
+        maxRetries: 0,
+      })
+      .withResponse();
 
     return response.choices[0]?.message?.content?.trim() || "";
   }
 
-  async *generateStream(prompt: string, systemPrompt?: string): AsyncGenerator<string, void, unknown> {
+  async *generateStream(
+    prompt: string,
+    systemPrompt?: string,
+    options?: AIRequestOptions,
+  ): AsyncGenerator<string, void, unknown> {
     const client = getGroqClient();
     const model = this.getModel();
     const messages: Groq.Chat.ChatCompletionMessageParam[] = [];
@@ -94,12 +114,9 @@ export class GroqProvider implements IAIProvider {
       reasoning_effort: "low",
     };
 
-    const stream = await client.chat.completions.create(
-      params,
-      {
-        timeout: 8000,
-      }
-    ) as any;
+    const stream = (await client.chat.completions.create(params, {
+      timeout: 8000,
+    })) as any;
 
     for await (const chunk of stream) {
       const text = chunk.choices[0]?.delta?.content || "";

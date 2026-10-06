@@ -12,6 +12,7 @@ import {
   X,
   LogOut,
   FileText,
+  Pin,
 } from 'lucide-react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -36,7 +37,7 @@ export function Sidebar({ onNewChat }: SidebarProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { conversationId } = useParams<{ conversationId: string }>();
-  const { conversations, isLoading: isConversationsLoading, deleteConversation } = useConversations();
+  const { conversations, isLoading: isConversationsLoading, deleteConversation, updateConversationPin } = useConversations();
   const { bookmarks } = useBookmarks();
   const { sidebarOpen, toggleSidebar } = useUIStore();
   const { user, logout } = useAuth();
@@ -66,6 +67,80 @@ export function Sidebar({ onNewChat }: SidebarProps) {
       toast.error('Failed to delete conversation');
     }
   };
+
+  const handleConversationPin = async (id: string, isPinned: boolean) => {
+    try {
+      await updateConversationPin({ conversationId: id, isPinned: !isPinned });
+      toast.success(isPinned ? 'Conversation unpinned' : 'Conversation pinned');
+    } catch (error) {
+      toast.error('Failed to update conversation pin');
+    }
+  };
+
+  const pinnedConversations = conversations.filter((conversation) => conversation.isPinned);
+  const historyConversations = conversations.filter((conversation) => !conversation.isPinned);
+
+  const renderConversationList = (items: typeof conversations) => (
+    <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-0.5">
+      {items.map((conv) => {
+        const isActive = conversationId === conv._id;
+        const isPdf = conv.type === "pdf";
+
+        return (
+          <motion.div key={conv._id} variants={listItemVariants} className="group relative">
+            <button
+              onClick={() => handleConversationClick(conv._id)}
+              className={cn(
+                'flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left transition-colors',
+                isActive
+                  ? 'bg-[rgba(157,165,255,0.12)] text-[var(--text-primary)]'
+                  : 'text-[var(--text-secondary)] hover:bg-[rgba(255,255,255,0.045)] hover:text-[var(--text-primary)]'
+              )}
+            >
+              <span className={cn(
+                'grid h-6 w-6 shrink-0 place-items-center rounded-md border',
+                isActive
+                  ? 'border-[rgba(157,165,255,0.22)] bg-[rgba(157,165,255,0.12)] text-[var(--accent)]'
+                  : 'border-[var(--border-soft)] bg-[rgba(255,255,255,0.035)] text-[var(--text-muted)]'
+              )}>
+                {isPdf ? <FileText size={12} /> : <MessageSquare size={12} />}
+              </span>
+              <span className="min-w-0 flex-1 pr-12">
+                <span className="block truncate text-[13px] font-medium leading-4">{conv.title.replace(/\*\*/g, "")}</span>
+                <span className="mt-px block text-[10px] leading-3.5 text-[var(--text-muted)]">
+                  {formatRelativeTime(new Date(conv.createdAt))}
+                </span>
+              </span>
+            </button>
+            <div className="absolute right-1.5 top-1/2 flex -translate-y-1/2 items-center opacity-100 transition-all lg:opacity-0 lg:group-hover:opacity-100">
+              <button
+                onClick={(event) => {
+                  event.stopPropagation();
+                  void handleConversationPin(conv._id, conv.isPinned);
+                }}
+                aria-label={`${conv.isPinned ? 'Unpin' : 'Pin'} ${conv.title}`}
+                title={conv.isPinned ? 'Unpin conversation' : 'Pin conversation'}
+                className="grid h-6 w-6 place-items-center rounded-md text-[var(--text-muted)] transition-all hover:bg-[rgba(157,165,255,0.12)] hover:text-[var(--accent)]"
+              >
+                <Pin size={13} className={conv.isPinned ? 'fill-current' : ''} />
+              </button>
+              <button
+                onClick={(event) => {
+                  event.stopPropagation();
+                  setConversationToDelete({ id: conv._id, title: conv.title });
+                  setDeleteModalOpen(true);
+                }}
+                aria-label={`Delete ${conv.title}`}
+                className="grid h-6 w-6 place-items-center rounded-md text-[var(--text-muted)] transition-all hover:bg-[var(--danger-subtle)] hover:text-[var(--danger)]"
+              >
+                <Trash2 size={13} />
+              </button>
+            </div>
+          </motion.div>
+        );
+      })}
+    </motion.div>
+  );
 
   return (
     <>
@@ -108,7 +183,7 @@ export function Sidebar({ onNewChat }: SidebarProps) {
             <button
               onClick={toggleSidebar}
               aria-label="Close sidebar"
-              className="grid h-8 w-8 place-items-center rounded-lg text-[var(--text-muted)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] lg:hidden"
+              className="grid h-8 w-8 !cursor-default place-items-center rounded-lg text-[var(--text-muted)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] lg:hidden"
             >
               <X size={16} />
             </button>
@@ -171,17 +246,27 @@ export function Sidebar({ onNewChat }: SidebarProps) {
           </nav>
 
           {/* ── History ── */}
-          <div className="mt-5 flex min-h-0 flex-1 flex-col px-3">
+          <div className="mt-5 flex min-h-0 flex-1 flex-col overflow-y-auto px-3 no-scrollbar">
+            {pinnedConversations.length > 0 && (
+              <div className="mb-5">
+                <div className="mb-2 flex items-center px-2">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">
+                    Pinned
+                  </p>
+                </div>
+                {renderConversationList(pinnedConversations)}
+              </div>
+            )}
             <div className="mb-2 flex items-center justify-between px-2">
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">
                 History
               </p>
               <span className="rounded-full bg-[var(--surface-3)] px-2 py-0.5 text-[10px] font-medium text-[var(--text-muted)]">
-                {conversations.length}
+                {historyConversations.length}
               </span>
             </div>
 
-            <div className="min-h-0 flex-1 overflow-y-auto pb-4 pr-1 no-scrollbar">
+            <div className="pb-4 pr-1">
               {isConversationsLoading && conversations.length === 0 ? (
                 <div className="space-y-2 p-2">
                   {[...Array(3)].map((_, i) => (
@@ -201,7 +286,7 @@ export function Sidebar({ onNewChat }: SidebarProps) {
                   animate="animate"
                   className="space-y-0.5"
                 >
-                  {conversations.map((conv) => {
+                  {historyConversations.map((conv) => {
                     const isActive = conversationId === conv._id;
                     const isPdf = conv.type === "pdf";
 
@@ -210,7 +295,7 @@ export function Sidebar({ onNewChat }: SidebarProps) {
                         <button
                           onClick={() => handleConversationClick(conv._id)}
                           className={cn(
-                            'flex w-full items-start gap-3 rounded-xl px-3 py-2.5 text-left transition-colors',
+                          'flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left transition-colors',
                             isActive
                               ? 'bg-[rgba(157,165,255,0.12)] text-[var(--text-primary)]'
                               : 'text-[var(--text-secondary)] hover:bg-[rgba(255,255,255,0.045)] hover:text-[var(--text-primary)]'
@@ -218,20 +303,20 @@ export function Sidebar({ onNewChat }: SidebarProps) {
                         >
                           <span
                             className={cn(
-                              'mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg border',
+                              'grid h-6 w-6 shrink-0 place-items-center rounded-md border',
                             isActive
                                 ? 'border-[rgba(157,165,255,0.22)] bg-[rgba(157,165,255,0.12)] text-[var(--accent)]'
                                 : 'border-[var(--border-soft)] bg-[rgba(255,255,255,0.035)] text-[var(--text-muted)]'
                             )}
                           >
-                            {isPdf ? <FileText size={13} /> : <MessageSquare size={13} />}
+                            {isPdf ? <FileText size={12} /> : <MessageSquare size={12} />}
                           </span>
-                          <span className="min-w-0 flex-1 pr-7">
-                            <span className="block truncate text-sm font-medium">
+                          <span className="min-w-0 flex-1 pr-12">
+                            <span className="block truncate text-[13px] font-medium leading-4">
                               {conv.title.replace(/\*\*/g, "")}
                             </span>
-                            <span className="mt-0.5 block text-[11px] text-[var(--text-muted)]">
-                              {formatRelativeTime(new Date(conv.updatedAt))}
+                            <span className="mt-px block text-[10px] leading-3.5 text-[var(--text-muted)]">
+                              {formatRelativeTime(new Date(conv.createdAt))}
                             </span>
                           </span>
                         </button>
@@ -239,11 +324,22 @@ export function Sidebar({ onNewChat }: SidebarProps) {
                         <button
                           onClick={(event) => {
                             event.stopPropagation();
+                            void handleConversationPin(conv._id, conv.isPinned);
+                          }}
+                          aria-label={`Pin ${conv.title}`}
+                          title="Pin conversation"
+                          className="absolute right-7.5 top-1/2 grid h-6 w-6 -translate-y-1/2 place-items-center rounded-md text-[var(--text-muted)] opacity-100 transition-all hover:bg-[rgba(157,165,255,0.12)] hover:text-[var(--accent)] lg:opacity-0 lg:group-hover:opacity-100"
+                        >
+                          <Pin size={13} />
+                        </button>
+                        <button
+                          onClick={(event) => {
+                            event.stopPropagation();
                             setConversationToDelete({ id: conv._id, title: conv.title });
                             setDeleteModalOpen(true);
                           }}
                           aria-label={`Delete ${conv.title}`}
-                          className="absolute right-2 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-lg text-[var(--text-muted)] opacity-100 lg:opacity-0 transition-all hover:bg-[var(--danger-subtle)] hover:text-[var(--danger)] lg:group-hover:opacity-100"
+                          className="absolute right-1.5 top-1/2 grid h-6 w-6 -translate-y-1/2 place-items-center rounded-md text-[var(--text-muted)] opacity-100 transition-all hover:bg-[var(--danger-subtle)] hover:text-[var(--danger)] lg:opacity-0 lg:group-hover:opacity-100"
                         >
                           <Trash2 size={13} />
                         </button>

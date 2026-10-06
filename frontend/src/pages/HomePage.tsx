@@ -1,23 +1,31 @@
-import { useCallback, useEffect, useState, lazy, Suspense } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useQueryClient } from '@tanstack/react-query';
-import { FileText, Loader2, Sparkles, Youtube } from 'lucide-react';
-import toast from 'react-hot-toast';
-import { EMAIL_NOT_VERIFIED_CODE } from '@/lib/axios';
+import { useCallback, useEffect, useState, lazy, Suspense } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { useParams, useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
+import { FileText, Loader2, Sparkles, Youtube } from "lucide-react";
+import toast from "react-hot-toast";
+import { EMAIL_NOT_VERIFIED_CODE } from "@/lib/axios";
 
-const ChatContainer = lazy(() => import('@/components/ChatContainer').then(m => ({ default: m.ChatContainer })));
-const PdfChatContainer = lazy(() => import('@/components/pdf/PdfChatContainer').then(m => ({ default: m.PdfChatContainer })));
+const ChatContainer = lazy(() =>
+  import("@/components/ChatContainer").then((m) => ({
+    default: m.ChatContainer,
+  })),
+);
+const PdfChatContainer = lazy(() =>
+  import("@/components/pdf/PdfChatContainer").then((m) => ({
+    default: m.PdfChatContainer,
+  })),
+);
 
-import { PdfUploadCard } from '@/components/pdf/PdfUploadCard';
-import { PdfIndexingStatus } from '@/components/pdf/PdfIndexingStatus';
-import { GreetingHero } from '@/components/chat/GreetingHero';
-import { TranscriptLoader } from '@/components/TranscriptLoader';
-import { useConversations } from '@/hooks/useConversations';
-import { videoService } from '@/services/video.service';
-import { fadeIn, pageVariants } from '@/animations/variants';
-import { WorkspaceAction } from '@/components/workspace-actions/workspaceActionConfig';
-import { PdfDocument, IConversation } from '@/types';
+import { PdfUploadCard } from "@/components/pdf/PdfUploadCard";
+import { PdfIndexingStatus } from "@/components/pdf/PdfIndexingStatus";
+import { GreetingHero } from "@/components/chat/GreetingHero";
+import { TranscriptLoader } from "@/components/TranscriptLoader";
+import { useConversations } from "@/hooks/useConversations";
+import { videoService } from "@/services/video.service";
+import { fadeIn, pageVariants } from "@/animations/variants";
+import { WorkspaceAction } from "@/components/workspace-actions/workspaceActionConfig";
+import { PdfDocument, IConversation } from "@/types";
 
 interface HomePageProps {
   onActionReady?: (trigger: (action: WorkspaceAction) => void) => void;
@@ -25,46 +33,80 @@ interface HomePageProps {
 
 const videoProcessingSteps = [
   {
-    title: 'Fetching video details',
-    description: 'Checking the video and getting everything ready.'
+    title: "Fetching video details",
+    description: "Checking the video and getting everything ready.",
   },
   {
-    title: 'Extracting the transcript',
-    description: 'Turning the video into text you can chat with.'
+    title: "Extracting the transcript",
+    description: "Turning the video into text you can chat with.",
   },
   {
-    title: 'Organizing the context',
-    description: 'Chunking the content and preparing your workspace.'
-  }
+    title: "Organizing the context",
+    description: "Chunking the content and preparing your workspace.",
+  },
 ];
 
 export default function HomePage({ onActionReady }: HomePageProps) {
   const { conversationId } = useParams<{ conversationId: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { conversations, createConversation, isCreating: isCreatingConversation } = useConversations();
+  const {
+    conversations,
+    createConversation,
+    isCreating: isCreatingConversation,
+  } = useConversations(conversationId);
 
   const [sourceType, setSourceType] = useState<"video" | "pdf">("video");
   const [isPdfProcessing, setIsPdfProcessing] = useState(false);
   const [processingFileName, setProcessingFileName] = useState("");
 
-  const activeConversation = conversations.find((c) => c._id === conversationId);
+  const activeConversation = conversations.find(
+    (c) => c._id === conversationId,
+  );
+
+  const activeVideo =
+    activeConversation?.type === "video" &&
+    activeConversation.videoId &&
+    typeof activeConversation.videoId !== "string"
+      ? activeConversation.videoId
+      : null;
+
+  const isVideoReady =
+    activeConversation?.type === "video" &&
+    !!activeVideo &&
+    activeVideo.status === "ready" &&
+    activeVideo.ragStatus === "ready";
+
+  const isVideoFailed =
+    activeConversation?.type === "video" &&
+    !!activeVideo &&
+    (activeVideo.status === "failed" || activeVideo.ragStatus === "failed");
+
+  const isVideoPreparing =
+    activeConversation?.type === "video" && !isVideoReady && !isVideoFailed;
 
   const [isExtracting, setIsExtracting] = useState(false);
   const [processingStep, setProcessingStep] = useState(0);
 
   useEffect(() => {
-    if (!isExtracting && !isCreatingConversation) {
+    if (
+      !isExtracting &&
+      !isCreatingConversation &&
+      !isVideoPreparing &&
+      !isPdfProcessing
+    ) {
       setProcessingStep(0);
       return;
     }
 
     const interval = window.setInterval(() => {
-      setProcessingStep((currentStep) => (currentStep + 1) % videoProcessingSteps.length);
+      setProcessingStep(
+        (currentStep) => (currentStep + 1) % videoProcessingSteps.length,
+      );
     }, 2400);
 
     return () => window.clearInterval(interval);
-  }, [isCreatingConversation, isExtracting]);
+  }, [isCreatingConversation, isExtracting, isVideoPreparing, isVideoReady]);
 
   const handleTranscriptSubmit = useCallback(
     async (url: string) => {
@@ -74,27 +116,26 @@ export default function HomePage({ onActionReady }: HomePageProps) {
 
         const conversation = await createConversation({
           videoId: videoData._id,
-          title: videoData.title || 'New Chat'
+          title: videoData.title || "New Chat",
         });
-
-        toast.success('Source indexed and ready to chat');
 
         navigate(`/workspace/${conversation._id}`);
       } catch (err) {
-        if ((err as { code?: string })?.code === EMAIL_NOT_VERIFIED_CODE) return;
-        toast.error(err instanceof Error ? err.message : 'Indexing failed');
+        if ((err as { code?: string })?.code === EMAIL_NOT_VERIFIED_CODE)
+          return;
+        toast.error(err instanceof Error ? err.message : "Indexing failed");
       } finally {
         setIsExtracting(false);
       }
     },
-    [createConversation, navigate]
+    [createConversation, navigate],
   );
 
   const handlePdfUploadSuccess = useCallback(
     (conversation: IConversation) => {
       setIsPdfProcessing(false);
 
-      queryClient.setQueryData<IConversation[]>(['conversations'], (old) => {
+      queryClient.setQueryData<IConversation[]>(["conversations"], (old) => {
         if (!old) return [conversation];
         if (old.some((c) => c._id === conversation._id)) return old;
         return [conversation, ...old];
@@ -102,7 +143,7 @@ export default function HomePage({ onActionReady }: HomePageProps) {
 
       navigate(`/workspace/${conversation._id}`);
     },
-    [navigate, queryClient]
+    [navigate, queryClient],
   );
 
   const handlePdfUploadingState = useCallback((uploading: boolean) => {
@@ -111,7 +152,7 @@ export default function HomePage({ onActionReady }: HomePageProps) {
 
   return (
     <AnimatePresence mode="wait">
-      {activeConversation ? (
+      {activeConversation && !isVideoPreparing && !isVideoFailed ? (
         <motion.div
           key={activeConversation._id}
           variants={pageVariants}
@@ -120,15 +161,19 @@ export default function HomePage({ onActionReady }: HomePageProps) {
           exit="exit"
           className="h-full min-h-0 w-full"
         >
-          <Suspense fallback={
-            <div className="flex h-full w-full items-center justify-center bg-[var(--canvas)]">
-              <div className="flex flex-col items-center gap-3">
-                <div className="w-8 h-8 border-4 border-[#7C5CFF] border-t-transparent rounded-full animate-spin" />
-                <span className="text-xs text-[var(--text-muted)] animate-pulse">Initializing workspace...</span>
+          <Suspense
+            fallback={
+              <div className="flex h-full w-full items-center justify-center bg-[var(--canvas)]">
+                <div className="flex flex-col items-center gap-3">
+                  <div className="w-8 h-8 border-4 border-[#7C5CFF] border-t-transparent rounded-full animate-spin" />
+                  <span className="text-xs text-[var(--text-muted)] animate-pulse">
+                    Initializing workspace...
+                  </span>
+                </div>
               </div>
-            </div>
-          }>
-            {activeConversation.type === 'pdf' ? (
+            }
+          >
+            {activeConversation.type === "pdf" ? (
               <PdfChatContainer
                 conversationId={activeConversation._id}
                 pdf={activeConversation.pdfDocumentId as PdfDocument}
@@ -137,7 +182,11 @@ export default function HomePage({ onActionReady }: HomePageProps) {
             ) : (
               <ChatContainer
                 conversationId={activeConversation._id}
-                video={typeof activeConversation.videoId === 'string' ? { _id: activeConversation.videoId } as any : activeConversation.videoId}
+                video={
+                  typeof activeConversation.videoId === "string"
+                    ? ({ _id: activeConversation.videoId } as any)
+                    : activeConversation.videoId
+                }
                 onActionReady={onActionReady}
               />
             )}
@@ -155,8 +204,36 @@ export default function HomePage({ onActionReady }: HomePageProps) {
           <div className="content-container flex min-h-full flex-col justify-center py-3 sm:py-4 lg:py-5">
             <div className="grid items-center gap-3 lg:gap-4 w-full max-w-full overflow-x-hidden">
               <AnimatePresence mode="wait">
-                {!(isExtracting || isCreatingConversation || isPdfProcessing) ? (
-                  <motion.div key="empty" variants={fadeIn} className="w-full max-w-full min-w-0 overflow-x-hidden">
+                {isVideoFailed ? (
+                  <motion.div
+                    key="video-failed"
+                    variants={fadeIn}
+                    className="mx-auto w-full max-w-[440px] py-10 sm:py-12"
+                  >
+                    <div className="premium-panel relative overflow-hidden rounded-2xl px-5 py-6 sm:px-7">
+                      <div className="relative z-10 text-center">
+                        <h2 className="text-lg font-semibold tracking-tight text-[var(--text-primary)] sm:text-xl">
+                          We couldn't prepare this video
+                        </h2>
+
+                        <p className="mt-2 text-sm text-[var(--text-muted)]">
+                          The video could not be fully prepared for AI chat.
+                          Please try again.
+                        </p>
+                      </div>
+                    </div>
+                  </motion.div>
+                ) : !(
+                    isExtracting ||
+                    isCreatingConversation ||
+                    isPdfProcessing ||
+                    isVideoPreparing
+                  ) ? (
+                  <motion.div
+                    key="empty"
+                    variants={fadeIn}
+                    className="w-full max-w-full min-w-0 overflow-x-hidden"
+                  >
                     <GreetingHero />
                   </motion.div>
                 ) : isPdfProcessing ? (
@@ -165,7 +242,9 @@ export default function HomePage({ onActionReady }: HomePageProps) {
                     variants={fadeIn}
                     className="mx-auto w-full max-w-[520px] py-10"
                   >
-                    <PdfIndexingStatus fileName={processingFileName || "your document"} />
+                    <PdfIndexingStatus
+                      fileName={processingFileName || "your document"}
+                    />
                   </motion.div>
                 ) : (
                   <motion.div
@@ -177,13 +256,20 @@ export default function HomePage({ onActionReady }: HomePageProps) {
                       <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(157,165,255,0.07),transparent_36%),radial-gradient(circle_at_80%_0%,rgba(77,162,255,0.05),transparent_30%)] pointer-events-none" />
                       <div className="relative z-10 flex flex-col items-center text-center">
                         <div className="mb-4 flex items-center justify-center gap-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]">
-                          <Sparkles size={12} className="text-[var(--accent)]" />
+                          <Sparkles
+                            size={12}
+                            className="text-[var(--accent)]"
+                          />
                           <span>Preparing your workspace</span>
                         </div>
 
                         <motion.div
                           animate={{ rotate: 360 }}
-                          transition={{ repeat: Infinity, duration: 1.4, ease: 'linear' }}
+                          transition={{
+                            repeat: Infinity,
+                            duration: 1.4,
+                            ease: "linear",
+                          }}
                           className="mb-4 text-[var(--accent)]"
                         >
                           <Loader2 size={24} strokeWidth={2.25} />
@@ -209,8 +295,12 @@ export default function HomePage({ onActionReady }: HomePageProps) {
                         <div className="mt-5 h-1 w-full max-w-[280px] overflow-hidden rounded-full bg-[rgba(255,255,255,0.07)]">
                           <motion.div
                             className="h-full w-1/2 rounded-full bg-[linear-gradient(90deg,rgba(157,165,255,0.68),rgba(77,162,255,0.98),rgba(157,165,255,0.68))]"
-                            animate={{ x: ['-35%', '135%'] }}
-                            transition={{ repeat: Infinity, duration: 1.7, ease: 'easeInOut' }}
+                            animate={{ x: ["-35%", "135%"] }}
+                            transition={{
+                              repeat: Infinity,
+                              duration: 1.7,
+                              ease: "easeInOut",
+                            }}
                           />
                         </div>
                       </div>
@@ -219,11 +309,21 @@ export default function HomePage({ onActionReady }: HomePageProps) {
                 )}
               </AnimatePresence>
 
-              {!(isExtracting || isCreatingConversation || isPdfProcessing) && (
+              {!(
+                isExtracting ||
+                isCreatingConversation ||
+                isPdfProcessing ||
+                isVideoPreparing ||
+                isVideoFailed
+              ) && (
                 <motion.div
                   initial={{ y: 14, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.14, duration: 0.35, ease: [0.25, 0.1, 0.25, 1.0] }}
+                  transition={{
+                    delay: 0.14,
+                    duration: 0.35,
+                    ease: [0.25, 0.1, 0.25, 1.0],
+                  }}
                   className="flex flex-col gap-4 w-full max-w-full min-w-0 overflow-x-hidden"
                 >
                   {/* Source Type Toggle */}
@@ -254,7 +354,9 @@ export default function HomePage({ onActionReady }: HomePageProps) {
                       onUploadSuccess={handlePdfUploadSuccess}
                       onUploadingStateChange={(uploading) => {
                         handlePdfUploadingState(uploading);
-                        const inputEl = document.querySelector('input[type="file"]') as HTMLInputElement;
+                        const inputEl = document.querySelector(
+                          'input[type="file"]',
+                        ) as HTMLInputElement;
                         if (inputEl?.files?.[0]) {
                           setProcessingFileName(inputEl.files[0].name);
                         }

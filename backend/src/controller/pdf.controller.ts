@@ -2,13 +2,13 @@ import mongoose, { Types } from "mongoose";
 import { PdfDocument } from "../models/pdfDocument.model.js";
 import { Conversation } from "../models/conversation.model.js";
 import { hashPdfBuffer, processPdfUpload } from "../services/pdf.service.js";
-import { deletePdf } from "../services/imagekit.service.js";
 import {
   generatePdfTitle,
   askAiAboutPdf,
   streamAiAboutPdf,
+  generatePdfLongContextSummary
 } from "../services/ai.service.js";
-import { retrieveRelevantChunks } from "../utils/retrieveRelevantChunks.js";
+import { retrieveRelevantChunks, getPdfChunksForDocument } from "../utils/retrieveRelevantChunks.js";
 import { isSimpleGreeting } from "../utils/greeting.js";
 import { formatDocumentContext } from "../utils/formatDocumentContext.js";
 import { extractPdfText } from "../utils/extractPdfText.js";
@@ -20,9 +20,9 @@ import {
   MAX_AUTO_RETRIES,
   MAX_RETRY_COUNT,
 } from "../rag/services/pdfRagIngestion.service.js";
-import { deletePdfRagArtifacts } from "../rag/services/pdfRagCleanup.service.js";
 import logger from "../lib/logger.js";
 import { cleanupPdfDocument } from "../rag/services/PdfCleanup.service.js";
+import type { SummaryLanguage } from "../rag/utils/languagePrompt.util.js";
 
 const GENERIC_PDF_TITLES = new Set([
   "new document",
@@ -385,11 +385,32 @@ export const askPdfQuestion = asyncHandler(async (req, res) => {
     throw new ApiError(404, "PDF Document not found");
   }
 
-  let chunks: any[] = [];
-  if (question && !isSimpleGreeting(question)) {
-    chunks = await retrieveRelevantChunks(pdfDoc._id, question, 8);
-  }
-  const contextText = formatDocumentContext(chunks);
+if (type === "summary") {
+  const chunks = await getPdfChunksForDocument(pdfDoc._id);
+
+  const summary = await generatePdfLongContextSummary(
+    chunks,
+    responseLanguage!,
+  );
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        summary,
+        "PDF summary generated successfully",
+      ),
+    );
+}
+
+let chunks: any[] = [];
+
+if (question && !isSimpleGreeting(question)) {
+  chunks = await retrieveRelevantChunks(pdfDoc._id, question, 8);
+}
+
+const contextText = formatDocumentContext(chunks);
 
   const acceptHeader = req.headers.accept || "";
   const isStreaming =

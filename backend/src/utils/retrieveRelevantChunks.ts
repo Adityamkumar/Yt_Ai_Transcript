@@ -10,28 +10,45 @@ import { PdfChunk, type IPdfChunk } from "../models/pdfChunk.model.js";
 export const retrieveRelevantChunks = async (
   documentId: string | Types.ObjectId,
   question: string,
-  limit = 8
+  limit = 8,
 ): Promise<IPdfChunk[]> => {
-
-  const docId = typeof documentId === "string" ? new Types.ObjectId(documentId) : documentId;
+  const docId =
+    typeof documentId === "string"
+      ? new Types.ObjectId(documentId)
+      : documentId;
 
   const queryVector = await generateQueryEmbedding(question);
 
- const results = await executeVectorSearch<
-  IPdfChunk & { score: number }
->(PdfChunk, {
-  index: RAG_CONFIG.indexes.pdfChunks,
-  queryVector,
-  limit,
-  filter:{
-    documentId: docId
-  }
-});
-
+  const results = await executeVectorSearch<IPdfChunk & { score: number }>(
+    PdfChunk,
+    {
+      index: RAG_CONFIG.indexes.pdfChunks,
+      queryVector,
+      limit,
+      filter: {
+        documentId: docId,
+      },
+    },
+  );
 
   const finalResult = filterBySimilarityThreshold(results);
 
   finalResult.sort((a, b) => a.chunkIndex - b.chunkIndex);
 
   return finalResult;
+};
+
+export const getPdfChunksForDocument = async (
+  documentId: string | Types.ObjectId,
+): Promise<IPdfChunk[]> => {
+  const docId =
+    typeof documentId === "string"
+      ? new Types.ObjectId(documentId)
+      : documentId;
+
+  return PdfChunk.find({ documentId: docId })
+    .select("text page chunkIndex")
+    .sort({ chunkIndex: 1 })
+    .lean();
+    
 };

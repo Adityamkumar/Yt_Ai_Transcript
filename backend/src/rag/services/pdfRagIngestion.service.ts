@@ -22,8 +22,7 @@ export const MAX_AUTO_RETRIES = RAG_CONFIG.retries.MAX_AUTO_RETRIES;
 
 export const MAX_MANUAL_RETRIES = RAG_CONFIG.retries.MAX_MANUAL_RETRIES;
 
-export const MAX_RETRY_COUNT =
-  MAX_AUTO_RETRIES + MAX_MANUAL_RETRIES;
+export const MAX_RETRY_COUNT = MAX_AUTO_RETRIES + MAX_MANUAL_RETRIES;
 
 const toObjectId = (value: string | Types.ObjectId): Types.ObjectId =>
   typeof value === "string" ? new Types.ObjectId(value) : value;
@@ -36,7 +35,6 @@ const fetchPdfBufferFromUrl = async (fileUrl: string): Promise<Buffer> => {
 };
 
 const EMBEDDING_BATCH_SIZE = RAG_CONFIG.embeddings.batchSize;
-
 
 const generateEmbeddingsForChunks = async (
   chunks: Array<{
@@ -74,9 +72,7 @@ const generateEmbeddingsForChunks = async (
       const embedding = embeddings[index];
 
       if (!embedding) {
-        throw new Error(
-          `Missing embedding for PDF chunk ${chunk.chunkIndex}`,
-        );
+        throw new Error(`Missing embedding for PDF chunk ${chunk.chunkIndex}`);
       }
 
       return {
@@ -90,10 +86,6 @@ const generateEmbeddingsForChunks = async (
 
   return result;
 };
-
-
-
-
 
 export const ingestPdfForRag = async ({
   pdfDocumentId,
@@ -111,7 +103,6 @@ export const ingestPdfForRag = async ({
     ragStatus: "processing",
   });
 
-  
   await PdfChunk.deleteMany({ documentId: documentObjectId });
 
   try {
@@ -126,7 +117,6 @@ export const ingestPdfForRag = async ({
     }
 
     const embeddedChunks = await generateEmbeddingsForChunks(chunks, title);
-
 
     await PdfChunk.insertMany(
       embeddedChunks.map((chunk) => ({
@@ -149,15 +139,13 @@ export const ingestPdfForRag = async ({
 
     logger.info(
       { documentId: documentObjectId, chunksCount: embeddedChunks.length },
-      "[RAG] PDF ingestion complete"
+      "[RAG] PDF ingestion complete",
     );
-      } catch (error: any) {
+  } catch (error: any) {
     const isRetryable = error?.retryable === true;
 
     const retryAfterMs =
-      typeof error?.retryAfterMs === "number"
-        ? error.retryAfterMs
-        : null;
+      typeof error?.retryAfterMs === "number" ? error.retryAfterMs : null;
 
     if (!isRetryable) {
       await PdfDocument.findByIdAndUpdate(documentObjectId, {
@@ -175,57 +163,54 @@ export const ingestPdfForRag = async ({
           status: error?.status,
           error: error?.message ?? String(error),
         },
-        "[RAG] Non-retryable PDF ingestion error. Stopping retry."
+        "[RAG] Non-retryable PDF ingestion error. Stopping retry.",
       );
 
       throw new Error(
         `[RAG] PDF ingestion failed for documentId=${documentObjectId}: ${
           error?.message ?? "Unknown error"
-        }`
+        }`,
       );
     }
 
     if (retryType === "manual") {
-  const currentDoc = await PdfDocument.findById(documentObjectId);
+      const currentDoc = await PdfDocument.findById(documentObjectId);
 
-  const retryCount = currentDoc?.retryCount ?? 0;
+      const retryCount = currentDoc?.retryCount ?? 0;
 
-  await PdfDocument.findByIdAndUpdate(documentObjectId, {
-    status: "failed",
-    ragStatus: "failed",
-  });
+      await PdfDocument.findByIdAndUpdate(documentObjectId, {
+        status: "failed",
+        ragStatus: "failed",
+      });
 
-  await PdfChunk.deleteMany({
-    documentId: documentObjectId,
-  });
-
-  if (retryCount >= MAX_RETRY_COUNT) {
-    const cooldownTime = new Date(
-      Date.now() + 10 * 60 * 1000,
-    );
-
-    await PdfDocument.findByIdAndUpdate(documentObjectId, {
-      cooldownUntil: cooldownTime,
-    });
-
-    logger.warn(
-      {
+      await PdfChunk.deleteMany({
         documentId: documentObjectId,
-        retryCount,
-        maxRetryCount: MAX_RETRY_COUNT,
-        cooldownUntil: cooldownTime.toISOString(),
-      },
-      "[RAG] Maximum retry budget reached. Entering cooldown.",
-    );
-  }
+      });
 
-  throw new Error(
-    `[RAG] Manual PDF ingestion failed for documentId=${documentObjectId}: ${
-      error?.message ?? "Unknown error"
-    }`,
-  );
-}
+      if (retryCount >= MAX_RETRY_COUNT) {
+        const cooldownTime = new Date(Date.now() + 10 * 60 * 1000);
 
+        await PdfDocument.findByIdAndUpdate(documentObjectId, {
+          cooldownUntil: cooldownTime,
+        });
+
+        logger.warn(
+          {
+            documentId: documentObjectId,
+            retryCount,
+            maxRetryCount: MAX_RETRY_COUNT,
+            cooldownUntil: cooldownTime.toISOString(),
+          },
+          "[RAG] Maximum retry budget reached. Entering cooldown.",
+        );
+      }
+
+      throw new Error(
+        `[RAG] Manual PDF ingestion failed for documentId=${documentObjectId}: ${
+          error?.message ?? "Unknown error"
+        }`,
+      );
+    }
 
     const updatedDoc = await PdfDocument.findByIdAndUpdate(
       documentObjectId,
@@ -238,7 +223,7 @@ export const ingestPdfForRag = async ({
       },
       {
         returnDocument: "after",
-      }
+      },
     );
 
     await PdfChunk.deleteMany({
@@ -246,9 +231,7 @@ export const ingestPdfForRag = async ({
     });
 
     if (!updatedDoc) {
-      throw new Error(
-        `[RAG] PDF document not found: ${documentObjectId}`
-      );
+      throw new Error(`[RAG] PDF document not found: ${documentObjectId}`);
     }
 
     const retryCount = updatedDoc.retryCount ?? 0;
@@ -264,7 +247,7 @@ export const ingestPdfForRag = async ({
           retryAfterMs: delayMs,
           error: error?.message ?? String(error),
         },
-        "[RAG] Scheduling automatic PDF ingestion retry."
+        "[RAG] Scheduling automatic PDF ingestion retry.",
       );
 
       setTimeout(() => {
@@ -275,27 +258,25 @@ export const ingestPdfForRag = async ({
           fileUrl,
           fileId: _fileId,
           uploadedBy: _uploadedBy,
-          retryType:'auto'
+          retryType: "auto",
         }).catch((retryError: Error) => {
           logger.error(
             {
               documentId: documentObjectId,
               error: retryError,
             },
-            "[RAG] Background auto-retry ingestion failed."
+            "[RAG] Background auto-retry ingestion failed.",
           );
         });
       }, delayMs);
 
       throw new Error(
-        `[RAG] PDF ingestion failed temporarily. Auto-retry scheduled in ${delayMs}ms.`
+        `[RAG] PDF ingestion failed temporarily. Auto-retry scheduled in ${delayMs}ms.`,
       );
     }
 
     if (retryCount >= MAX_RETRY_COUNT) {
-      const cooldownTime = new Date(
-        Date.now() + 10 * 60 * 1000
-      );
+      const cooldownTime = new Date(Date.now() + 10 * 60 * 1000);
 
       await PdfDocument.findByIdAndUpdate(documentObjectId, {
         cooldownUntil: cooldownTime,
@@ -308,10 +289,10 @@ export const ingestPdfForRag = async ({
           maxRetryCount: MAX_RETRY_COUNT,
           cooldownUntil: cooldownTime.toISOString(),
         },
-        "[RAG] Maximum retry budget reached. Entering cooldown."
+        "[RAG] Maximum retry budget reached. Entering cooldown.",
       );
     }
 
-   throw error
+    throw error;
   }
 };

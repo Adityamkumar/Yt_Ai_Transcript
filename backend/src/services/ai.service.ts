@@ -5,7 +5,8 @@ import { CHAT_SYSTEM_PROMPT } from "../rag/prompts/chat.prompt.js";
 import { NOTES_SYSTEM_PROMPT } from "../rag/prompts/notes.prompt.js";
 import { PDF_CHAT_SYSTEM_PROMPT } from "../rag/prompts/pdf.prompt.js";
 import { PDF_NOTES_SYSTEM_PROMPT } from "../rag/prompts/pdf_notes.prompt.js";
-import { SUMMARY_SYSTEM_PROMPT } from "../rag/prompts/summary.prompt.js";
+import { VIDEO_SUMMARY_SYSTEM_PROMPT } from "../rag/prompts/video_summary.prompt.js";
+import { PDF_SUMMARY_SYSTEM_PROMPT } from "../rag/prompts/pdf_summary.prompt.js";
 import {
   aiProviderService,
   sanitizeModelOutput,
@@ -18,7 +19,11 @@ import {
   type ResponseLanguage,
   type SummaryLanguage,
 } from "../rag/utils/languagePrompt.util.js";
-import { FINAL_SUMMARY_SYSTEM_PROMPT } from "../rag/prompts/final_summary.prompt.js";
+import {
+  FINAL_SUMMARY_SYSTEM_PROMPT,
+  LONG_CONTEXT_SUMMARY_SYSTEM_PROMPT,
+} from "../rag/prompts/final_summary.prompt.js";
+import type { IPdfChunk } from "../models/pdfChunk.model.js";
 
 export type ConversationMessage = {
   role: "user" | "assistant";
@@ -51,8 +56,48 @@ const SummarySchema = z.object({
   ),
 });
 
+const LongContextSummarySchema = z.object({
+  summary: z.array(
+    z.object({
+      text: z.string(),
+      startChunkIndex: z.number().int().nonnegative(),
+      endChunkIndex: z.number().int().nonnegative(),
+    }),
+  ),
+});
+
+const PdfSummaryResponseSchema = {
+  type: "object",
+  properties: {
+    summary: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          text: { type: "string" },
+          startChunkIndex: { type: "integer" },
+          endChunkIndex: { type: "integer" },
+        },
+        required: ["text", "startChunkIndex", "endChunkIndex"],
+        additionalProperties: false,
+      },
+    },
+  },
+  required: ["summary"],
+  additionalProperties: false,
+};
+
+const PdfSummarySchema = z.object({
+  summary: z.array(
+    z.object({
+      text: z.string(),
+      startChunkIndex: z.number().int().nonnegative(),
+      endChunkIndex: z.number().int().nonnegative(),
+    }),
+  ),
+});
+
 export type NotesResponse = z.infer<typeof NotesSchema>;
-type SummaryResponse = z.infer<typeof SummarySchema>;
 
 const TIMESTAMP_PATTERN =
   /(\[?\(?\b\d{1,2}:\d{2}(?::\d{2})?\b(?:\s*-\s*\d{1,2}:\d{2}(?::\d{2})?)?\)?\]?)/g;
@@ -112,6 +157,26 @@ export const formatTranscriptWithTimestamps = (chunks: ITranscriptChunk[]) => {
     .join("\n\n");
 };
 
+const formatTranscriptForLongContextSummary = (chunks: ITranscriptChunk[]) => {
+  return chunks
+    .map((chunk, index) => {
+      const startSeconds = Math.floor(chunk.start);
+      const endSeconds = Math.floor(
+        typeof (chunk as { end?: number }).end === "number"
+          ? (chunk as { end: number }).end
+          : chunk.start + chunk.duration,
+      );
+
+      return [
+        `[CHUNK ${index}]`,
+        `START_SECONDS: ${startSeconds}`,
+        `END_SECONDS: ${endSeconds}`,
+        `TEXT: ${chunk.text}`,
+      ].join("\n");
+    })
+    .join("\n\n");
+};
+
 export const buildContextPrompt = (
   transcript: string | ITranscriptChunk[],
   question: string,
@@ -146,7 +211,7 @@ export const buildContextPrompt = (
     type === "notes"
       ? NOTES_SYSTEM_PROMPT
       : type === "summary"
-        ? SUMMARY_SYSTEM_PROMPT
+        ? VIDEO_SUMMARY_SYSTEM_PROMPT
         : CHAT_SYSTEM_PROMPT;
 
   const languageInstruction = buildResponseLanguageInstruction(language);
@@ -210,7 +275,7 @@ const GeminiNotesSchema = {
   ],
 };
 
-const SummaryResponseSchema  = {
+const SummaryResponseSchema = {
   type: "object",
   properties: {
     summary: {
@@ -231,28 +296,25 @@ const SummaryResponseSchema  = {
   additionalProperties: false,
 };
 
-const toNearestTranscriptStart = (
-  timestamp: number,
-  chunks: ITranscriptChunk[],
-) => {
-  if (chunks.length === 0) {
-    return Math.max(0, Math.floor(timestamp));
-  }
-
-  const target = Math.max(0, Math.floor(timestamp));
-  let nearest = Math.max(0, Math.floor(chunks[0]!.start));
-  let minDistance = Math.abs(nearest - target);
-
-  for (let i = 1; i < chunks.length; i += 1) {
-    const start = Math.max(0, Math.floor(chunks[i]!.start));
-    const distance = Math.abs(start - target);
-    if (distance < minDistance) {
-      nearest = start;
-      minDistance = distance;
-    }
-  }
-
-  return nearest;
+const LongContextSummaryResponseSchema = {
+  type: "object",
+  properties: {
+    summary: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          text: { type: "string" },
+          startChunkIndex: { type: "integer" },
+          endChunkIndex: { type: "integer" },
+        },
+        required: ["text", "startChunkIndex", "endChunkIndex"],
+        additionalProperties: false,
+      },
+    },
+  },
+  required: ["summary"],
+  additionalProperties: false,
 };
 
 const getTranscriptDurationSeconds = (chunks: ITranscriptChunk[]) => {
@@ -266,68 +328,6 @@ const getTranscriptDurationSeconds = (chunks: ITranscriptChunk[]) => {
       ? (last as { end: number }).end
       : last.start + last.duration;
   return Math.max(0, Math.floor(lastEnd));
-};
-
-const normalizeSummaryTimeline = (
-  summary: SummaryResponse["summary"],
-  chunks: ITranscriptChunk[],
-  totalDurationSeconds: number,
-): SummaryResponse["summary"] => {
-  const normalized = summary
-    .map((item) => ({
-      text: item.text,
-      timestamp: toNearestTranscriptStart(item.timestamp, chunks),
-    }))
-    .sort((a, b) => a.timestamp - b.timestamp);
-
-  const deduped = normalized.filter((item, index) => {
-    if (index === 0) return true;
-    const prev = normalized[index - 1]!;
-    return item.timestamp - prev.timestamp >= 15;
-  });
-
-  const withRanges = deduped.map((item, index) => {
-    const next = deduped[index + 1];
-    const endTimestamp = next ? next.timestamp : totalDurationSeconds;
-    return {
-      text: item.text,
-      timestamp: item.timestamp,
-      endTimestamp:
-        endTimestamp > item.timestamp
-          ? endTimestamp
-          : Math.min(totalDurationSeconds, item.timestamp + 20),
-    };
-  });
-
-  const last = withRanges[withRanges.length - 1];
-  if (!last) return withRanges;
-
-  const remainingTail = totalDurationSeconds - last.timestamp;
-  if (remainingTail > 75 && chunks.length > 0) {
-    const tailStartTarget = Math.max(
-      0,
-      totalDurationSeconds - Math.min(120, remainingTail),
-    );
-    const tailStart = toNearestTranscriptStart(tailStartTarget, chunks);
-
-    withRanges.push({
-      text: "Final section: Closing recap and final implementation notes, including wrap-up checks, expected outcomes, and end-of-video conclusions.",
-      timestamp: tailStart,
-      endTimestamp: totalDurationSeconds,
-    });
-  } else if (last.endTimestamp && last.endTimestamp < totalDurationSeconds) {
-    last.endTimestamp = totalDurationSeconds;
-  }
-
-  return withRanges
-    .sort((a, b) => a.timestamp - b.timestamp)
-    .map((item, index, arr) => {
-      const next = arr[index + 1];
-      if (next && item.endTimestamp && item.endTimestamp > next.timestamp) {
-        return { ...item, endTimestamp: next.timestamp };
-      }
-      return item;
-    });
 };
 
 const extractJsonString = (rawText: string): string => {
@@ -395,7 +395,8 @@ export const askAiAboutTranscript = async (
     );
 
     if (type === "notes") {
-      const schema = type === "notes" ? GeminiNotesSchema : SummaryResponseSchema ;
+      const schema =
+        type === "notes" ? GeminiNotesSchema : SummaryResponseSchema;
       const validator = type === "notes" ? NotesSchema : SummarySchema;
 
       const rawText = await aiProviderService.generateStructuredResponse(
@@ -453,7 +454,13 @@ Transcript:
 ${transcript}
 `;
 
-    const summary = await aiProviderService.generateResponse(prompt);
+    const summary = await aiProviderService.generateResponse(
+      prompt,
+      undefined,
+      {
+        purpose: "summary",
+      },
+    );
 
     return summary.trim();
   } catch (error: any) {
@@ -483,9 +490,12 @@ ${summaries}
 
     const rawText = await aiProviderService.generateStructuredResponse(
       prompt,
-      SummaryResponseSchema ,
+      SummaryResponseSchema,
       undefined,
       (text) => extractAndValidateJson(text, SummarySchema),
+      {
+        purpose: "summary",
+      },
     );
 
     const jsonStr = extractJsonString(rawText);
@@ -500,6 +510,254 @@ ${summaries}
 
     throw new Error(
       `Failed to generate final summary: ${error?.message ?? "Unknown error"}`,
+    );
+  }
+};
+
+export const generateVideoLongContextSummary = async (
+  chunks: ITranscriptChunk[],
+  language: SummaryLanguage,
+): Promise<string | null> => {
+  try {
+    const transcript = formatTranscriptForLongContextSummary(chunks);
+
+    const prompt = `
+${LONG_CONTEXT_SUMMARY_SYSTEM_PROMPT}
+
+${buildLanguageInstruction(language)}
+
+FULL VIDEO TRANSCRIPT:
+
+${transcript}
+`;
+
+    const inputTokens = await aiProviderService.countTokens("Gemini", prompt);
+
+    const maxInputTokens = Number(
+      process.env.GEMINI_SUMMARY_MAX_INPUT_TOKENS ?? 900000,
+    );
+
+    logger.info(
+      {
+        inputTokens,
+        maxInputTokens,
+        chunks: chunks.length,
+      },
+      "[Summary] Gemini long-context token check",
+    );
+
+    if (inputTokens > maxInputTokens) {
+      logger.info(
+        {
+          inputTokens,
+          maxInputTokens,
+        },
+        "[Summary] Transcript exceeds Gemini long-context threshold",
+      );
+
+      return null;
+    }
+
+    const rawText = await aiProviderService.generateStructuredResponse(
+      prompt,
+      LongContextSummaryResponseSchema,
+      undefined,
+      (text) => extractAndValidateJson(text, LongContextSummarySchema),
+      {
+        purpose: "long-summary",
+      },
+    );
+
+    const jsonStr = extractJsonString(rawText);
+    const parsed = JSON.parse(jsonStr);
+    const validated = LongContextSummarySchema.parse(parsed);
+
+    const summary = validated.summary.map((item) => {
+      if (item.startChunkIndex >= chunks.length) {
+        throw new Error(`Invalid startChunkIndex: ${item.startChunkIndex}`);
+      }
+
+      if (item.endChunkIndex >= chunks.length) {
+        throw new Error(`Invalid endChunkIndex: ${item.endChunkIndex}`);
+      }
+
+      if (item.startChunkIndex > item.endChunkIndex) {
+        throw new Error(
+          `Invalid chunk range: ${item.startChunkIndex}-${item.endChunkIndex}`,
+        );
+      }
+
+      const startChunk = chunks[item.startChunkIndex]!;
+      const endChunk = chunks[item.endChunkIndex]!;
+
+      const start = Math.floor(startChunk.start);
+
+      const end = Math.floor(
+        typeof (endChunk as { end?: number }).end === "number"
+          ? (endChunk as { end: number }).end
+          : endChunk.start + endChunk.duration,
+      );
+
+      if (end <= start) {
+        throw new Error(`Invalid timestamp range: ${start}-${end}`);
+      }
+
+      return {
+        text: item.text,
+        timestamp: start,
+        endTimestamp: end,
+      };
+    });
+
+    for (let i = 1; i < summary.length; i += 1) {
+      if (summary[i]!.timestamp < summary[i - 1]!.timestamp) {
+        throw new Error("Long-context summary is not chronological.");
+      }
+    }
+
+    return JSON.stringify({
+      summary,
+    });
+  } catch (error: any) {
+    logger.error({ error }, "[AI] Failed to generate long-context summary");
+
+    throw new Error(
+      `Failed to generate long-context summary: ${
+        error?.message ?? "Unknown error"
+      }`,
+    );
+  }
+};
+
+export const generatePdfLongContextSummary = async (
+  chunks: IPdfChunk[],
+  language: ResponseLanguage,
+): Promise<string> => {
+  try {
+    if (chunks.length === 0) {
+      throw new Error("No PDF chunks available for summary.");
+    }
+
+    const context = chunks
+      .map((chunk, index) => {
+        return [
+          `[CHUNK ${index}]`,
+          `PAGE: ${chunk.page}`,
+          `TEXT: ${chunk.text}`,
+        ].join("\n");
+      })
+      .join("\n\n");
+
+    const prompt = `
+${PDF_SUMMARY_SYSTEM_PROMPT}
+
+${buildResponseLanguageInstruction(language)}
+
+FULL PDF DOCUMENT:
+
+${context}
+`;
+
+    const inputTokens = await aiProviderService.countTokens(
+      "Gemini",
+      prompt,
+    );
+
+    const maxInputTokens = Number(
+      process.env.GEMINI_SUMMARY_MAX_INPUT_TOKENS ?? 900000,
+    );
+
+    logger.info(
+      {
+        inputTokens,
+        maxInputTokens,
+        chunks: chunks.length,
+      },
+      "[PDF Summary] Gemini long-context token check",
+    );
+
+    if (inputTokens > maxInputTokens) {
+      throw new Error(
+        `PDF document is too large for long-context summarization. ` +
+          `Input tokens: ${inputTokens}, maximum: ${maxInputTokens}`,
+      );
+    }
+
+    const rawText = await aiProviderService.generateStructuredResponse(
+      prompt,
+      PdfSummaryResponseSchema,
+      undefined,
+      (text) => extractAndValidateJson(text, PdfSummarySchema),
+      {
+        purpose: "long-summary",
+      },
+    );
+
+    if (!rawText) {
+      throw new Error("Empty PDF summary response received.");
+    }
+
+    const jsonStr = extractJsonString(rawText);
+
+    const parsed = JSON.parse(jsonStr);
+
+    const validated = PdfSummarySchema.parse(parsed);
+
+    const summary = validated.summary.map((item) => {
+      if (item.startChunkIndex >= chunks.length) {
+        throw new Error(
+          `Invalid startChunkIndex: ${item.startChunkIndex}`,
+        );
+      }
+
+      if (item.endChunkIndex >= chunks.length) {
+        throw new Error(
+          `Invalid endChunkIndex: ${item.endChunkIndex}`,
+        );
+      }
+
+      if (item.startChunkIndex > item.endChunkIndex) {
+        throw new Error(
+          `Invalid chunk range: ${item.startChunkIndex}-${item.endChunkIndex}`,
+        );
+      }
+
+      const startChunk = chunks[item.startChunkIndex]!;
+      const endChunk = chunks[item.endChunkIndex]!;
+
+      return {
+        text: item.text,
+        startPage: startChunk.page,
+        endPage: endChunk.page,
+      };
+    });
+
+    for (let i = 1; i < summary.length; i += 1) {
+      const previous = summary[i - 1]!;
+      const current = summary[i]!;
+
+      if (
+        current.startPage < previous.startPage
+      ) {
+        throw new Error(
+          "PDF summary is not in chronological document order.",
+        );
+      }
+    }
+
+    return JSON.stringify({
+      summary,
+    });
+  } catch (error: any) {
+    logger.error(
+      { error },
+      "[AI] Failed to generate PDF long-context summary",
+    );
+
+    throw new Error(
+      `Failed to generate PDF summary: ${
+        error?.message ?? "Unknown error"
+      }`,
     );
   }
 };
@@ -637,10 +895,11 @@ export const buildPdfContextPrompt = (
     type === "notes"
       ? PDF_NOTES_SYSTEM_PROMPT
       : type === "summary"
-        ? SUMMARY_SYSTEM_PROMPT
+        ? VIDEO_SUMMARY_SYSTEM_PROMPT
         : PDF_CHAT_SYSTEM_PROMPT;
 
-  const responseLanguageInstruction = buildResponseLanguageInstruction(language);
+  const responseLanguageInstruction =
+    buildResponseLanguageInstruction(language);
 
   return `
 ${systemPrompt}
@@ -680,7 +939,8 @@ export const askAiAboutPdf = async (
     );
 
     if (type === "notes" || type === "summary") {
-      const schema = type === "notes" ? GeminiNotesSchema : SummaryResponseSchema ;
+      const schema =
+        type === "notes" ? GeminiNotesSchema : SummaryResponseSchema;
       const validator = type === "notes" ? NotesSchema : SummarySchema;
 
       const rawText = await aiProviderService.generateStructuredResponse(

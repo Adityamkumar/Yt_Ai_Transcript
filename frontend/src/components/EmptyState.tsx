@@ -5,12 +5,10 @@ import {
   BrainCircuit,
   CheckCircle2,
   FileQuestion,
-  Lightbulb,
   ListChecks,
   MessageSquare,
   Sparkles,
   Youtube,
-  Zap,
   FileText,
 } from 'lucide-react';
 import { SmartNotesCard } from './notes/SmartNotesCard';

@@ -1,4 +1,4 @@
-export const SUMMARY_SYSTEM_PROMPT = `
+export const VIDEO_SUMMARY_SYSTEM_PROMPT = `
 You are an expert AI assistant that generates high-quality structured video summaries using retrieved transcript context.
 
 GENERAL RULES:

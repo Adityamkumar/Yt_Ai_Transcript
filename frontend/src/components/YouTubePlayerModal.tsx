@@ -1,10 +1,11 @@
-import { useEffect, useCallback, useState, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, Maximize2, Minimize2, Headphones, MonitorPlay } from 'lucide-react';
-import { useYouTubePlayer } from '@/store/YouTubePlayerContext';
+import { useEffect, useCallback, useState, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { X, Maximize2, Minimize2, Headphones, MonitorPlay } from "lucide-react";
+import { useYouTubePlayer } from "@/store/YouTubePlayerContext";
 
 export function YouTubePlayerModal() {
-  const { state, closePlayer, minimizePlayer, expandPlayer } = useYouTubePlayer();
+  const { state, closePlayer, minimizePlayer, expandPlayer } =
+    useYouTubePlayer();
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   // Escape key handler
@@ -12,7 +13,7 @@ export function YouTubePlayerModal() {
     if (!state.isOpen) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+      if (e.key === "Escape") {
         if (state.isMinimized) {
           closePlayer();
         } else if (isFullscreen) {
@@ -23,19 +24,19 @@ export function YouTubePlayerModal() {
       }
     };
 
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
   }, [state.isOpen, state.isMinimized, closePlayer, isFullscreen]);
 
   // Lock body scroll only when modal is fully open (not minimized)
   useEffect(() => {
     if (state.isOpen && !state.isMinimized) {
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = '';
+      document.body.style.overflow = "";
     }
     return () => {
-      document.body.style.overflow = '';
+      document.body.style.overflow = "";
     };
   }, [state.isOpen, state.isMinimized]);
 
@@ -49,7 +50,7 @@ export function YouTubePlayerModal() {
         closePlayer();
       }
     },
-    [closePlayer]
+    [closePlayer],
   );
 
   // Reset fullscreen when modal closes
@@ -66,13 +67,21 @@ export function YouTubePlayerModal() {
     if (!state.isOpen) return;
 
     const handleMessage = (event: MessageEvent) => {
-      if (event.origin !== 'https://www.youtube.com' && event.origin !== 'http://www.youtube.com') return;
+      if (
+        event.origin !== "https://www.youtube.com" &&
+        event.origin !== "http://www.youtube.com"
+      )
+        return;
 
-      if (typeof event.data === 'string') {
+      if (typeof event.data === "string") {
         try {
           const data = JSON.parse(event.data);
           // playerState === 0 means the video has ended
-          if (data.event === 'infoDelivery' && data.info && data.info.playerState === 0) {
+          if (
+            data.event === "infoDelivery" &&
+            data.info &&
+            data.info.playerState === 0
+          ) {
             closePlayer();
           }
         } catch (e) {
@@ -81,23 +90,23 @@ export function YouTubePlayerModal() {
       }
     };
 
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
   }, [state.isOpen, closePlayer]);
 
   const handleIframeLoad = useCallback(() => {
     if (iframeRef.current && iframeRef.current.contentWindow) {
       // Tell the YouTube iframe to start broadcasting events
       iframeRef.current.contentWindow.postMessage(
-        JSON.stringify({ event: 'listening', id: 1 }),
-        'https://www.youtube.com'
+        JSON.stringify({ event: "listening", id: 1 }),
+        "https://www.youtube.com",
       );
     }
   }, []);
 
   const embedUrl = state.videoId
     ? `https://www.youtube.com/embed/${state.videoId}?start=${Math.floor(state.startSeconds)}&autoplay=1&rel=0&enablejsapi=1`
-    : '';
+    : "";
 
   if (!state.isOpen) return null;
 
@@ -126,14 +135,26 @@ export function YouTubePlayerModal() {
         <motion.div
           key="player-container"
           layout
-          initial={state.isMinimized ? { opacity: 0, y: 80, scale: 0.9 } : { opacity: 0, scale: 0.92, y: 20 }}
-          animate={state.isMinimized ? { opacity: 1, y: 0, scale: 1 } : { opacity: 1, scale: 1, y: 0 }}
-          exit={state.isMinimized ? { opacity: 0, y: 80, scale: 0.9 } : { opacity: 0, scale: 0.92, y: 20 }}
+          initial={
+            state.isMinimized
+              ? { opacity: 0, y: 80, scale: 0.9 }
+              : { opacity: 0, scale: 0.92, y: 20 }
+          }
+          animate={
+            state.isMinimized
+              ? { opacity: 1, y: 0, scale: 1 }
+              : { opacity: 1, scale: 1, y: 0 }
+          }
+          exit={
+            state.isMinimized
+              ? { opacity: 0, y: 80, scale: 0.9 }
+              : { opacity: 0, scale: 0.92, y: 20 }
+          }
           transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
           className={
             state.isMinimized
-              ? 'yt-mini-player'
-              : `yt-player-container ${isFullscreen ? 'yt-player-fullscreen' : ''}`
+              ? "yt-mini-player"
+              : `yt-player-container ${isFullscreen ? "yt-player-fullscreen" : ""}`
           }
         >
           {/* Header - only visible when NOT minimized */}
@@ -155,10 +176,14 @@ export function YouTubePlayerModal() {
                 <button
                   onClick={toggleFullscreen}
                   className="yt-player-btn"
-                  title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
-                  aria-label={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
+                  title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
+                  aria-label={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
                 >
-                  {isFullscreen ? <Minimize2 size={15} /> : <Maximize2 size={15} />}
+                  {isFullscreen ? (
+                    <Minimize2 size={15} />
+                  ) : (
+                    <Maximize2 size={15} />
+                  )}
                 </button>
                 <button
                   onClick={closePlayer}
@@ -175,7 +200,9 @@ export function YouTubePlayerModal() {
           {/* Persistent Iframe Container */}
           <div
             className={
-              state.isMinimized ? 'yt-mini-player-iframe-container' : 'yt-player-iframe-wrapper'
+              state.isMinimized
+                ? "yt-mini-player-iframe-container"
+                : "yt-player-iframe-wrapper"
             }
           >
             <iframe
@@ -185,7 +212,9 @@ export function YouTubePlayerModal() {
               title="YouTube video player"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
               allowFullScreen
-              className={state.isMinimized ? 'yt-mini-player-iframe' : 'yt-player-iframe'}
+              className={
+                state.isMinimized ? "yt-mini-player-iframe" : "yt-player-iframe"
+              }
             />
           </div>
 

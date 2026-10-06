@@ -3,8 +3,11 @@ import type { ITranscriptChunk } from "../../models/transcriptChunk.model.js";
 import { groupIntoBatches } from "../utils/groupIntoBatches.util.js";
 import type { IntermediateSummary } from "../types/summary.types.js";
 import { RAG_CONFIG } from "../RagConfig/rag.config.js";
-import { generateIntermediateSummary } from "../../services/ai.service.js";
-import { generateFinalSummary } from "../../services/ai.service.js";
+import {
+  generateIntermediateSummary,
+  generateFinalSummary,
+  generateVideoLongContextSummary,
+} from "../../services/ai.service.js";
 import logger from "../../lib/logger.js";
 import type { SummaryLanguage } from "../utils/languagePrompt.util.js";
 import { formatTimestamp } from "../../utils/formatTimestamp.js";
@@ -92,4 +95,26 @@ export const generateHierarchicalSummary = async (
   );
 
   return await mergeIntermediateSummaries(intermediateSummaries, language);
+};
+
+export const generateSummary = async (
+  chunks: ITranscriptChunk[],
+  language: SummaryLanguage,
+): Promise<string> => {
+  const longContextSummary = await generateVideoLongContextSummary(chunks, language);
+
+  if (longContextSummary !== null) {
+    return longContextSummary;
+  }
+
+  logger.info("[Summary] Falling back to hierarchical summarization");
+
+  const batches = createSummaryBatches(chunks);
+
+  const intermediateSummaries = await generateIntermediateSummaries(
+    batches,
+    language,
+  );
+
+  return mergeIntermediateSummaries(intermediateSummaries, language);
 };

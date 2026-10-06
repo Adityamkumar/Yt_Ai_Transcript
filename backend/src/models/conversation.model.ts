@@ -6,6 +6,7 @@ export interface IConversation extends Document {
   pdfDocumentId?: Types.ObjectId;
   type: "video" | "pdf";
   title: string;
+  isPinned: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -36,6 +37,10 @@ const conversationSchema = new Schema(
     title: {
       type: String,
       required: true,
+    },
+    isPinned: {
+      type: Boolean,
+      default: false,
     },
   },
   {

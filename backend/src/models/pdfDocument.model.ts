@@ -12,11 +12,6 @@ export interface IPdfDocument extends Document {
   uploadedBy: Types.ObjectId;
   status: "processing" | "ready" | "failed";
   ragStatus?: "processing" | "ready" | "failed";
-  
-
-
-
-
   retryCount: number;
   cooldownUntil?: Date;
   createdAt: Date;

@@ -1,24 +1,34 @@
-import React, { useMemo } from 'react';
-import { ChatMessage } from '@/types';
-import { SummaryTimestamp } from '../timestamps/SummaryTimestamp';
-import { formatTimestamp } from '../timestamps/formatTimestamp';
+import React, { useMemo } from "react";
+import { ChatMessage } from "@/types";
+import { SummaryTimestamp } from "../timestamps/SummaryTimestamp";
+import { formatTimestamp } from "../timestamps/formatTimestamp";
+import { CitationChip } from "./CitationChip";
 
 interface SummaryMessageProps {
   message: ChatMessage;
   videoId?: string;
 }
 
+interface SummaryItem {
+  text: string;
+
+  // Video summary fields
+  timestamp?: number;
+  endTimestamp?: number;
+
+  // PDF summary fields
+  startPage?: number;
+  endPage?: number;
+}
+
 interface SummaryData {
-  summary: {
-    text: string;
-    timestamp: number;
-    endTimestamp?: number;
-  }[];
+  summary: SummaryItem[];
 }
 
 const splitTopicAndDescription = (text: string) => {
   const trimmed = text.trim();
-  const colonIndex = trimmed.indexOf(':');
+
+  const colonIndex = trimmed.indexOf(":");
   if (colonIndex > 0 && colonIndex < 80) {
     return {
       topic: trimmed.slice(0, colonIndex).trim(),
@@ -26,7 +36,7 @@ const splitTopicAndDescription = (text: string) => {
     };
   }
 
-  const sentenceIndex = trimmed.indexOf('. ');
+  const sentenceIndex = trimmed.indexOf(". ");
   if (sentenceIndex > 0 && sentenceIndex < 100) {
     return {
       topic: trimmed.slice(0, sentenceIndex).trim(),
@@ -34,70 +44,129 @@ const splitTopicAndDescription = (text: string) => {
     };
   }
 
+  const commaIndex = trimmed.indexOf(", ");
+  if (commaIndex > 0 && commaIndex < 100) {
+    return {
+      topic: trimmed.slice(0, commaIndex + 1).trim(),
+      description: trimmed.slice(commaIndex + 2).trim(),
+      descriptionPrefix: " ",
+    };
+  }
+
   return {
     topic: trimmed,
-    description: '',
+    description: "",
   };
 };
+
+const isFiniteNumber = (value: unknown): value is number =>
+  typeof value === "number" && Number.isFinite(value);
 
 export function SummaryMessage({ message, videoId }: SummaryMessageProps) {
   const data = useMemo((): SummaryData | null => {
     try {
       const parsed = JSON.parse(message.content) as SummaryData;
-      if (!parsed || !Array.isArray(parsed.summary)) return null;
-      return {
-        summary: parsed.summary
-          .filter(
-            (item) => typeof item?.text === 'string' && Number.isFinite(item?.timestamp),
-          )
-          .map((item) => ({
-            text: item.text.trim(),
-            timestamp: Math.max(0, Math.floor(item.timestamp)),
-            endTimestamp: Number.isFinite(item.endTimestamp)
-              ? Math.max(0, Math.floor(item.endTimestamp as number))
-              : undefined,
-          })),
-      };
+
+      if (!parsed || !Array.isArray(parsed.summary)) {
+        return null;
+      }
+
+      const summary = parsed.summary
+        .filter((item) => {
+          if (!item || typeof item.text !== "string") {
+            return false;
+          }
+
+          const hasVideoReference = isFiniteNumber(item.timestamp);
+          const hasPdfReference = isFiniteNumber(item.startPage);
+
+          return hasVideoReference || hasPdfReference;
+        })
+        .map((item) => ({
+          text: item.text.trim(),
+          timestamp: isFiniteNumber(item.timestamp)
+            ? Math.max(0, Math.floor(item.timestamp))
+            : undefined,
+          endTimestamp: isFiniteNumber(item.endTimestamp)
+            ? Math.max(0, Math.floor(item.endTimestamp))
+            : undefined,
+          startPage: isFiniteNumber(item.startPage)
+            ? Math.max(1, Math.floor(item.startPage))
+            : undefined,
+          endPage: isFiniteNumber(item.endPage)
+            ? Math.max(1, Math.floor(item.endPage))
+            : undefined,
+        }));
+
+      return { summary };
     } catch {
       return null;
     }
   }, [message.content]);
 
   if (!data || data.summary.length === 0) {
-    return <div className="text-(--text-secondary) whitespace-pre-wrap text-[16px] leading-relaxed">{message.content}</div>;
+    return (
+      <div className="whitespace-pre-wrap text-[16px] leading-relaxed text-(--text-secondary)">
+        {message.content}
+      </div>
+    );
   }
 
   return (
     <div className="space-y-4 py-1">
-      <h3 className="text-(--text-primary) text-[17px] sm:text-[18px] font-bold leading-tight tracking-tight">
-        {videoId ? 'Key highlights from this video:' : 'Key highlights from this document:'}
+      <h3 className="text-[17px] font-bold leading-tight tracking-tight text-(--text-primary) sm:text-[18px]">
+        {videoId
+          ? "Key highlights from this video:"
+          : "Key highlights from this document:"}
       </h3>
 
       <div className="space-y-5">
         {data.summary.map((item, index) => {
           const parsed = splitTopicAndDescription(item.text);
-          const end = item.endTimestamp && item.endTimestamp > item.timestamp ? item.endTimestamp : undefined;
-          const rangeLabel = end
-            ? `${formatTimestamp(item.timestamp)} - ${formatTimestamp(end)}`
-            : formatTimestamp(item.timestamp);
+
+          const isPdfSummary = !videoId && isFiniteNumber(item.startPage);
+
+          const isVideoSummary = !!videoId && isFiniteNumber(item.timestamp);
+
+          const videoEnd =
+            isFiniteNumber(item.endTimestamp) &&
+            item.endTimestamp > item.timestamp!
+              ? item.endTimestamp
+              : undefined;
+
+          const pdfStartPage = item.startPage!;
+
+          const rangeLabel = videoEnd
+            ? `${formatTimestamp(item.timestamp!)} - ${formatTimestamp(videoEnd)}`
+            : formatTimestamp(item.timestamp!);
 
           return (
             <div
-              key={`${item.timestamp}-${index}`}
-              className="text-(--text-primary)/90 text-[16px] leading-[1.55]"
+              key={`${item.timestamp ?? item.startPage}-${index}`}
+              className="text-[16px] leading-[1.6] text-(--text-primary)/90"
             >
-              <p>
-                <span className="mr-2 align-top text-(--text-muted)">-</span>
-                <span className="font-bold text-(--text-primary)">{parsed.topic}</span>{' '}
-                {videoId ? (
+              <p className="flex flex-wrap items-start gap-x-1.5 gap-y-1">
+                <span className="mr-1 text-(--text-muted)">•</span>
+
+                <span className="font-bold text-(--text-primary)">
+                  {parsed.topic}
+                </span>
+
+                {isVideoSummary ? (
                   <SummaryTimestamp
-                    timestamp={item.timestamp}
-                    endTimestamp={end}
-                    videoId={videoId}
+                    timestamp={item.timestamp!}
+                    endTimestamp={videoEnd}
+                    videoId={videoId!}
                     label={rangeLabel}
                   />
                 ) : null}
-                {parsed.description ? `: ${parsed.description}` : ''}
+                {isPdfSummary ? <CitationChip page={pdfStartPage} /> : null}
+                {parsed.description ? (
+                  <span>
+                    {parsed.descriptionPrefix ?? ": "}
+                    {parsed.description}
+                  </span>
+                ) : null}
               </p>
             </div>
           );
@@ -106,4 +175,3 @@ export function SummaryMessage({ message, videoId }: SummaryMessageProps) {
     </div>
   );
 }
-

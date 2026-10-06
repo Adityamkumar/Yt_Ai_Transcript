@@ -38,11 +38,15 @@ export const generateFollowUp = asyncHandler(async (req, res) => {
       const conversation = await Conversation.findById(conversationId);
       if (conversation) {
         if (conversation.type === "video" && conversation.videoId) {
-          // 1. Fetch up to 4 semantically relevant chunks
-          const relevantChunks = await retrieveRelevantTranscriptChunks(conversation.videoId, question, 4);
-          
-          // 2. Fetch up to 4 chunks spread out evenly across the video transcript index
-          const totalChunks = await TranscriptChunk.countDocuments({ videoDocumentId: conversation.videoId });
+          const relevantChunks = await retrieveRelevantTranscriptChunks(
+            conversation.videoId,
+            question,
+            4,
+          );
+
+          const totalChunks = await TranscriptChunk.countDocuments({
+            videoDocumentId: conversation.videoId,
+          });
           let spreadChunks: any[] = [];
           if (totalChunks > 0) {
             const indices: number[] = [];
@@ -55,26 +59,32 @@ export const generateFollowUp = asyncHandler(async (req, res) => {
             }
             spreadChunks = await TranscriptChunk.find({
               videoDocumentId: conversation.videoId,
-              chunkIndex: { $in: indices }
+              chunkIndex: { $in: indices },
             }).sort({ chunkIndex: 1 });
           }
 
           // Combine and deduplicate
           const combined = [...relevantChunks];
-          const seenIds = new Set(combined.map(c => c._id.toString()));
+          const seenIds = new Set(combined.map((c) => c._id.toString()));
           for (const sc of spreadChunks) {
             if (!seenIds.has(sc._id.toString())) {
               combined.push(sc);
             }
           }
           combined.sort((a, b) => a.chunkIndex - b.chunkIndex);
-          retrievedContext = combined.map(c => c.text).join(" ");
+          retrievedContext = combined.map((c) => c.text).join(" ");
         } else if (conversation.type === "pdf" && conversation.pdfDocumentId) {
           // 1. Fetch up to 4 semantically relevant chunks
-          const relevantChunks = await retrieveRelevantChunks(conversation.pdfDocumentId, question, 4);
+          const relevantChunks = await retrieveRelevantChunks(
+            conversation.pdfDocumentId,
+            question,
+            4,
+          );
 
           // 2. Fetch up to 4 chunks spread out evenly across the PDF pages/index
-          const totalChunks = await PdfChunk.countDocuments({ documentId: conversation.pdfDocumentId });
+          const totalChunks = await PdfChunk.countDocuments({
+            documentId: conversation.pdfDocumentId,
+          });
           let spreadChunks: any[] = [];
           if (totalChunks > 0) {
             const indices: number[] = [];
@@ -87,24 +97,27 @@ export const generateFollowUp = asyncHandler(async (req, res) => {
             }
             spreadChunks = await PdfChunk.find({
               documentId: conversation.pdfDocumentId,
-              chunkIndex: { $in: indices }
+              chunkIndex: { $in: indices },
             }).sort({ chunkIndex: 1 });
           }
 
           // Combine and deduplicate
           const combined = [...relevantChunks];
-          const seenIds = new Set(combined.map(c => c._id.toString()));
+          const seenIds = new Set(combined.map((c) => c._id.toString()));
           for (const sc of spreadChunks) {
             if (!seenIds.has(sc._id.toString())) {
               combined.push(sc);
             }
           }
           combined.sort((a, b) => a.chunkIndex - b.chunkIndex);
-          retrievedContext = combined.map(c => c.text).join(" ");
+          retrievedContext = combined.map((c) => c.text).join(" ");
         }
       }
     } catch (err) {
-      logger.error({ err }, "[FollowUp] Failed to fetch context chunks for grounding");
+      logger.error(
+        { err },
+        "[FollowUp] Failed to fetch context chunks for grounding",
+      );
     }
   }
 
@@ -112,7 +125,7 @@ export const generateFollowUp = asyncHandler(async (req, res) => {
   const truncatedAnswer = answer.slice(0, 1500);
   const truncatedContext = finalContext.slice(0, 3000);
   const language = req.user?.preferences?.responseLanguage ?? "en";
- const followUpResponseLanguage = buildResponseLanguageInstruction(language);
+  const followUpResponseLanguage = buildResponseLanguageInstruction(language);
 
   const prompt = `
 ${FOLLOWUP_SYSTEM_PROMPT}
@@ -130,19 +143,34 @@ Generate follow-up questions:
 `;
 
   try {
-    const rawText = await aiProviderService.generateStructuredResponse(prompt, FollowUpSchema);
-
+    const rawText = await aiProviderService.generateStructuredResponse(
+      prompt,
+      FollowUpSchema,
+      undefined,
+      undefined,
+      {
+        purpose: "followup",
+      },
+    );
     if (!rawText) {
       return res
         .status(200)
-        .json(new ApiResponse(200, { followUpQuestions: [] }, "No suggestions generated"));
+        .json(
+          new ApiResponse(
+            200,
+            { followUpQuestions: [] },
+            "No suggestions generated",
+          ),
+        );
     }
 
     let parsed: { questions?: string[] };
     try {
       parsed = JSON.parse(rawText);
     } catch {
-      const jsonMatch = rawText.match(/```json\s?([\s\S]*?)\s?```/) || rawText.match(/```\s?([\s\S]*?)\s?```/);
+      const jsonMatch =
+        rawText.match(/```json\s?([\s\S]*?)\s?```/) ||
+        rawText.match(/```\s?([\s\S]*?)\s?```/);
       if (jsonMatch) {
         parsed = JSON.parse(jsonMatch[1]!.trim());
       } else {
@@ -158,10 +186,17 @@ Generate follow-up questions:
       const trimmed = q.trim();
       if (trimmed.length === 0) continue;
 
-      const normalized = trimmed.toLowerCase().replace(/[?.,!]/g, "").replace(/\s+/g, " ");
+      const normalized = trimmed
+        .toLowerCase()
+        .replace(/[?.,!]/g, "")
+        .replace(/\s+/g, " ");
       if (seen.has(normalized)) continue;
 
-      const normalizedUserQ = question.trim().toLowerCase().replace(/[?.,!]/g, "").replace(/\s+/g, " ");
+      const normalizedUserQ = question
+        .trim()
+        .toLowerCase()
+        .replace(/[?.,!]/g, "")
+        .replace(/\s+/g, " ");
       if (normalized === normalizedUserQ) continue;
 
       seen.add(normalized);
@@ -172,10 +207,22 @@ Generate follow-up questions:
 
     return res
       .status(200)
-      .json(new ApiResponse(200, { followUpQuestions: questions }, "Follow-up questions generated"));
+      .json(
+        new ApiResponse(
+          200,
+          { followUpQuestions: questions },
+          "Follow-up questions generated",
+        ),
+      );
   } catch (error: any) {
     return res
       .status(200)
-      .json(new ApiResponse(200, { followUpQuestions: [] }, "Follow-up generation skipped"));
+      .json(
+        new ApiResponse(
+          200,
+          { followUpQuestions: [] },
+          "Follow-up generation skipped",
+        ),
+      );
   }
 });

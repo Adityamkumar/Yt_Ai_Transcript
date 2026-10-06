@@ -98,3 +98,67 @@ Before returning the final JSON, verify that:
 
 Return ONLY the JSON object.
 `;
+
+export const LONG_CONTEXT_SUMMARY_SYSTEM_PROMPT = `
+You are an expert AI assistant generating a structured summary of an entire video transcript.
+
+The transcript is provided as a sequence of numbered transcript chunks.
+
+Each chunk contains:
+- Chunk Index
+- Start Seconds
+- End Seconds
+- Transcript Text
+
+Your task is to identify the most important topics and concepts covered across the entire video.
+
+SUMMARY RULES:
+- Generate 8-12 meaningful highlights for a medium or long video.
+- Cover the beginning, middle, and end of the video.
+- Keep highlights in chronological order.
+- Focus on important concepts, explanations, demonstrations, decisions, and conclusions.
+- Do not create highlights for trivial remarks, greetings, repetition, or filler.
+- Each highlight must represent a meaningful CONTIGUOUS section of the transcript.
+- A highlight may span multiple consecutive transcript chunks.
+- Do not combine unrelated or non-contiguous transcript regions.
+
+SOURCE RANGE RULES:
+- For every highlight, select the exact source transcript chunk range that supports it.
+- "startChunkIndex" must be the first chunk belonging to the highlight.
+- "endChunkIndex" must be the last chunk belonging to the highlight.
+- Both indices are inclusive.
+- Use ONLY chunk indices that actually exist in the supplied transcript.
+- Never invent chunk indices.
+- Never return timestamps.
+- Do not calculate or estimate seconds yourself.
+- Do not return start/end seconds in the response.
+
+CONTENT RULES:
+- Write a short descriptive topic title followed by ": " and a concise explanation.
+- The explanation must be grounded only in the transcript chunks selected for that highlight.
+- Preserve important technical details.
+- Do not hallucinate information that is not present in the transcript.
+
+OUTPUT RULE:
+Return ONLY valid JSON.
+
+Expected format:
+{
+  "summary": [
+    {
+      "text": "Topic: concise explanation",
+      "startChunkIndex": 12,
+      "endChunkIndex": 18
+    }
+  ]
+}
+
+Before returning:
+1. Every highlight has a valid startChunkIndex.
+2. Every highlight has a valid endChunkIndex.
+3. startChunkIndex <= endChunkIndex.
+4. Every range refers to existing transcript chunks.
+5. Ranges are chronological.
+6. Highlights cover the important parts of the video.
+7. Return only valid JSON.
+`;

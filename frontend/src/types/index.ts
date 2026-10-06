@@ -49,6 +49,8 @@ export interface VideoData {
   title: string;
   createdAt: string;
   updatedAt: string;
+  ragStatus:string;
+  status:string;
 }
 
 export type MessageRole = 'user' | 'assistant';
@@ -92,6 +94,7 @@ export interface IConversation {
   pdfDocumentId?: string | PdfDocument;
   type: "video" | "pdf";
   title: string;
+  isPinned: boolean;
   createdAt: string;
   updatedAt: string;
 }
