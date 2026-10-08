@@ -1,12 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Document, Page, pdfjs } from 'react-pdf';
-import { X, ChevronLeft, ChevronRight, Loader2, ExternalLink } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { useSourcePanelStore } from '@/stores/sourcePanel.store';
 import { PdfDocument } from '@/types';
 
 
-pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+  'pdfjs-dist/build/pdf.worker.min.mjs',
+  import.meta.url,
+).toString();
 
 interface SourcePanelProps {
   pdf: PdfDocument;
@@ -16,6 +19,8 @@ export function SourcePanel({ pdf }: SourcePanelProps) {
   const { selectedPage, isSourcePanelOpen, closeSourcePanel, setSelectedPage } = useSourcePanelStore();
   const [numPages, setNumPages] = useState<number | null>(pdf.pageCount || null);
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1024);
+  const [panelWidth, setPanelWidth] = useState<number | null>(null);
+  const [isResizing, setIsResizing] = useState(false);
   const [direction, setDirection] = useState(1); 
   const prevPageRef = useRef(selectedPage || 1);
 
@@ -33,14 +38,29 @@ export function SourcePanel({ pdf }: SourcePanelProps) {
     }
   }, [selectedPage]);
 
-  
   useEffect(() => {
     const handleResize = () => {
-      setIsDesktop(window.innerWidth >= 1024);
+      const desktop = window.innerWidth >= 1024;
+      setIsDesktop(desktop);
+      if (desktop) {
+        const maxWidth = Math.min(650, Math.round(window.innerWidth * 0.52));
+        setPanelWidth((current) => current ? Math.min(current, maxWidth) : current);
+      }
     };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  useEffect(() => {
+    if (!isSourcePanelOpen) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') closeSourcePanel();
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isSourcePanelOpen, closeSourcePanel]);
 
   const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
     setNumPages(numPages);
@@ -58,12 +78,18 @@ export function SourcePanel({ pdf }: SourcePanelProps) {
     }
   };
 
-  
   const panelTransition = {
     type: 'tween',
     ease: 'easeInOut',
-    duration: 0.3,
+    duration: isResizing ? 0 : 0.3,
   } as const;
+
+  const resizePanel = (clientX: number) => {
+    const minWidth = 380;
+    const maxWidth = Math.min(650, Math.round(window.innerWidth * 0.52));
+    const nextWidth = window.innerWidth - clientX;
+    setPanelWidth(Math.min(maxWidth, Math.max(minWidth, nextWidth)));
+  };
 
   
   const pageVariants = {
@@ -90,7 +116,7 @@ export function SourcePanel({ pdf }: SourcePanelProps) {
     <AnimatePresence>
       {isSourcePanelOpen && (
         <>
-          {/* Backdrop overlay for Mobile/Tablet drawer */}
+          {/* Backdrop is only needed while the docked panel becomes a mobile drawer. */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 0.5 }}
@@ -99,22 +125,41 @@ export function SourcePanel({ pdf }: SourcePanelProps) {
             className="fixed inset-0 z-40 bg-black lg:hidden"
           />
 
-          {/* Panel Container */}
+          {/* Docked workspace panel */}
           <motion.div
             custom={isDesktop}
             initial={isDesktop ? { width: 0, opacity: 0 } : { y: '100%' }}
-            animate={isDesktop ? { width: '38%', opacity: 1 } : { y: 0 }}
+            animate={isDesktop ? { width: panelWidth ? `${panelWidth}px` : '38%', opacity: 1 } : { y: 0 }}
             exit={isDesktop ? { width: 0, opacity: 0 } : { y: '100%' }}
             transition={panelTransition}
             style={{
               minWidth: isDesktop ? '380px' : undefined,
               maxWidth: isDesktop ? '650px' : undefined,
             }}
-            
-            className="flex flex-col bg-[var(--surface-2)] shadow-2xl backdrop-blur-md overflow-hidden shrink-0
-                       fixed bottom-0 left-0 w-full h-[80vh] rounded-t-3xl border-t border-[var(--border-soft)] z-50
-                       lg:relative lg:bottom-auto lg:left-auto lg:top-0 lg:h-full lg:rounded-t-none lg:border-t-0 lg:border-l lg:z-10"
+            className="relative flex shrink-0 flex-col overflow-hidden bg-[var(--surface-2)] shadow-2xl backdrop-blur-md fixed bottom-0 left-0 z-50 h-[80vh] w-full rounded-t-3xl border-t border-[var(--border-soft)] lg:relative lg:bottom-auto lg:left-auto lg:top-0 lg:z-10 lg:h-full lg:rounded-t-none lg:border-t-0"
           >
+            <div
+              role="separator"
+              aria-orientation="vertical"
+              aria-label="Resize document panel"
+              onPointerDown={(event) => {
+                if (!isDesktop) return;
+                event.currentTarget.setPointerCapture(event.pointerId);
+                setIsResizing(true);
+                resizePanel(event.clientX);
+              }}
+              onPointerMove={(event) => {
+                if (isResizing) resizePanel(event.clientX);
+              }}
+              onPointerUp={(event) => {
+                if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+                  event.currentTarget.releasePointerCapture(event.pointerId);
+                }
+                setIsResizing(false);
+              }}
+              onPointerCancel={() => setIsResizing(false)}
+              className="group/resize absolute inset-y-0 left-0 z-20 hidden w-3 cursor-col-resize touch-none lg:block"
+            />
             {/* Header */}
             <div className="flex items-center justify-between border-b border-[var(--border-soft)] px-5 py-4 shrink-0">
               <div className="min-w-0 flex-1">
@@ -126,20 +171,10 @@ export function SourcePanel({ pdf }: SourcePanelProps) {
                 </p>
               </div>
               <div className="ml-4 flex items-center gap-2">
-                {pdf.fileUrl && (
-                  <a
-                    href={pdf.fileUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--border-soft)] text-[var(--text-muted)] transition-all hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
-                    title="Open Original PDF"
-                  >
-                    <ExternalLink size={15} />
-                  </a>
-                )}
                 <button
                   onClick={closeSourcePanel}
                   className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--border-soft)] text-[var(--text-muted)] transition-all hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+                  aria-label="Close document preview"
                 >
                   <X size={15} />
                 </button>
@@ -171,7 +206,7 @@ export function SourcePanel({ pdf }: SourcePanelProps) {
 
             {/* PDF Viewport */}
             <div 
-              className="pdf-viewport-container flex-1 overflow-y-auto bg-[#0a0d14] p-5 flex justify-center items-start"
+              className="pdf-viewport-container flex flex-1 items-start justify-center overflow-y-auto bg-[#0a0d14] p-5"
             >
               <Document
                 file={pdf.fileUrl}
