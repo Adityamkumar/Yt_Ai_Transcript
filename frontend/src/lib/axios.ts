@@ -12,8 +12,7 @@ export const notifyEmailVerificationRequired = () => {
 };
 
 export const getApiBaseUrl = (): string => {
-  const envUrl =
-    import.meta.env.VITE_CLOUDWAYS_URL ?? import.meta.env.VITE_API_BASE_URL;
+  const envUrl = import.meta.env.VITE_API_BASE_URL;
 
   if (typeof window !== "undefined") {
     const currentHostname = window.location.hostname;
