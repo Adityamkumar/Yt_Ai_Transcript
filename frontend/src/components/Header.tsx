@@ -19,7 +19,7 @@ export function Header({ onNewChat, onSearchOpen, workspaceActions }: HeaderProp
   const activeConversation = conversations.find((c) => c._id === conversationId);
 
   return (
-    <header className="relative z-20 flex h(--header-height) shrink-0 items-center border-b border(--border-soft) bg-[rgba(8,9,12,0.72)] backdrop-blur-2xl">
+    <header className="relative z-20 flex h-[var(--header-height)] shrink-0 items-center border-b border-[var(--border-soft)] bg-[rgba(8,9,12,0.72)] backdrop-blur-2xl">
       <div className="flex w-full items-center justify-between gap-3 px-3 sm:px-5">
         <div className="flex min-w-0 items-center gap-3">
           <button
