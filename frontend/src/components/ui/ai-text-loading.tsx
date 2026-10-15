@@ -16,13 +16,7 @@ interface AITextLoadingProps {
 }
 
 export default function AITextLoading({
-  texts = [
-    "Lumora is Thinking...",
-    "Processing...",
-    "Analyzing...",
-    "Computing...",
-    "Almost...",
-  ],
+  texts = ["Lumora is Thinking...", "Processing...", "Analyzing...", "Computing...", "Almost..."],
   className,
   interval = 1500,
 }: AITextLoadingProps) {
@@ -53,7 +47,7 @@ export default function AITextLoading({
             }}
             className={cn(
               "flex min-w-max whitespace-nowrap bg-[length:200%_100%] bg-gradient-to-r from-neutral-600 via-neutral-400 to-neutral-600 bg-clip-text font-medium text-sm text-transparent tracking-wide",
-              className
+              className,
             )}
             exit={{ opacity: 0, y: -16 }}
             initial={{ opacity: 0, y: 16 }}

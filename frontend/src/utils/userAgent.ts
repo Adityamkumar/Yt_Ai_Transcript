@@ -1,58 +1,58 @@
-export type UserAgentDeviceType = 'mobile' | 'tablet' | 'desktop';
+export type UserAgentDeviceType = "mobile" | "tablet" | "desktop";
 
 export function getUserAgentDeviceType(userAgent?: string): UserAgentDeviceType {
-  const ua = typeof userAgent === 'string' ? userAgent : '';
+  const ua = typeof userAgent === "string" ? userAgent : "";
 
   if (/ipad|tablet/i.test(ua) || (/android/i.test(ua) && !/mobile/i.test(ua))) {
-    return 'tablet';
+    return "tablet";
   }
 
   if (/iphone|ipod|android.*mobile|mobile/i.test(ua)) {
-    return 'mobile';
+    return "mobile";
   }
 
-  return 'desktop';
+  return "desktop";
 }
 
 export function parseUserAgent(userAgent?: string): string {
-  if (!userAgent || typeof userAgent !== 'string' || !userAgent.trim()) {
-    return 'Unknown Device';
+  if (!userAgent || typeof userAgent !== "string" || !userAgent.trim()) {
+    return "Unknown Device";
   }
 
   const ua = userAgent.trim();
 
   // Detect browser
-  let browser = '';
+  let browser = "";
   if (/edg([ea]|ios)?\//i.test(ua)) {
-    browser = 'Edge';
+    browser = "Edge";
   } else if (/opr\/|opera/i.test(ua)) {
-    browser = 'Opera';
+    browser = "Opera";
   } else if (/samsungbrowser/i.test(ua)) {
-    browser = 'Samsung Internet';
+    browser = "Samsung Internet";
   } else if (/chrome|crios/i.test(ua) && !/edg/i.test(ua)) {
-    browser = 'Chrome';
+    browser = "Chrome";
   } else if (/firefox|fxios/i.test(ua)) {
-    browser = 'Firefox';
+    browser = "Firefox";
   } else if (/safari/i.test(ua) && !/chrome|crios|android/i.test(ua)) {
-    browser = 'Safari';
+    browser = "Safari";
   }
 
   // Detect OS / Device
-  let os = '';
+  let os = "";
   if (/iphone/i.test(ua)) {
-    os = 'iPhone';
+    os = "iPhone";
   } else if (/ipad/i.test(ua)) {
-    os = 'iPad';
+    os = "iPad";
   } else if (/android/i.test(ua)) {
-    os = 'Android';
+    os = "Android";
   } else if (/windows nt/i.test(ua)) {
-    os = 'Windows';
+    os = "Windows";
   } else if (/macintosh|mac os x/i.test(ua)) {
-    os = 'macOS';
+    os = "macOS";
   } else if (/cros/i.test(ua)) {
-    os = 'ChromeOS';
+    os = "ChromeOS";
   } else if (/linux/i.test(ua)) {
-    os = 'Linux';
+    os = "Linux";
   }
 
   if (browser && os) {

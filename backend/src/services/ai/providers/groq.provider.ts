@@ -51,7 +51,7 @@ export class GroqProvider implements IAIProvider {
     prompt: string,
     schema: any,
     systemPrompt?: string,
-    _options?: AIRequestOptions,
+    options?: AIRequestOptions,
   ): Promise<string> {
     const client = getGroqClient();
     const model = this.getModel();
@@ -86,7 +86,7 @@ export class GroqProvider implements IAIProvider {
 
     const { data: response } = await client.chat.completions
       .create(params, {
-        timeout: 8000,
+        timeout: options?.purpose === "assessment-generation" ? 25000 : 8000,
         maxRetries: 0,
       })
       .withResponse();

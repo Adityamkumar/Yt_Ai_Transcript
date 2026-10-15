@@ -1,6 +1,6 @@
-import React from 'react';
-import { formatTimestamp } from './formatTimestamp';
-import { useYouTubePlayer } from '@/store/YouTubePlayerContext';
+import React from "react";
+import { formatTimestamp } from "./formatTimestamp";
+import { useYouTubePlayer } from "@/store/YouTubePlayerContext";
 
 interface TimestampBadgeProps {
   seconds: number;
@@ -9,7 +9,12 @@ interface TimestampBadgeProps {
   children?: React.ReactNode;
 }
 
-export function TimestampBadge({ seconds, videoId, className = "", children }: TimestampBadgeProps) {
+export function TimestampBadge({
+  seconds,
+  videoId,
+  className = "",
+  children,
+}: TimestampBadgeProps) {
   const { openPlayer } = useYouTubePlayer();
 
   const handleClick = (e: React.MouseEvent) => {
@@ -26,4 +31,3 @@ export function TimestampBadge({ seconds, videoId, className = "", children }: T
     </button>
   );
 }
-

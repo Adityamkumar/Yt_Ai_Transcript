@@ -47,7 +47,7 @@ export function LogoutModal({ isOpen, onClose, onConfirm }: LogoutModalProps) {
     setIsLoggingOut(true);
     try {
       await onConfirm();
-    } catch (error) {
+    } catch {
       setIsLoggingOut(false);
     }
   };
@@ -87,12 +87,8 @@ export function LogoutModal({ isOpen, onClose, onConfirm }: LogoutModalProps) {
                     <LogOut size={18} className="text-[var(--accent)]" />
                   </span>
                   <div>
-                    <h2 className="text-base font-semibold text-white">
-                      Sign Out
-                    </h2>
-                    <p className="text-xs text-[var(--text-muted)]">
-                      Confirm logout from account
-                    </p>
+                    <h2 className="text-base font-semibold text-white">Sign Out</h2>
+                    <p className="text-xs text-[var(--text-muted)]">Confirm logout from account</p>
                   </div>
                 </div>
                 <button
@@ -108,7 +104,8 @@ export function LogoutModal({ isOpen, onClose, onConfirm }: LogoutModalProps) {
             {/* Content */}
             <div className="px-6 py-5">
               <p className="text-sm leading-relaxed text-[var(--text-secondary)]">
-                Are you sure you want to sign out of your Lumora account? You will need to log back in to access your workspace conversations and bookmarks.
+                Are you sure you want to sign out of your Lumora account? You will need to log back
+                in to access your workspace conversations and bookmarks.
               </p>
             </div>
 

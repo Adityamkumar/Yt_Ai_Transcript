@@ -93,9 +93,7 @@ export function SummaryMessage({ message, videoId }: SummaryMessageProps) {
           startPage: isFiniteNumber(item.startPage)
             ? Math.max(1, Math.floor(item.startPage))
             : undefined,
-          endPage: isFiniteNumber(item.endPage)
-            ? Math.max(1, Math.floor(item.endPage))
-            : undefined,
+          endPage: isFiniteNumber(item.endPage) ? Math.max(1, Math.floor(item.endPage)) : undefined,
         }));
 
       return { summary };
@@ -115,9 +113,7 @@ export function SummaryMessage({ message, videoId }: SummaryMessageProps) {
   return (
     <div className="space-y-4 py-1">
       <h3 className="text-[17px] font-bold leading-tight tracking-tight text-(--text-primary) sm:text-[18px]">
-        {videoId
-          ? "Key highlights from this video:"
-          : "Key highlights from this document:"}
+        {videoId ? "Key highlights from this video:" : "Key highlights from this document:"}
       </h3>
 
       <div className="space-y-5">
@@ -129,8 +125,7 @@ export function SummaryMessage({ message, videoId }: SummaryMessageProps) {
           const isVideoSummary = !!videoId && isFiniteNumber(item.timestamp);
 
           const videoEnd =
-            isFiniteNumber(item.endTimestamp) &&
-            item.endTimestamp > item.timestamp!
+            isFiniteNumber(item.endTimestamp) && item.endTimestamp > item.timestamp!
               ? item.endTimestamp
               : undefined;
 
@@ -148,9 +143,7 @@ export function SummaryMessage({ message, videoId }: SummaryMessageProps) {
               <p className="flex flex-wrap items-start gap-x-1.5 gap-y-1">
                 <span className="mr-1 text-(--text-muted)">•</span>
 
-                <span className="font-bold text-(--text-primary)">
-                  {parsed.topic}
-                </span>
+                <span className="font-bold text-(--text-primary)">{parsed.topic}</span>
 
                 {isVideoSummary ? (
                   <SummaryTimestamp

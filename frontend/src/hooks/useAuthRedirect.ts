@@ -17,9 +17,7 @@ export function useAuthRedirect() {
     hasAttempted.current = true;
     sessionStorage.removeItem("oauth_pending");
 
-    refreshUser().then(() => {
-      navigate("/app", { replace: true });
-    });
+    void refreshUser();
   }, [authStatus, user, refreshUser, navigate]);
 
   // Handle auto-redirect if already authenticated
@@ -27,7 +25,7 @@ export function useAuthRedirect() {
     if (authStatus === "authenticated" && user) {
       const isOAuthReturn = sessionStorage.getItem("oauth_pending") === "true";
       if (!isOAuthReturn) {
-        navigate("/app", { replace: true });
+        void navigate("/app", { replace: true });
       }
     }
   }, [authStatus, user, navigate]);

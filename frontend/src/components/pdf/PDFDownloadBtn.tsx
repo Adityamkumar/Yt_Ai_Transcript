@@ -12,12 +12,7 @@ const buildPdfFileName = (title: string) => {
     .replace(/[^a-zA-Z0-9\s-]/g, " ")
     .replace(/\s+/g, " ")
     .trim();
-  const shortTitle = normalized
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 4)
-    .join("_")
-    .slice(0, 36);
+  const shortTitle = normalized.split(" ").filter(Boolean).slice(0, 4).join("_").slice(0, 36);
   return `${shortTitle || "notes"}_Notes.pdf`;
 };
 
@@ -53,4 +48,3 @@ export function PDFDownloadButton({ notes }: Props) {
     </PDFDownloadLink>
   );
 }
-

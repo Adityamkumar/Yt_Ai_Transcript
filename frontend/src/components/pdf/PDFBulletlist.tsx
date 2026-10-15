@@ -32,4 +32,3 @@ export function PDFBulletList({ items, isCheck = false }: Props) {
     </View>
   );
 }
-

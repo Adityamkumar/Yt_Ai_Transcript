@@ -1,12 +1,12 @@
-import { Navbar } from '@/components/landing/Navbar';
-import { HeroSection } from '@/components/landing/HeroSection';
-import { ProductDemoSection } from '@/components/landing/ProductDemoSection';
-import { FeaturesSection } from '@/components/landing/FeaturesSection';
-import { ShowcaseSection } from '@/components/landing/ShowcaseSection';
-import { TestimonialsSection } from '@/components/landing/TestimonialsSection';
-import { FinalCTASection } from '@/components/landing/FinalCTASection';
-import { Footer } from '@/components/landing/Footer';
-import { useAuthRedirect } from '@/hooks/useAuthRedirect';
+import { Navbar } from "@/components/landing/Navbar";
+import { HeroSection } from "@/components/landing/HeroSection";
+import { ProductDemoSection } from "@/components/landing/ProductDemoSection";
+import { FeaturesSection } from "@/components/landing/FeaturesSection";
+import { ShowcaseSection } from "@/components/landing/ShowcaseSection";
+import { TestimonialsSection } from "@/components/landing/TestimonialsSection";
+import { FinalCTASection } from "@/components/landing/FinalCTASection";
+import { Footer } from "@/components/landing/Footer";
+import { useAuthRedirect } from "@/hooks/useAuthRedirect";
 
 export default function LandingPage() {
   useAuthRedirect();

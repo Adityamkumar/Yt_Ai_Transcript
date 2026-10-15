@@ -60,9 +60,7 @@ export default function HomePage({ onActionReady }: HomePageProps) {
   const [isPdfProcessing, setIsPdfProcessing] = useState(false);
   const [processingFileName, setProcessingFileName] = useState("");
 
-  const activeConversation = conversations.find(
-    (c) => c._id === conversationId,
-  );
+  const activeConversation = conversations.find((c) => c._id === conversationId);
 
   const activeVideo =
     activeConversation?.type === "video" &&
@@ -82,27 +80,19 @@ export default function HomePage({ onActionReady }: HomePageProps) {
     !!activeVideo &&
     (activeVideo.status === "failed" || activeVideo.ragStatus === "failed");
 
-  const isVideoPreparing =
-    activeConversation?.type === "video" && !isVideoReady && !isVideoFailed;
+  const isVideoPreparing = activeConversation?.type === "video" && !isVideoReady && !isVideoFailed;
 
   const [isExtracting, setIsExtracting] = useState(false);
   const [processingStep, setProcessingStep] = useState(0);
 
   useEffect(() => {
-    if (
-      !isExtracting &&
-      !isCreatingConversation &&
-      !isVideoPreparing &&
-      !isPdfProcessing
-    ) {
+    if (!isExtracting && !isCreatingConversation && !isVideoPreparing && !isPdfProcessing) {
       setProcessingStep(0);
       return;
     }
 
     const interval = window.setInterval(() => {
-      setProcessingStep(
-        (currentStep) => (currentStep + 1) % videoProcessingSteps.length,
-      );
+      setProcessingStep((currentStep) => (currentStep + 1) % videoProcessingSteps.length);
     }, 2400);
 
     return () => window.clearInterval(interval);
@@ -119,10 +109,9 @@ export default function HomePage({ onActionReady }: HomePageProps) {
           title: videoData.title || "New Chat",
         });
 
-        navigate(`/workspace/${conversation._id}`);
+        void navigate(`/workspace/${conversation._id}`);
       } catch (err) {
-        if ((err as { code?: string })?.code === EMAIL_NOT_VERIFIED_CODE)
-          return;
+        if ((err as { code?: string })?.code === EMAIL_NOT_VERIFIED_CODE) return;
         toast.error(err instanceof Error ? err.message : "Indexing failed");
       } finally {
         setIsExtracting(false);
@@ -141,7 +130,7 @@ export default function HomePage({ onActionReady }: HomePageProps) {
         return [conversation, ...old];
       });
 
-      navigate(`/workspace/${conversation._id}`);
+      void navigate(`/workspace/${conversation._id}`);
     },
     [navigate, queryClient],
   );
@@ -217,8 +206,7 @@ export default function HomePage({ onActionReady }: HomePageProps) {
                         </h2>
 
                         <p className="mt-2 text-sm text-[var(--text-muted)]">
-                          The video could not be fully prepared for AI chat.
-                          Please try again.
+                          The video could not be fully prepared for AI chat. Please try again.
                         </p>
                       </div>
                     </div>
@@ -242,9 +230,7 @@ export default function HomePage({ onActionReady }: HomePageProps) {
                     variants={fadeIn}
                     className="mx-auto w-full max-w-[520px] py-10"
                   >
-                    <PdfIndexingStatus
-                      fileName={processingFileName || "your document"}
-                    />
+                    <PdfIndexingStatus fileName={processingFileName || "your document"} />
                   </motion.div>
                 ) : (
                   <motion.div
@@ -256,10 +242,7 @@ export default function HomePage({ onActionReady }: HomePageProps) {
                       <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(157,165,255,0.07),transparent_36%),radial-gradient(circle_at_80%_0%,rgba(77,162,255,0.05),transparent_30%)] pointer-events-none" />
                       <div className="relative z-10 flex flex-col items-center text-center">
                         <div className="mb-4 flex items-center justify-center gap-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]">
-                          <Sparkles
-                            size={12}
-                            className="text-[var(--accent)]"
-                          />
+                          <Sparkles size={12} className="text-[var(--accent)]" />
                           <span>Preparing your workspace</span>
                         </div>
 

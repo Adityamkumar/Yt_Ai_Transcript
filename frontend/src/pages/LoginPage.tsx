@@ -6,13 +6,7 @@ import { useAuth } from "@/store/AuthContext";
 import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton";
 import { SessionManagementPanel } from "@/components/auth/SessionManagementPanel";
 import type { PreAuthSessionManagementData } from "@/types";
-import {
-  AuthSplitLayout,
-  Input,
-  PasswordInput,
-  Button,
-  Label,
-} from "@/components/ui/auth-ui";
+import { AuthSplitLayout, Input, PasswordInput, Button, Label } from "@/components/ui/auth-ui";
 import { useAuthRedirect } from "@/hooks/useAuthRedirect";
 
 export default function LoginPage() {
@@ -21,10 +15,12 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({ email: "", password: "" });
-  const [sessionManagement, setSessionManagement] =
-    useState<PreAuthSessionManagementData | null>(null);
-  const [sessionManagementProvider, setSessionManagementProvider] =
-    useState<"local" | "google" | null>(null);
+  const [sessionManagement, setSessionManagement] = useState<PreAuthSessionManagementData | null>(
+    null,
+  );
+  const [sessionManagementProvider, setSessionManagementProvider] = useState<
+    "local" | "google" | null
+  >(null);
   const [googleAttempt, setGoogleAttempt] = useState(0);
 
   const [lockedUntil, setLockedUntil] = useState<number | null>(() => {
@@ -195,9 +191,7 @@ export default function LoginPage() {
                   required
                   autoComplete="email"
                   value={form.email}
-                  onChange={(e) =>
-                    setForm((prev) => ({ ...prev, email: e.target.value }))
-                  }
+                  onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
                   disabled={isLocked}
                 />
               </div>
@@ -219,9 +213,7 @@ export default function LoginPage() {
                   required
                   autoComplete="current-password"
                   value={form.password}
-                  onChange={(e) =>
-                    setForm((prev) => ({ ...prev, password: e.target.value }))
-                  }
+                  onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
                   disabled={isLocked}
                 />
               </div>
@@ -262,7 +254,6 @@ export default function LoginPage() {
           />
         </>
       )}
-
       <div className="text-center text-xs text-muted-foreground pt-2">
         Don't have an account?{" "}
         <Link

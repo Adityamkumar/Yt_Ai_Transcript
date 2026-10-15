@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react';
-import { ArrowUp, Square } from 'lucide-react';
-import { cn } from '@/utils/cn';
+import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from "react";
+import { ArrowUp, Square } from "lucide-react";
+import { cn } from "@/utils/cn";
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -11,13 +11,13 @@ interface ChatInputProps {
 }
 
 export function ChatInput({ onSend, onStop, disabled, isPending, placeholder }: ChatInputProps) {
-  const [value, setValue] = useState('');
+  const [value, setValue] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const resizeTextarea = useCallback(() => {
     const textarea = textareaRef.current;
     if (!textarea) return;
-    textarea.style.height = 'auto';
+    textarea.style.height = "auto";
     textarea.style.height = `${Math.min(textarea.scrollHeight, 180)}px`;
   }, []);
 
@@ -26,12 +26,12 @@ export function ChatInput({ onSend, onStop, disabled, isPending, placeholder }: 
     if (!trimmed || disabled || isPending) return;
 
     onSend(trimmed);
-    setValue('');
+    setValue("");
     requestAnimationFrame(resizeTextarea);
   }, [value, disabled, isPending, onSend, resizeTextarea]);
 
   const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
-    if (event.key === 'Enter' && !event.shiftKey) {
+    if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
       handleSend();
     }
@@ -53,8 +53,8 @@ export function ChatInput({ onSend, onStop, disabled, isPending, placeholder }: 
       <div className="chat-container pointer-events-auto">
         <div
           className={cn(
-            'premium-panel rounded-[var(--radius-2xl)] p-2 transition-all duration-200',
-            'focus-within:border-[rgba(157,165,255,0.28)] focus-within:shadow-[0_20px_70px_rgba(0,0,0,0.34),0_0_0_1px_rgba(157,165,255,0.06)]'
+            "premium-panel rounded-[var(--radius-2xl)] p-2 transition-all duration-200",
+            "focus-within:border-[rgba(157,165,255,0.28)] focus-within:shadow-[0_20px_70px_rgba(0,0,0,0.34),0_0_0_1px_rgba(157,165,255,0.06)]",
           )}
         >
           <div className="flex items-end gap-2">
@@ -63,7 +63,7 @@ export function ChatInput({ onSend, onStop, disabled, isPending, placeholder }: 
               value={value}
               onChange={(event) => setValue(event.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder={placeholder ?? 'Message AI...'}
+              placeholder={placeholder ?? "Message AI..."}
               disabled={disabled || isPending}
               rows={1}
               className="max-h-45 min-h-12 flex-1 resize-none bg-transparent px-3 py-2.5 text-[16px] leading-7 text-[var(--text-primary)] outline-none placeholder:text-[var(--text-muted)] disabled:cursor-not-allowed disabled:opacity-45 sm:px-4"
@@ -72,12 +72,12 @@ export function ChatInput({ onSend, onStop, disabled, isPending, placeholder }: 
             <button
               onClick={isPending ? onStop : handleSend}
               disabled={!canSend && !canStop}
-              aria-label={isPending ? 'Generating answer' : 'Send message'}
+              aria-label={isPending ? "Generating answer" : "Send message"}
               className={cn(
-                'mb-1 grid h-10 w-10 shrink-0 place-items-center rounded-2xl transition-all',
+                "mb-1 grid h-10 w-10 shrink-0 place-items-center rounded-2xl transition-all",
                 canSend || canStop
-                  ? 'bg-[linear-gradient(135deg,#dfe3ff_0%,#87b8ff_100%)] text-[var(--canvas)] hover:scale-[1.03] hover:opacity-95 shadow-[0_14px_28px_rgba(110,127,255,0.18)]'
-                  : 'cursor-not-allowed bg-[rgba(255,255,255,0.04)] text-[var(--text-muted)]'
+                  ? "bg-[linear-gradient(135deg,#dfe3ff_0%,#87b8ff_100%)] text-[var(--canvas)] hover:scale-[1.03] hover:opacity-95 shadow-[0_14px_28px_rgba(110,127,255,0.18)]"
+                  : "cursor-not-allowed bg-[rgba(255,255,255,0.04)] text-[var(--text-muted)]",
               )}
             >
               {isPending ? <Square size={14} fill="currentColor" /> : <ArrowUp size={18} />}

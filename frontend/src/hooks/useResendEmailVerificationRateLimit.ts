@@ -39,23 +39,26 @@ export function useResendEmailVerificationRateLimit(initialCooldownUntil?: numbe
     setCooldownUntil(Date.now() + Math.max(0, seconds) * 1000);
   }, []);
 
-  const handleRateLimitError = useCallback((error: unknown) => {
-    const rateLimitError = error as RateLimitError;
-    if (rateLimitError.status !== 429) return false;
+  const handleRateLimitError = useCallback(
+    (error: unknown) => {
+      const rateLimitError = error as RateLimitError;
+      if (rateLimitError.status !== 429) return false;
 
-    if (rateLimitError.reason === "cooldown" && typeof rateLimitError.retryAfter === "number") {
-      startCooldown(rateLimitError.retryAfter);
-      return true;
-    }
+      if (rateLimitError.reason === "cooldown" && typeof rateLimitError.retryAfter === "number") {
+        startCooldown(rateLimitError.retryAfter);
+        return true;
+      }
 
-    if (rateLimitError.reason === "hourly_limit") {
-      setCooldownUntil(null);
-      setResendState("hourly_limit");
-      return true;
-    }
+      if (rateLimitError.reason === "hourly_limit") {
+        setCooldownUntil(null);
+        setResendState("hourly_limit");
+        return true;
+      }
 
-    return false;
-  }, [startCooldown]);
+      return false;
+    },
+    [startCooldown],
+  );
 
   return {
     resendState,

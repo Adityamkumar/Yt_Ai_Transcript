@@ -1,14 +1,14 @@
-import { useState, useCallback, useRef } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
-import { messageService } from '@/services/message.service';
-import { chatService } from '@/services/chat.service';
-import { IMessage, MessageType } from '@/types';
-import { WorkspaceAction } from '@/components/workspace-actions/workspaceActionConfig';
+import { useState, useCallback, useRef } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { messageService } from "@/services/message.service";
+import { chatService } from "@/services/chat.service";
+import { IMessage, MessageType } from "@/types";
+import { WorkspaceAction } from "@/components/workspace-actions/workspaceActionConfig";
 
 export function useChat(conversationId: string | undefined, videoId: string | undefined) {
   const queryClient = useQueryClient();
   const [isStreaming, setIsStreaming] = useState(false);
-  const [streamingMessage, setStreamingMessage] = useState('');
+  const [streamingMessage, setStreamingMessage] = useState("");
   const [isNotesRequest, setIsNotesRequest] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -16,24 +16,30 @@ export function useChat(conversationId: string | undefined, videoId: string | un
     abortControllerRef.current?.abort();
     abortControllerRef.current = null;
     setIsStreaming(false);
-    setStreamingMessage('');
+    setStreamingMessage("");
   }, []);
 
   const sendMessage = useCallback(
-    async (content: string, source?: 'user' | 'suggested_question') => {
+    async (content: string, source?: "user" | "suggested_question") => {
       if (!conversationId || !videoId || isStreaming) return;
 
-      const isNotesIntent = /create notes|generate notes|make notes|structured notes/i.test(content);
+      const isNotesIntent = /create notes|generate notes|make notes|structured notes/i.test(
+        content,
+      );
       const isSummaryIntent = /summarize this video|key highlights|video summary/i.test(content);
-      
-      const messageType: MessageType = isNotesIntent ? 'notes' : isSummaryIntent ? 'summary' : 'chat';
+
+      const messageType: MessageType = isNotesIntent
+        ? "notes"
+        : isSummaryIntent
+          ? "summary"
+          : "chat";
 
       const tempId = `temp-${Date.now()}`;
       const tempUserMsg: IMessage = {
         _id: tempId,
         clientId: tempId,
         conversationId,
-        role: 'user',
+        role: "user",
         type: messageType,
         content,
         source,
@@ -42,36 +48,36 @@ export function useChat(conversationId: string | undefined, videoId: string | un
       };
 
       try {
-        queryClient.setQueryData(['messages', conversationId], (old: IMessage[] = []) => [
+        queryClient.setQueryData(["messages", conversationId], (old: IMessage[] = []) => [
           ...old,
           tempUserMsg,
         ]);
 
         setIsStreaming(true);
-        setIsNotesRequest(messageType === 'notes');
-        setStreamingMessage('');
+        setIsNotesRequest(messageType === "notes");
+        setStreamingMessage("");
 
         const userMsg = await messageService.createMessage(
           conversationId,
-          'user',
+          "user",
           content,
           messageType,
-          source
+          source,
         );
 
-        queryClient.setQueryData(['messages', conversationId], (old: IMessage[] = []) =>
-          old.map(m => (m._id === tempId ? { ...userMsg, clientId: tempId } : m))
+        queryClient.setQueryData(["messages", conversationId], (old: IMessage[] = []) =>
+          old.map((m) => (m._id === tempId ? { ...userMsg, clientId: tempId } : m)),
         );
 
-        const history: IMessage[] = queryClient.getQueryData(['messages', conversationId]) || [];
-        const recentMessages = history.slice(-10).map(m => ({
+        const history: IMessage[] = queryClient.getQueryData(["messages", conversationId]) || [];
+        const recentMessages = history.slice(-10).map((m) => ({
           role: m.role,
-          content: m.content
+          content: m.content,
         }));
 
-        let fullResponse = '';
-        
-        if (messageType === 'notes' || messageType === 'summary') {
+        let fullResponse = "";
+
+        if (messageType === "notes" || messageType === "summary") {
           const response = await chatService.askQuestion({
             videoId,
             question: content,
@@ -98,75 +104,91 @@ export function useChat(conversationId: string | undefined, videoId: string | un
         }
 
         if (!fullResponse.trim()) {
-          fullResponse = "I'm sorry, I encountered an issue while generating a response. Please try again.";
+          fullResponse =
+            "I'm sorry, I encountered an issue while generating a response. Please try again.";
         }
 
-        const assistantMsg = await messageService.createMessage(conversationId, 'assistant', fullResponse, messageType);
+        const assistantMsg = await messageService.createMessage(
+          conversationId,
+          "assistant",
+          fullResponse,
+          messageType,
+        );
 
-        queryClient.setQueryData(['messages', conversationId], (old: IMessage[] = []) => [
+        queryClient.setQueryData(["messages", conversationId], (old: IMessage[] = []) => [
           ...old,
           assistantMsg,
         ]);
-        setStreamingMessage('');
+        setStreamingMessage("");
       } catch (error: any) {
-        if (error?.name !== 'AbortError') throw error;
+        if (error?.name !== "AbortError") throw error;
       } finally {
         setIsStreaming(false);
-        setStreamingMessage('');
+        setStreamingMessage("");
       }
     },
-    [conversationId, videoId, isStreaming, queryClient]
+    [conversationId, videoId, isStreaming, queryClient],
   );
 
-  const generateNotes = useCallback(
-    async () => {
-      if (!conversationId || !videoId || isStreaming) return;
-      try {
-        setIsStreaming(true);
-        setIsNotesRequest(true);
-        setStreamingMessage('');
-        const response = await chatService.askQuestion({
-          videoId,
-          question: "Generate complete structured educational notes for this video.",
-          recentMessages: [],
-          type: 'notes',
-        });
-        const assistantMsg = await messageService.createMessage(conversationId, 'assistant', response.data, 'notes');
-        queryClient.setQueryData(['messages', conversationId], (old: IMessage[] = []) => [...old, assistantMsg]);
-        setStreamingMessage('');
-      } catch (error) {
-        console.error("Notes generation error:", error);
-      } finally {
-        setIsStreaming(false);
-      }
-    },
-    [conversationId, videoId, isStreaming, queryClient]
-  );
+  const generateNotes = useCallback(async () => {
+    if (!conversationId || !videoId || isStreaming) return;
+    try {
+      setIsStreaming(true);
+      setIsNotesRequest(true);
+      setStreamingMessage("");
+      const response = await chatService.askQuestion({
+        videoId,
+        question: "Generate complete structured educational notes for this video.",
+        recentMessages: [],
+        type: "notes",
+      });
+      const assistantMsg = await messageService.createMessage(
+        conversationId,
+        "assistant",
+        response.data,
+        "notes",
+      );
+      queryClient.setQueryData(["messages", conversationId], (old: IMessage[] = []) => [
+        ...old,
+        assistantMsg,
+      ]);
+      setStreamingMessage("");
+    } catch (error) {
+      console.error("Notes generation error:", error);
+    } finally {
+      setIsStreaming(false);
+    }
+  }, [conversationId, videoId, isStreaming, queryClient]);
 
-  const generateSummary = useCallback(
-    async () => {
-      if (!conversationId || !videoId || isStreaming) return;
-      try {
-        setIsStreaming(true);
-        setIsNotesRequest(false);
-        setStreamingMessage('');
-        const response = await chatService.askQuestion({
-          videoId,
-          question: "Provide a quick summary of this video with key highlights.",
-          recentMessages: [],
-          type: 'summary',
-        });
-        const assistantMsg = await messageService.createMessage(conversationId, 'assistant', response.data, 'summary');
-        queryClient.setQueryData(['messages', conversationId], (old: IMessage[] = []) => [...old, assistantMsg]);
-        setStreamingMessage('');
-      } catch (error) {
-        console.error("Summary generation error:", error);
-      } finally {
-        setIsStreaming(false);
-      }
-    },
-    [conversationId, videoId, isStreaming, queryClient]
-  );
+  const generateSummary = useCallback(async () => {
+    if (!conversationId || !videoId || isStreaming) return;
+    try {
+      setIsStreaming(true);
+      setIsNotesRequest(false);
+      setStreamingMessage("");
+      const response = await chatService.askQuestion({
+        videoId,
+        question: "Provide a quick summary of this video with key highlights.",
+        recentMessages: [],
+        type: "summary",
+      });
+      const assistantMsg = await messageService.createMessage(
+        conversationId,
+        "assistant",
+        response.data,
+        "summary",
+      );
+      queryClient.setQueryData(["messages", conversationId], (old: IMessage[] = []) => [
+        ...old,
+        assistantMsg,
+      ]);
+      setStreamingMessage("");
+    } catch (error) {
+      console.error("Summary generation error:", error);
+    } finally {
+      setIsStreaming(false);
+    }
+  }, [conversationId, videoId, isStreaming, queryClient]);
 
   const editMessage = useCallback(
     async (messageId: string, newContent: string) => {
@@ -174,23 +196,23 @@ export function useChat(conversationId: string | undefined, videoId: string | un
 
       try {
         setIsStreaming(true);
-        setStreamingMessage('');
+        setStreamingMessage("");
 
         const updatedMsg = await messageService.updateMessage(messageId, newContent);
 
-        queryClient.setQueryData(['messages', conversationId], (old: IMessage[] = []) => {
-          const index = old.findIndex(m => m._id === messageId);
+        queryClient.setQueryData(["messages", conversationId], (old: IMessage[] = []) => {
+          const index = old.findIndex((m) => m._id === messageId);
           if (index === -1) return old;
           return [...old.slice(0, index), updatedMsg];
         });
 
-        const history: IMessage[] = queryClient.getQueryData(['messages', conversationId]) || [];
-        const recentMessages = history.slice(-10).map(m => ({
+        const history: IMessage[] = queryClient.getQueryData(["messages", conversationId]) || [];
+        const recentMessages = history.slice(-10).map((m) => ({
           role: m.role,
-          content: m.content
+          content: m.content,
         }));
 
-        let fullResponse = '';
+        let fullResponse = "";
         const controller = new AbortController();
         abortControllerRef.current = controller;
         await chatService.streamQuestion(
@@ -206,28 +228,32 @@ export function useChat(conversationId: string | undefined, videoId: string | un
           controller.signal,
         );
 
-        const assistantMsg = await messageService.createMessage(conversationId, 'assistant', fullResponse);
+        const assistantMsg = await messageService.createMessage(
+          conversationId,
+          "assistant",
+          fullResponse,
+        );
 
-        queryClient.setQueryData(['messages', conversationId], (old: IMessage[] = []) => [
+        queryClient.setQueryData(["messages", conversationId], (old: IMessage[] = []) => [
           ...old,
           assistantMsg,
         ]);
-        setStreamingMessage('');
+        setStreamingMessage("");
       } catch (error: any) {
-        if (error?.name !== 'AbortError') throw error;
+        if (error?.name !== "AbortError") throw error;
       } finally {
         setIsStreaming(false);
-        setStreamingMessage('');
+        setStreamingMessage("");
       }
     },
-    [conversationId, videoId, isStreaming, queryClient]
+    [conversationId, videoId, isStreaming, queryClient],
   );
 
   const triggerAction = useCallback(
     async (action: WorkspaceAction) => {
       if (!conversationId || !videoId || isStreaming) return;
 
-      if (action.type === 'chat') {
+      if (action.type === "chat") {
         await sendMessage(action.prompt);
         return;
       }
@@ -237,7 +263,7 @@ export function useChat(conversationId: string | undefined, videoId: string | un
         _id: tempId,
         clientId: tempId,
         conversationId,
-        role: 'user',
+        role: "user",
         type: action.type,
         content: action.prompt,
         createdAt: new Date().toISOString(),
@@ -245,18 +271,18 @@ export function useChat(conversationId: string | undefined, videoId: string | un
       };
 
       try {
-        queryClient.setQueryData(['messages', conversationId], (old: IMessage[] = []) => [
+        queryClient.setQueryData(["messages", conversationId], (old: IMessage[] = []) => [
           ...old,
           tempUserMsg,
         ]);
 
         setIsStreaming(true);
-        setIsNotesRequest(action.type === 'notes');
-        setStreamingMessage('');
+        setIsNotesRequest(action.type === "notes");
+        setStreamingMessage("");
 
-        const userMsg = await messageService.createMessage(conversationId, 'user', action.prompt);
-        queryClient.setQueryData(['messages', conversationId], (old: IMessage[] = []) =>
-          old.map(m => (m._id === tempId ? { ...userMsg, clientId: tempId } : m))
+        const userMsg = await messageService.createMessage(conversationId, "user", action.prompt);
+        queryClient.setQueryData(["messages", conversationId], (old: IMessage[] = []) =>
+          old.map((m) => (m._id === tempId ? { ...userMsg, clientId: tempId } : m)),
         );
 
         const response = await chatService.askQuestion({
@@ -266,20 +292,19 @@ export function useChat(conversationId: string | undefined, videoId: string | un
           type: action.type,
         });
 
-        const fullResponse = response.data || "I'm sorry, I encountered an issue. Please try again.";
+        const fullResponse =
+          response.data || "I'm sorry, I encountered an issue. Please try again.";
         const assistantMsg = await messageService.createMessage(
           conversationId,
-          'assistant',
+          "assistant",
           fullResponse,
           action.type,
         );
-        queryClient.setQueryData(['messages', conversationId], (old: IMessage[] = []) => [
+        queryClient.setQueryData(["messages", conversationId], (old: IMessage[] = []) => [
           ...old,
           assistantMsg,
         ]);
-        setStreamingMessage('');
-      } catch (error) {
-        throw error;
+        setStreamingMessage("");
       } finally {
         setIsStreaming(false);
       }
@@ -299,4 +324,3 @@ export function useChat(conversationId: string | undefined, videoId: string | un
     isNotesRequest,
   };
 }
-

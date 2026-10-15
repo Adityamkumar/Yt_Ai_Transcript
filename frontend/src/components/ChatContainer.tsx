@@ -7,6 +7,7 @@ import { MessageRenderer } from "./MessageRenderer";
 import { ChatInput } from "./ChatInput";
 import { EmptyState } from "./EmptyState";
 import { VideoCard } from "./VideoCard";
+import { TestUnderstandingCta } from "./TestUnderstandingCta";
 import { VideoData } from "@/types";
 import { WorkspaceAction } from "./workspace-actions/workspaceActionConfig";
 
@@ -19,8 +20,7 @@ interface ChatContainerProps {
 export function ChatContainer({ conversationId, video, onActionReady }: ChatContainerProps) {
   const { messages, isLoading } = useMessages(conversationId);
 
-  const targetVideoId =
-    video?.youtubeVideoId || (typeof video === "string" ? video : "");
+  const targetVideoId = video?.youtubeVideoId || (typeof video === "string" ? video : "");
 
   const {
     sendMessage,
@@ -58,34 +58,38 @@ export function ChatContainer({ conversationId, video, onActionReady }: ChatCont
   }, [isStreaming, streamingMessage, isNotesRequest, conversationId]);
 
   const displayMessages = useMemo(() => {
-    return streamingDisplayMessage
-      ? [...messages, streamingDisplayMessage]
-      : messages;
+    return streamingDisplayMessage ? [...messages, streamingDisplayMessage] : messages;
   }, [messages, streamingDisplayMessage]);
 
   const lastAssistantMessageId = useMemo(() => {
     for (let i = displayMessages.length - 1; i >= 0; i--) {
-      if (displayMessages[i].role === 'assistant') {
+      if (displayMessages[i].role === "assistant") {
         return displayMessages[i]._id;
       }
     }
     return null;
   }, [displayMessages]);
 
-  const getUserQuestionForMessage = useCallback((messageId: string) => {
-    const msgIndex = displayMessages.findIndex(m => m._id === messageId);
-    if (msgIndex === -1) return undefined;
-    for (let i = msgIndex - 1; i >= 0; i--) {
-      if (displayMessages[i].role === 'user') {
-        return displayMessages[i].content;
+  const getUserQuestionForMessage = useCallback(
+    (messageId: string) => {
+      const msgIndex = displayMessages.findIndex((m) => m._id === messageId);
+      if (msgIndex === -1) return undefined;
+      for (let i = msgIndex - 1; i >= 0; i--) {
+        if (displayMessages[i].role === "user") {
+          return displayMessages[i].content;
+        }
       }
-    }
-    return undefined;
-  }, [displayMessages]);
+      return undefined;
+    },
+    [displayMessages],
+  );
 
-  const handleSelectSuggestedQuestion = useCallback((question: string) => {
-    sendMessage(question, 'suggested_question');
-  }, [sendMessage]);
+  const handleSelectSuggestedQuestion = useCallback(
+    (question: string) => {
+      void sendMessage(question, "suggested_question");
+    },
+    [sendMessage],
+  );
 
   const bottomRef = useAutoScroll(displayMessages);
 
@@ -127,7 +131,7 @@ export function ChatContainer({ conversationId, video, onActionReady }: ChatCont
   };
 
   const handlePromptSelect = (text: string) => {
-    sendMessage(text);
+    void sendMessage(text);
   };
 
   if (isLoading && messages.length === 0) {
@@ -165,6 +169,9 @@ export function ChatContainer({ conversationId, video, onActionReady }: ChatCont
                   youtubeUrl={video?.youtubeUrl || ""}
                   transcript="loaded"
                 />
+              </div>
+              <div className="chat-container mb-8">
+                <TestUnderstandingCta />
               </div>
             </div>
 

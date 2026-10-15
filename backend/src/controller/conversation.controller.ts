@@ -2,8 +2,7 @@ import { Conversation } from "../models/conversation.model.js";
 import { Message } from "../models/message.model.js";
 import { Video } from "../models/VideoUrl.model.js";
 import { PdfDocument } from "../models/pdfDocument.model.js";
-import { deletePdf } from "../services/imagekit.service.js";
-import { deletePdfRagArtifacts } from "../rag/services/pdfRagCleanup.service.js";
+import { SourceAccess } from "../models/sourceAccess.model.js";
 import { deleteVideoRagArtifacts } from "../rag/services/transcriptRagCleanup.service.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
@@ -19,22 +18,46 @@ export const conversation = asyncHandler(async (req: any, res) => {
     throw new ApiError(400, "Title is required");
   }
 
-  if (type === "video" && !videoId) {
-    throw new ApiError(400, "VideoId is required for video conversations");
-  }
-
-  if (type === "pdf" && !pdfDocumentId) {
-    throw new ApiError(400, "PdfDocumentId is required for pdf conversations");
-  }
-
   if (!req.authUserId) {
     throw new ApiError(401, "Unauthorized request");
   }
 
+  if (type !== "video" && type !== "pdf") {
+    throw new ApiError(400, "Conversation type must be video or pdf");
+  }
+
+  if (
+    (type === "video" && (!videoId || pdfDocumentId)) ||
+    (type === "pdf" && (!pdfDocumentId || videoId))
+  ) {
+    throw new ApiError(400, "Source reference does not match conversation type");
+  }
+
+  const sourceId = type === "video" ? videoId : pdfDocumentId;
+  if (!mongoose.isValidObjectId(sourceId)) {
+    throw new ApiError(400, "Invalid source ID");
+  }
+
+  const sourceExists = type === "video"
+    ? await Video.exists({ _id: sourceId })
+    : await PdfDocument.exists({ _id: sourceId });
+  if (!sourceExists) {
+    throw new ApiError(404, "Source not found or unavailable");
+  }
+
+  const sourceAccess = await SourceAccess.exists({
+    userId: req.authUserId,
+    sourceType: type,
+    sourceId,
+  });
+  if (!sourceAccess) {
+    throw new ApiError(404, "Source not found or unavailable");
+  }
+
   const conversation = await Conversation.create({
     userId: req.authUserId,
-    videoId: type === "video" ? videoId : undefined,
-    pdfDocumentId: type === "pdf" ? pdfDocumentId : undefined,
+    videoId: type === "video" ? sourceId : undefined,
+    pdfDocumentId: type === "pdf" ? sourceId : undefined,
     type,
     title,
   });

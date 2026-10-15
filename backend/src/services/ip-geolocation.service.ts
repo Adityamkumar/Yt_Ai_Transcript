@@ -20,10 +20,7 @@ export const getSessionLocation = async (
   }
 
   const controller = new AbortController();
-  const timeout = setTimeout(
-    () => controller.abort(),
-    COUNTRY_API_TIMEOUT_MS,
-  );
+  const timeout = setTimeout(() => controller.abort(), COUNTRY_API_TIMEOUT_MS);
 
   try {
     const response = await fetch(
@@ -31,7 +28,7 @@ export const getSessionLocation = async (
       { signal: controller.signal },
     );
 
-    console.log(response)
+    console.log(response);
 
     if (!response.ok) {
       return { ...EMPTY_LOCATION };

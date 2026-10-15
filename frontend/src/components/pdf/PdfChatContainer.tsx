@@ -12,7 +12,6 @@ import { PdfFailedState } from "./PdfFailedState";
 import { PdfDocument } from "@/types";
 import { WorkspaceAction } from "../workspace-actions/workspaceActionConfig";
 import { pdfService } from "@/services/pdf.service";
-import { cn } from "@/utils/cn";
 import { SourcePanel } from "../workspace/SourcePanel";
 import { useSourcePanelStore } from "@/stores/sourcePanel.store";
 
@@ -39,7 +38,6 @@ export function PdfChatContainer({ conversationId, pdf, onActionReady }: PdfChat
   const [livePdf, setLivePdf] = useState<PdfDocument>(pdf);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const isSourcePanelOpen = useSourcePanelStore((state) => state.isSourcePanelOpen);
   const closeSourcePanel = useSourcePanelStore((state) => state.closeSourcePanel);
 
   // Reset source panel when switching conversations or on unmount
@@ -58,7 +56,13 @@ export function PdfChatContainer({ conversationId, pdf, onActionReady }: PdfChat
     if (pollRef.current) return; // already polling
     pollRef.current = setInterval(async () => {
       try {
-        const { ragStatus: polledRagStatus, totalChunks, retryCount, maxRetries, cooldownUntil } = await pdfService.getPdfStatus(livePdf._id);
+        const {
+          ragStatus: polledRagStatus,
+          totalChunks,
+          retryCount,
+          maxRetries,
+          cooldownUntil,
+        } = await pdfService.getPdfStatus(livePdf._id);
         setLivePdf((prev) => ({
           ...prev,
           ragStatus: polledRagStatus,
@@ -67,7 +71,7 @@ export function PdfChatContainer({ conversationId, pdf, onActionReady }: PdfChat
           retryCount,
           cooldownUntil,
           // Store maxRetries as a transient field for the failed state UI
-          ...(maxRetries !== undefined ? { _maxRetries: maxRetries } as any : {}),
+          ...(maxRetries !== undefined ? ({ _maxRetries: maxRetries } as any) : {}),
         }));
         // Stop polling once we leave the processing state
         if (polledRagStatus !== "processing") {
@@ -149,32 +153,38 @@ export function PdfChatContainer({ conversationId, pdf, onActionReady }: PdfChat
 
   const displayMessages = useMemo(
     () => (streamingDisplayMessage ? [...messages, streamingDisplayMessage] : messages),
-    [messages, streamingDisplayMessage]
+    [messages, streamingDisplayMessage],
   );
 
   const lastAssistantMessageId = useMemo(() => {
     for (let i = displayMessages.length - 1; i >= 0; i--) {
-      if (displayMessages[i].role === 'assistant') {
+      if (displayMessages[i].role === "assistant") {
         return displayMessages[i]._id;
       }
     }
     return null;
   }, [displayMessages]);
 
-  const getUserQuestionForMessage = useCallback((messageId: string) => {
-    const msgIndex = displayMessages.findIndex(m => m._id === messageId);
-    if (msgIndex === -1) return undefined;
-    for (let i = msgIndex - 1; i >= 0; i--) {
-      if (displayMessages[i].role === 'user') {
-        return displayMessages[i].content;
+  const getUserQuestionForMessage = useCallback(
+    (messageId: string) => {
+      const msgIndex = displayMessages.findIndex((m) => m._id === messageId);
+      if (msgIndex === -1) return undefined;
+      for (let i = msgIndex - 1; i >= 0; i--) {
+        if (displayMessages[i].role === "user") {
+          return displayMessages[i].content;
+        }
       }
-    }
-    return undefined;
-  }, [displayMessages]);
+      return undefined;
+    },
+    [displayMessages],
+  );
 
-  const handleSelectSuggestedQuestion = useCallback((question: string) => {
-    sendMessage(question, 'suggested_question');
-  }, [sendMessage]);
+  const handleSelectSuggestedQuestion = useCallback(
+    (question: string) => {
+      void sendMessage(question, "suggested_question");
+    },
+    [sendMessage],
+  );
 
   const bottomRef = useAutoScroll(displayMessages);
 
@@ -196,7 +206,10 @@ export function PdfChatContainer({ conversationId, pdf, onActionReady }: PdfChat
   }, []);
 
   const scrollToBottom = () => {
-    scrollContainerRef.current?.scrollTo({ top: scrollContainerRef.current.scrollHeight, behavior: "auto" });
+    scrollContainerRef.current?.scrollTo({
+      top: scrollContainerRef.current.scrollHeight,
+      behavior: "auto",
+    });
   };
 
   const handlePromptSelect = (text: string) => sendMessage(text);
@@ -206,7 +219,7 @@ export function PdfChatContainer({ conversationId, pdf, onActionReady }: PdfChat
   // ============================================================
 
   if (ragStatus === "processing") {
-    return <PdfProcessingState document={livePdf} />;
+    return <PdfProcessingState />;
   }
 
   if (ragStatus === "failed") {

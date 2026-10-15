@@ -40,16 +40,12 @@ export function NotesPDF({ notes }: Props) {
           <PDFSection title="Executive Summary" sectionNumber="01">
             <View wrap={false}>
               <View style={{ marginBottom: 5 }}>
-                <PDFMarkdownText style={styles.overviewText}>
-                  {notes.overview[0]}
-                </PDFMarkdownText>
+                <PDFMarkdownText style={styles.overviewText}>{notes.overview[0]}</PDFMarkdownText>
               </View>
             </View>
             {notes.overview.slice(1).map((paragraph, index) => (
               <View key={index + 1} style={{ marginBottom: 5 }}>
-                <PDFMarkdownText style={styles.overviewText}>
-                  {paragraph}
-                </PDFMarkdownText>
+                <PDFMarkdownText style={styles.overviewText}>{paragraph}</PDFMarkdownText>
               </View>
             ))}
           </PDFSection>
@@ -82,10 +78,7 @@ export function NotesPDF({ notes }: Props) {
             <View wrap={false}>
               <View style={styles.takeawayBox}>
                 <Text style={styles.takeawayLabel}>Next Steps</Text>
-                <PDFBulletList
-                  items={notes.actionableTakeaways}
-                  isCheck={true}
-                />
+                <PDFBulletList items={notes.actionableTakeaways} isCheck={true} />
               </View>
             </View>
           </PDFSection>
@@ -118,4 +111,3 @@ export function NotesPDF({ notes }: Props) {
     </Document>
   );
 }
-

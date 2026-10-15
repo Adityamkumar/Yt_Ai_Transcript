@@ -1,10 +1,4 @@
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useCallback,
-} from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "@/lib/axios";
 import { authService } from "@/services/auth.service";
@@ -57,7 +51,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         hasPassword: userData.hasPassword,
         preferences: userData.preferences,
       });
-      setAuthStatus('authenticated')
+      setAuthStatus("authenticated");
     } catch (err: any) {
       setUser(null);
       if (err?.response?.status === 401) {
@@ -69,16 +63,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-  refreshUser();
-}, [refreshUser]);
+    void refreshUser();
+  }, [refreshUser]);
 
   const login = async (email: string, password: string) => {
     const response = await axiosInstance.post("/api/v1/user/login", {
       email,
       password,
     });
-    const userData = response.data.data.user
-    console.log(userData)
+    const userData = response.data.data.user;
+    console.log(userData);
     setUser({
       id: userData._id || userData.id,
       name: userData.name,
@@ -90,7 +84,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       preferences: userData.preferences,
     });
     setAuthStatus("authenticated");
-    navigate("/app");
+    void navigate("/app");
   };
 
   const register = async (name: string, email: string, password: string) => {
@@ -101,15 +95,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
     const userData = response.data.user;
 
-    navigate("/verify-email", { state: { email: userData.email } });
+    void navigate("/verify-email", { state: { email: userData.email } });
   };
 
-  const loginWithGoogle = useCallback(async (code: string) => {
-    await authService.verifyGoogleCode(code);
-    await refreshUser()
-    setAuthStatus("authenticated");
-    navigate("/app");
-  }, [navigate, refreshUser]);
+  const loginWithGoogle = useCallback(
+    async (code: string) => {
+      await authService.verifyGoogleCode(code);
+      await refreshUser();
+      setAuthStatus("authenticated");
+      void navigate("/app");
+    },
+    [navigate, refreshUser],
+  );
 
   const queryClient = useQueryClient();
   const logout = async () => {
@@ -117,13 +114,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await axiosInstance.post("/api/v1/user/logout");
     } finally {
       if (user?.id) {
-      queryClient.removeQueries({
-        queryKey: ["sessions", user.id],
-      });
-    }
+        queryClient.removeQueries({
+          queryKey: ["sessions", user.id],
+        });
+      }
       setUser(null);
       setAuthStatus("unauthenticated");
-      navigate("/");
+      void navigate("/");
     }
   };
 
@@ -133,7 +130,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setUser(null);
       setAuthStatus("unauthenticated");
-      navigate("/");
+      void navigate("/");
     }
   };
 
@@ -144,7 +141,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
     setUser(null);
     setAuthStatus("unauthenticated");
-    navigate("/");
+    void navigate("/");
   };
 
   return (
@@ -173,4 +170,3 @@ export function useAuth() {
   }
   return context;
 }
-

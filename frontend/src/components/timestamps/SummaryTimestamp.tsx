@@ -1,5 +1,5 @@
-import { TimestampBadge } from './TimestampBadge';
-import { formatTimestamp } from './formatTimestamp';
+import { TimestampBadge } from "./TimestampBadge";
+import { formatTimestamp } from "./formatTimestamp";
 
 interface SummaryTimestampProps {
   timestamp: number;
@@ -8,8 +8,13 @@ interface SummaryTimestampProps {
   label?: string;
 }
 
-export function SummaryTimestamp({ timestamp, endTimestamp, videoId, label }: SummaryTimestampProps) {
-  if (typeof endTimestamp === 'number' && endTimestamp > timestamp) {
+export function SummaryTimestamp({
+  timestamp,
+  endTimestamp,
+  videoId,
+  label,
+}: SummaryTimestampProps) {
+  if (typeof endTimestamp === "number" && endTimestamp > timestamp) {
     return (
       <TimestampBadge
         seconds={timestamp}
@@ -31,4 +36,3 @@ export function SummaryTimestamp({ timestamp, endTimestamp, videoId, label }: Su
     </TimestampBadge>
   );
 }
-

@@ -1,4 +1,4 @@
-import { SearchX} from "lucide-react";
+import { SearchX } from "lucide-react";
 import type { SearchResult } from "./search.types";
 import { SearchResultItem } from "./SearchResultItem";
 import {
@@ -99,9 +99,7 @@ export function SearchResultList({
   return (
     <div className="search-results-list-container">
       {isRecent && results.length > 0 && (
-        <div className="search-section-header">
-          Recent Conversations
-        </div>
+        <div className="search-section-header">Recent Conversations</div>
       )}
 
       <div className="search-results-list" role="listbox" aria-label="Search results">

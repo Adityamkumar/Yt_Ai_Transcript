@@ -12,11 +12,14 @@ interface PdfFailedStateProps {
   onRetryStarted: (newRetryCount?: number) => void;
 }
 
-export function PdfFailedState({ document, maxRetries: _maxRetries, onRetryStarted }: PdfFailedStateProps) {
+export function PdfFailedState({
+  document,
+  maxRetries: _maxRetries,
+  onRetryStarted,
+}: PdfFailedStateProps) {
   const [isRetrying, setIsRetrying] = useState(false);
   const [timeLeft, setTimeLeft] = useState<number>(0);
 
-  
   useEffect(() => {
     if (!document.cooldownUntil) {
       setTimeLeft(0);
@@ -86,19 +89,19 @@ export function PdfFailedState({ document, maxRetries: _maxRetries, onRetryStart
       >
         {/* Document context strip */}
         <div className="mb-5 flex items-center gap-3 rounded-2xl border border-white/[0.07] bg-white/[0.025] px-4 py-3">
-          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-white/[0.08] bg-[#10141d] text-[var(--text-muted)]">
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-white/[0.08] bg-[#10141d] text(--text-muted)">
             <FileText size={17} />
           </span>
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-semibold text-white">{document.title}</p>
-            <p className="truncate text-xs text-[var(--text-muted)]">{document.fileName}</p>
+            <p className="truncate text-xs text(--text-muted)">{document.fileName}</p>
           </div>
           {document.fileUrl && (
             <a
               href={document.fileUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="ml-auto shrink-0 text-[var(--text-muted)] transition hover:text-white"
+              className="ml-auto shrink-0 text(--text-muted) transition hover:text-white"
               title="Open original PDF"
             >
               <ExternalLink size={14} />
@@ -109,11 +112,11 @@ export function PdfFailedState({ document, maxRetries: _maxRetries, onRetryStart
         {/* Lightweight Status Card */}
         <div className="rounded-2xl border border-white/[0.07] bg-white/[0.03] p-5 shadow-[0_8px_40px_rgba(0,0,0,0.3)] text-center flex flex-col items-center">
           {/* Softer Warning Icon */}
-          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-white/[0.06] bg-white/[0.02] text-[var(--text-muted)]">
+          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-white/[0.06] bg-white/[0.02] text(--text-muted)">
             {isInCooldown ? (
-              <Clock size={20} className="text-[var(--text-secondary)] animate-pulse" />
+              <Clock size={20} className="text(--text-secondary) animate-pulse" />
             ) : (
-              <AlertCircle size={20} className="text-[var(--text-secondary)]" />
+              <AlertCircle size={20} className="text(--text-secondary)" />
             )}
           </div>
 
@@ -123,7 +126,7 @@ export function PdfFailedState({ document, maxRetries: _maxRetries, onRetryStart
           </h2>
 
           {/* Short, Calm, Reassuring Subtitle */}
-          <p className="mt-2 text-sm text-[var(--text-muted)] leading-relaxed px-4">
+          <p className="mt-2 text-sm text(--text-muted) leading-relaxed px-4">
             {isInCooldown
               ? "Please try again in a little while."
               : "Your document is safe. You can trigger a new setup attempt below."}
@@ -157,7 +160,7 @@ export function PdfFailedState({ document, maxRetries: _maxRetries, onRetryStart
             )}
           </button>
 
-          <p className="mt-3 text-[11px] text-[var(--text-muted)] opacity-50">
+          <p className="mt-3 text-[11px] text(--text-muted) opacity-50">
             No re-upload needed. Your PDF is stored securely.
           </p>
         </div>

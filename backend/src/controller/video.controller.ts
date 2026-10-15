@@ -1,4 +1,5 @@
 import { Video } from "../models/VideoUrl.model.js";
+import { SourceAccess } from "../models/sourceAccess.model.js";
 import { getTranscriptFromYoutube } from "../services/transcript.service.js";
 import { generateVideoTitle } from "../services/ai.service.js";
 import { ApiError } from "../utils/ApiError.js";
@@ -120,6 +121,22 @@ export const getTranscript = asyncHandler(async (req, res) => {
       });
     }
 
+    await SourceAccess.updateOne(
+      {
+        userId: req.authUserId,
+        sourceType: "video",
+        sourceId: videoExists._id,
+      },
+      {
+        $setOnInsert: {
+          userId: req.authUserId,
+          sourceType: "video",
+          sourceId: videoExists._id,
+        },
+      },
+      { upsert: true },
+    );
+
     return res
       .status(200)
       .json(
@@ -152,6 +169,22 @@ export const getTranscript = asyncHandler(async (req, res) => {
   ingestVideoForRag({ videoDocumentId: video._id }).catch((err) => {
     logger.error({ err }, "[RAG] Background video ingestion failed");
   });
+
+  await SourceAccess.updateOne(
+    {
+      userId: req.authUserId,
+      sourceType: "video",
+      sourceId: video._id,
+    },
+    {
+      $setOnInsert: {
+        userId: req.authUserId,
+        sourceType: "video",
+        sourceId: video._id,
+      },
+    },
+    { upsert: true },
+  );
 
   res
     .status(200)

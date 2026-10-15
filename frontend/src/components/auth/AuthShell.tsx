@@ -19,7 +19,12 @@ export function AuthShell({
   minimalBackground = false,
 }: AuthShellProps) {
   return (
-    <div className={cn("relative min-h-screen flex items-center justify-center overflow-hidden px-4", !minimalBackground && "premium-shell")}>
+    <div
+      className={cn(
+        "relative min-h-screen flex items-center justify-center overflow-hidden px-4",
+        !minimalBackground && "premium-shell",
+      )}
+    >
       {minimalBackground ? (
         <div className="pointer-events-none absolute inset-0 bg-[#030304] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#11131a] via-[#060608] to-[#000000]" />
       ) : (
@@ -43,7 +48,9 @@ export function AuthShell({
               <LumoraLogo size="md" />
             </Link>
 
-            <h1 className="text-2xl font-semibold text-[var(--text-primary)] mb-2 text-center tracking-tight">{title}</h1>
+            <h1 className="text-2xl font-semibold text-[var(--text-primary)] mb-2 text-center tracking-tight">
+              {title}
+            </h1>
             <p className="text-sm text-[var(--text-secondary)] text-center max-w-sm">{subtitle}</p>
           </div>
 

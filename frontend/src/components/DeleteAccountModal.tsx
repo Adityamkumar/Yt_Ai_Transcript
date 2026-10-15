@@ -1,12 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
-import {
-  Eye,
-  EyeOff,
-  Loader2,
-  Lock,
-  X,
-  Info,
-} from "lucide-react";
+import { Eye, EyeOff, Loader2, Lock, X, Info } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/store/AuthContext";
 import toast from "react-hot-toast";
@@ -98,7 +91,7 @@ export function DeleteAccountModal({ isOpen, onClose }: Props) {
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !isDeleting) {
-      handleDelete();
+      void handleDelete();
     }
   };
 
@@ -164,21 +157,16 @@ export function DeleteAccountModal({ isOpen, onClose }: Props) {
                   <div className="flex items-start gap-3">
                     <Info size={17} className="mt-0.5 shrink-0 text-[var(--text-secondary)]" />
                     <div>
-                      <p className="text-sm font-medium text-white">
-                        Connected with Google
-                      </p>
+                      <p className="text-sm font-medium text-white">Connected with Google</p>
                       <p className="mt-1 text-xs leading-5 text-[var(--text-muted)]">
-                        This account is managed via Google authentication. No
-                        password exists for this account.
+                        This account is managed via Google authentication. No password exists for
+                        this account.
                       </p>
                     </div>
                   </div>
                 </div>
               ) : (
-                <motion.div
-                  animate={shouldShake ? "shake" : undefined}
-                  variants={shakeVariants}
-                >
+                <motion.div animate={shouldShake ? "shake" : undefined} variants={shakeVariants}>
                   <label className="mb-2 block text-xs font-medium text-[var(--text-secondary)]">
                     Password confirmation
                   </label>
@@ -260,4 +248,3 @@ export function DeleteAccountModal({ isOpen, onClose }: Props) {
     </AnimatePresence>
   );
 }
-

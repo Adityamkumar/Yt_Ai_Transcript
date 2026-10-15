@@ -1,7 +1,7 @@
-import { motion } from 'framer-motion';
-import { CheckCircle2, FileText, Play, Youtube } from 'lucide-react';
-import { cn } from '@/utils/cn';
-import { useYouTubePlayer } from '@/store/YouTubePlayerContext';
+import { motion } from "framer-motion";
+import { CheckCircle2, FileText, Play, Youtube } from "lucide-react";
+import { cn } from "@/utils/cn";
+import { useYouTubePlayer } from "@/store/YouTubePlayerContext";
 
 interface VideoCardProps {
   videoId: string;
@@ -12,8 +12,9 @@ interface VideoCardProps {
 
 export function VideoCard({ videoId, youtubeUrl, transcript, isLoading = false }: VideoCardProps) {
   const { openPlayer } = useYouTubePlayer();
-  const thumbnailUrl = videoId !== 'loading' ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : null;
-  const canPlay = Boolean(youtubeUrl && videoId && videoId !== 'loading');
+  const thumbnailUrl =
+    videoId !== "loading" ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : null;
+  const canPlay = Boolean(youtubeUrl && videoId && videoId !== "loading");
 
   if (isLoading) {
     return (
@@ -50,8 +51,8 @@ export function VideoCard({ videoId, youtubeUrl, transcript, isLoading = false }
             <div className="mt-3 h-2 overflow-hidden rounded-full bg-[rgba(255,255,255,0.06)]">
               <motion.div
                 className="h-full w-1/2 rounded-full bg-[linear-gradient(90deg,rgba(157,165,255,0.7),rgba(77,162,255,0.95),rgba(157,165,255,0.7))]"
-                animate={{ x: ['-30%', '110%'] }}
-                transition={{ repeat: Infinity, duration: 1.8, ease: 'easeInOut' }}
+                animate={{ x: ["-30%", "110%"] }}
+                transition={{ repeat: Infinity, duration: 1.8, ease: "easeInOut" }}
               />
             </div>
           </div>
@@ -63,7 +64,7 @@ export function VideoCard({ videoId, youtubeUrl, transcript, isLoading = false }
   return (
     <div
       className={cn(
-        'group overflow-hidden rounded-2xl border border-[var(--border-soft)] bg-[linear-gradient(135deg,rgba(255,255,255,0.07),rgba(255,255,255,0.02)),var(--surface-2)] shadow-[var(--shadow-md)] backdrop-blur-lg transition-all duration-300 hover:-translate-y-0.5 hover:border-[var(--border-medium)] hover:shadow-[var(--shadow-lg)]'
+        "group overflow-hidden rounded-2xl border border-[var(--border-soft)] bg-[linear-gradient(135deg,rgba(255,255,255,0.07),rgba(255,255,255,0.02)),var(--surface-2)] shadow-[var(--shadow-md)] backdrop-blur-lg transition-all duration-300 hover:-translate-y-0.5 hover:border-[var(--border-medium)] hover:shadow-[var(--shadow-lg)]",
       )}
     >
       <div className="grid gap-4 p-3.5 sm:grid-cols-[156px_minmax(0,1fr)] sm:p-4">
@@ -80,7 +81,8 @@ export function VideoCard({ videoId, youtubeUrl, transcript, isLoading = false }
               alt="Video thumbnail"
               className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
               onError={(event) => {
-                (event.target as HTMLImageElement).src = `https://img.youtube.com/vi/${videoId}/0.jpg`;
+                (event.target as HTMLImageElement).src =
+                  `https://img.youtube.com/vi/${videoId}/0.jpg`;
               }}
             />
           ) : (
@@ -112,9 +114,11 @@ export function VideoCard({ videoId, youtubeUrl, transcript, isLoading = false }
           </div>
 
           <h3 className="truncate text-[15px] font-semibold tracking-[-0.01em] text-[var(--text-primary)]">
-            {isLoading ? 'Extracting transcript...' : 'YouTube content context'}
+            {isLoading ? "Extracting transcript..." : "YouTube content context"}
           </h3>
-          <p className="mt-1 truncate text-xs leading-5 text-[var(--text-muted)]">{youtubeUrl || `ID: ${videoId}`}</p>
+          <p className="mt-1 truncate text-xs leading-5 text-[var(--text-muted)]">
+            {youtubeUrl || `ID: ${videoId}`}
+          </p>
 
           <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-[var(--border-soft)] pt-3">
             <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-[var(--text-muted)]">

@@ -1,17 +1,18 @@
-import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Bookmark, Search, Inbox, Loader2 } from 'lucide-react';
-import { useBookmarks } from '@/hooks/useBookmarks';
-import { BookmarkCard } from './BookmarkCard';
-import { fadeIn, staggerContainer } from '@/animations/variants';
+import React from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Bookmark, Search, Inbox, Loader2 } from "lucide-react";
+import { useBookmarks } from "@/hooks/useBookmarks";
+import { BookmarkCard } from "./BookmarkCard";
+import { fadeIn, staggerContainer } from "@/animations/variants";
 
 export default function BookmarksPage() {
   const { bookmarks, isLoading, deleteBookmark } = useBookmarks();
-  const [searchQuery, setSearchQuery] = React.useState('');
+  const [searchQuery, setSearchQuery] = React.useState("");
 
-  const filteredBookmarks = bookmarks.filter(b => 
-    b.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    b.content.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredBookmarks = bookmarks.filter(
+    (b) =>
+      b.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      b.content.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   return (
@@ -29,10 +30,13 @@ export default function BookmarksPage() {
                 <div className="p-3 rounded-2xl bg-purple-500/10 text-purple-400">
                   <Bookmark className="w-6 h-6" />
                 </div>
-                <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight">Bookmarks</h1>
+                <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
+                  Bookmarks
+                </h1>
               </div>
               <p className="text-gray-400 text-lg max-w-xl">
-                Your permanent library of AI-generated insights, notes, and key moments from YouTube.
+                Your permanent library of AI-generated insights, notes, and key moments from
+                YouTube.
               </p>
             </div>
 
@@ -68,7 +72,9 @@ export default function BookmarksPage() {
               </div>
               <h3 className="text-xl font-bold text-white mb-2">No bookmarks found</h3>
               <p className="text-gray-500 max-w-sm">
-                {searchQuery ? "We couldn't find anything matching your search." : "Start bookmarking important insights from your chat workspace to see them here."}
+                {searchQuery
+                  ? "We couldn't find anything matching your search."
+                  : "Start bookmarking important insights from your chat workspace to see them here."}
               </p>
             </motion.div>
           ) : (
@@ -80,11 +86,7 @@ export default function BookmarksPage() {
             >
               <AnimatePresence mode="popLayout">
                 {filteredBookmarks.map((bookmark) => (
-                  <BookmarkCard
-                    key={bookmark._id}
-                    bookmark={bookmark}
-                    onDelete={deleteBookmark}
-                  />
+                  <BookmarkCard key={bookmark._id} bookmark={bookmark} onDelete={deleteBookmark} />
                 ))}
               </AnimatePresence>
             </motion.div>
@@ -94,4 +96,3 @@ export default function BookmarksPage() {
     </motion.div>
   );
 }
-

@@ -59,7 +59,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
   const handleSelect = useCallback(
     (result: SearchResult) => {
-      navigate(`/workspace/${result.id}`);
+      void navigate(`/workspace/${result.id}`);
       onClose();
     },
     [navigate, onClose],
@@ -127,11 +127,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
           >
             <div className="search-modal-accent" />
 
-            <SearchInput
-              query={query}
-              onQueryChange={setQuery}
-              loading={loading}
-            />
+            <SearchInput query={query} onQueryChange={setQuery} loading={loading} />
 
             {results.length > 0 && <div className="search-modal-divider" />}
 

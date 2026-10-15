@@ -88,12 +88,8 @@ export function DeleteChatModal({ isOpen, onClose, onConfirm, chatTitle }: Delet
                     <AlertTriangle size={20} className="text-[var(--accent)]" />
                   </span>
                   <div>
-                    <h2 className="text-base font-semibold text-white">
-                      Delete Chat
-                    </h2>
-                    <p className="text-xs text-[var(--text-muted)]">
-                      This action is permanent
-                    </p>
+                    <h2 className="text-base font-semibold text-white">Delete Chat</h2>
+                    <p className="text-xs text-[var(--text-muted)]">This action is permanent</p>
                   </div>
                 </div>
                 <button
@@ -115,7 +111,8 @@ export function DeleteChatModal({ isOpen, onClose, onConfirm, chatTitle }: Delet
                 "{chatTitle}"
               </div>
               <p className="text-[12px] leading-normal text-[var(--text-muted)]">
-                All messages and indexed workspace resources for this chat will be permanently removed.
+                All messages and indexed workspace resources for this chat will be permanently
+                removed.
               </p>
             </div>
 

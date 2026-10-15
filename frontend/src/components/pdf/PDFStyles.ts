@@ -2,7 +2,6 @@ import { StyleSheet } from "@react-pdf/renderer";
 
 const ACCENT = "#4F46E5";
 const ACCENT_SOFT = "#6366F1";
-const ACCENT_LIGHT = "#EEF2FF";
 const TEXT_DARK = "#111827";
 const TEXT_BODY = "#374151";
 const TEXT_MUTED = "#6B7280";
@@ -10,9 +9,6 @@ const BORDER = "#E5E7EB";
 const BORDER_LIGHT = "#F3F4F6";
 const BG_PAGE = "#FFFFFF";
 const BG_SECTION = "#F9FAFB";
-const BG_KEYWORD = "#EEF2FF";
-const CODE_BG = "#F1F5F9";
-const CODE_TEXT = "#1E3A5F";
 const INSIGHT_BG = "#FFFBEB";
 const INSIGHT_BORDER = "#FCD34D";
 const TAKEAWAY_BG = "#F0FDF4";
@@ -261,4 +257,3 @@ export const styles = StyleSheet.create({
     fontFamily: "Helvetica-Bold",
   },
 });
-

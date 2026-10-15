@@ -3,13 +3,10 @@ import { ApiResponse, IConversation } from "@/types";
 
 export const conversationService = {
   createConversation: async (videoId: string, title: string) => {
-    const response = await axiosInstance.post<ApiResponse<IConversation>>(
-      "/api/v1/conversations",
-      {
-        videoId,
-        title,
-      },
-    );
+    const response = await axiosInstance.post<ApiResponse<IConversation>>("/api/v1/conversations", {
+      videoId,
+      title,
+    });
     return response.data.data;
   },
 

@@ -6,21 +6,12 @@ import { useAuth } from "@/store/AuthContext";
 import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton";
 import { SessionManagementPanel } from "@/components/auth/SessionManagementPanel";
 import type { PreAuthSessionManagementData } from "@/types";
-import {
-  AuthSplitLayout,
-  Input,
-  PasswordInput,
-  Button,
-  Label,
-} from "@/components/ui/auth-ui";
+import { AuthSplitLayout, Input, PasswordInput, Button, Label } from "@/components/ui/auth-ui";
 import { useAuthRedirect } from "@/hooks/useAuthRedirect";
 
-const passwordStrengthLabel = (
-  pw: string,
-): { label: string; color: string; width: string } => {
+const passwordStrengthLabel = (pw: string): { label: string; color: string; width: string } => {
   if (pw.length === 0) return { label: "", color: "transparent", width: "0%" };
-  if (pw.length < 6)
-    return { label: "Too weak", color: "#ef4444", width: "25%" };
+  if (pw.length < 6) return { label: "Too weak", color: "#ef4444", width: "25%" };
   if (pw.length < 10) return { label: "Fair", color: "#f59e0b", width: "55%" };
   if (!/[A-Z]/.test(pw) || !/[0-9]/.test(pw))
     return { label: "Good", color: "#3b82f6", width: "75%" };
@@ -50,8 +41,9 @@ export default function SignupPage() {
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [isRateLimited, setIsRateLimited] = useState(false);
-  const [sessionManagement, setSessionManagement] =
-    useState<PreAuthSessionManagementData | null>(null);
+  const [sessionManagement, setSessionManagement] = useState<PreAuthSessionManagementData | null>(
+    null,
+  );
   const [googleAttempt, setGoogleAttempt] = useState(0);
 
   const isOAuthReturn = sessionStorage.getItem("oauth_pending") === "true";
@@ -79,14 +71,10 @@ export default function SignupPage() {
 
       if (rateLimitError.status === 429) {
         setIsRateLimited(true);
-        const message = getErrorMessage(
-          err,
-          "Too many signup attempts. Please try again later.",
-        );
+        const message = getErrorMessage(err, "Too many signup attempts. Please try again later.");
 
         setError(
-          typeof rateLimitError.retryAfter === "number" &&
-            !/try again in/i.test(message)
+          typeof rateLimitError.retryAfter === "number" && !/try again in/i.test(message)
             ? `${message} Please try again in ${formatRetryAfter(rateLimitError.retryAfter)}.`
             : message,
         );
@@ -107,12 +95,8 @@ export default function SignupPage() {
     >
       <form onSubmit={handleSubmit} className="flex flex-col gap-5">
         <div className="flex flex-col items-center gap-1 text-center mb-1">
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            Create an account
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Enter your details below to sign up
-          </p>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Create an account</h1>
+          <p className="text-sm text-muted-foreground">Enter your details below to sign up</p>
         </div>
 
         {sessionManagement ? (
@@ -148,9 +132,7 @@ export default function SignupPage() {
                   required
                   autoComplete="name"
                   value={form.name}
-                  onChange={(e) =>
-                    setForm((prev) => ({ ...prev, name: e.target.value }))
-                  }
+                  onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
                 />
               </div>
 
@@ -163,9 +145,7 @@ export default function SignupPage() {
                   required
                   autoComplete="email"
                   value={form.email}
-                  onChange={(e) =>
-                    setForm((prev) => ({ ...prev, email: e.target.value }))
-                  }
+                  onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
                 />
               </div>
 
@@ -177,9 +157,7 @@ export default function SignupPage() {
                   required
                   autoComplete="new-password"
                   value={form.password}
-                  onChange={(e) =>
-                    setForm((prev) => ({ ...prev, password: e.target.value }))
-                  }
+                  onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
                 />
 
                 {form.password.length > 0 && (
@@ -197,10 +175,7 @@ export default function SignupPage() {
                         style={{ background: strength.color }}
                       />
                     </div>
-                    <span
-                      className="text-[11px] font-medium"
-                      style={{ color: strength.color }}
-                    >
+                    <span className="text-[11px] font-medium" style={{ color: strength.color }}>
                       {strength.label}
                     </span>
                   </motion.div>
@@ -217,8 +192,7 @@ export default function SignupPage() {
               </Button>
 
               <p className="text-[10px] text-muted-foreground text-center leading-relaxed mt-1">
-                By creating an account, you agree to our Terms of Service and
-                Privacy Policy.
+                By creating an account, you agree to our Terms of Service and Privacy Policy.
               </p>
             </div>
           </>

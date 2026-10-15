@@ -45,18 +45,26 @@ export default function ForgotPasswordPage() {
     >
       <div className="flex flex-col gap-5">
         <div className="flex flex-col items-center gap-1 text-center mb-1">
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Forgot your password?</h1>
-          <p className="text-sm text-muted-foreground">Enter your email and we will send you a secure reset link.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+            Forgot your password?
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Enter your email and we will send you a secure reset link.
+          </p>
         </div>
 
         {success ? (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="rounded-xl border border-green-500/30 bg-green-500/10 p-5 text-center space-y-2">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="rounded-xl border border-green-500/30 bg-green-500/10 p-5 text-center space-y-2"
+          >
             <div className="flex items-center justify-center text-green-400">
               <CheckCircle2 size={24} />
             </div>
             <p className="text-sm font-semibold text-foreground">Check your email</p>
             <p className="text-xs text-muted-foreground leading-relaxed">
-             If eligible, we'll send a reset link.
+              If eligible, we'll send a reset link.
             </p>
           </motion.div>
         ) : (
@@ -97,7 +105,10 @@ export default function ForgotPasswordPage() {
         )}
 
         <div className="text-center pt-2">
-          <Link to="/login" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
+          <Link
+            to="/login"
+            className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
             <ArrowLeft size={14} />
             Back to login
           </Link>

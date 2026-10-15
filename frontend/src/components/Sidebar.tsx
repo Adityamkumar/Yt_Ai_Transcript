@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   Bookmark,
   ChevronRight,
@@ -13,21 +13,21 @@ import {
   LogOut,
   FileText,
   Pin,
-} from 'lucide-react';
-import { useNavigate, useParams, useLocation } from 'react-router-dom';
-import toast from 'react-hot-toast';
-import { useConversations } from '@/hooks/useConversations';
-import { useBookmarks } from '@/hooks/useBookmarks';
-import { useUIStore } from '@/store/useUIStore';
-import { APP_NAME } from '@/constants';
-import { formatRelativeTime } from '@/utils';
-import { listItemVariants, sidebarVariants, staggerContainer } from '@/animations/variants';
-import { cn } from '@/utils/cn';
-import { useAuth } from '@/store/AuthContext';
-import { SettingsModal } from './SettingsModal';
-import { UserAvatar } from '@/components/auth/UserAvatar';
-import { DeleteChatModal } from './DeleteChatModal';
-import { LogoutModal } from '@/components/LogoutModal';
+} from "lucide-react";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
+import toast from "react-hot-toast";
+import { useConversations } from "@/hooks/useConversations";
+import { useBookmarks } from "@/hooks/useBookmarks";
+import { useUIStore } from "@/store/useUIStore";
+import { APP_NAME } from "@/constants";
+import { formatRelativeTime } from "@/utils";
+import { listItemVariants, sidebarVariants, staggerContainer } from "@/animations/variants";
+import { cn } from "@/utils/cn";
+import { useAuth } from "@/store/AuthContext";
+import { SettingsModal } from "./SettingsModal";
+import { UserAvatar } from "@/components/auth/UserAvatar";
+import { DeleteChatModal } from "./DeleteChatModal";
+import { LogoutModal } from "@/components/LogoutModal";
 
 interface SidebarProps {
   onNewChat: () => void;
@@ -37,17 +37,25 @@ export function Sidebar({ onNewChat }: SidebarProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { conversationId } = useParams<{ conversationId: string }>();
-  const { conversations, isLoading: isConversationsLoading, deleteConversation, updateConversationPin } = useConversations();
+  const {
+    conversations,
+    isLoading: isConversationsLoading,
+    deleteConversation,
+    updateConversationPin,
+  } = useConversations();
   const { bookmarks } = useBookmarks();
   const { sidebarOpen, toggleSidebar } = useUIStore();
   const { user, logout } = useAuth();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [conversationToDelete, setConversationToDelete] = useState<{ id: string; title: string } | null>(null);
+  const [conversationToDelete, setConversationToDelete] = useState<{
+    id: string;
+    title: string;
+  } | null>(null);
   const [logoutOpen, setLogoutOpen] = useState(false);
 
   const handleConversationClick = (id: string) => {
-    navigate(`/workspace/${id}`);
+    void navigate(`/workspace/${id}`);
     if (window.innerWidth < 1024) {
       toggleSidebar();
     }
@@ -57,23 +65,23 @@ export function Sidebar({ onNewChat }: SidebarProps) {
     if (!conversationToDelete) return;
     try {
       await deleteConversation(conversationToDelete.id);
-      toast.success('Conversation deleted');
+      toast.success("Conversation deleted");
       if (conversationId === conversationToDelete.id) {
-        navigate('/app');
+        void navigate("/app");
       }
       setDeleteModalOpen(false);
       setConversationToDelete(null);
-    } catch (error) {
-      toast.error('Failed to delete conversation');
+    } catch {
+      toast.error("Failed to delete conversation");
     }
   };
 
   const handleConversationPin = async (id: string, isPinned: boolean) => {
     try {
       await updateConversationPin({ conversationId: id, isPinned: !isPinned });
-      toast.success(isPinned ? 'Conversation unpinned' : 'Conversation pinned');
-    } catch (error) {
-      toast.error('Failed to update conversation pin');
+      toast.success(isPinned ? "Conversation unpinned" : "Conversation pinned");
+    } catch {
+      toast.error("Failed to update conversation pin");
     }
   };
 
@@ -81,7 +89,12 @@ export function Sidebar({ onNewChat }: SidebarProps) {
   const historyConversations = conversations.filter((conversation) => !conversation.isPinned);
 
   const renderConversationList = (items: typeof conversations) => (
-    <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-0.5">
+    <motion.div
+      variants={staggerContainer}
+      initial="initial"
+      animate="animate"
+      className="space-y-0.5"
+    >
       {items.map((conv) => {
         const isActive = conversationId === conv._id;
         const isPdf = conv.type === "pdf";
@@ -91,22 +104,26 @@ export function Sidebar({ onNewChat }: SidebarProps) {
             <button
               onClick={() => handleConversationClick(conv._id)}
               className={cn(
-                'flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left transition-colors',
+                "flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left transition-colors",
                 isActive
-                  ? 'bg-[rgba(157,165,255,0.12)] text-[var(--text-primary)]'
-                  : 'text-[var(--text-secondary)] hover:bg-[rgba(255,255,255,0.045)] hover:text-[var(--text-primary)]'
+                  ? "bg-[rgba(157,165,255,0.12)] text-[var(--text-primary)]"
+                  : "text-[var(--text-secondary)] hover:bg-[rgba(255,255,255,0.045)] hover:text-[var(--text-primary)]",
               )}
             >
-              <span className={cn(
-                'grid h-6 w-6 shrink-0 place-items-center rounded-md border',
-                isActive
-                  ? 'border-[rgba(157,165,255,0.22)] bg-[rgba(157,165,255,0.12)] text-[var(--accent)]'
-                  : 'border-[var(--border-soft)] bg-[rgba(255,255,255,0.035)] text-[var(--text-muted)]'
-              )}>
+              <span
+                className={cn(
+                  "grid h-6 w-6 shrink-0 place-items-center rounded-md border",
+                  isActive
+                    ? "border-[rgba(157,165,255,0.22)] bg-[rgba(157,165,255,0.12)] text-[var(--accent)]"
+                    : "border-[var(--border-soft)] bg-[rgba(255,255,255,0.035)] text-[var(--text-muted)]",
+                )}
+              >
                 {isPdf ? <FileText size={12} /> : <MessageSquare size={12} />}
               </span>
               <span className="min-w-0 flex-1 pr-12">
-                <span className="block truncate text-[13px] font-medium leading-4">{conv.title.replace(/\*\*/g, "")}</span>
+                <span className="block truncate text-[13px] font-medium leading-4">
+                  {conv.title.replace(/\*\*/g, "")}
+                </span>
                 <span className="mt-px block text-[10px] leading-3.5 text-[var(--text-muted)]">
                   {formatRelativeTime(new Date(conv.createdAt))}
                 </span>
@@ -118,11 +135,11 @@ export function Sidebar({ onNewChat }: SidebarProps) {
                   event.stopPropagation();
                   void handleConversationPin(conv._id, conv.isPinned);
                 }}
-                aria-label={`${conv.isPinned ? 'Unpin' : 'Pin'} ${conv.title}`}
-                title={conv.isPinned ? 'Unpin conversation' : 'Pin conversation'}
+                aria-label={`${conv.isPinned ? "Unpin" : "Pin"} ${conv.title}`}
+                title={conv.isPinned ? "Unpin conversation" : "Pin conversation"}
                 className="grid h-6 w-6 place-items-center rounded-md text-[var(--text-muted)] transition-all hover:bg-[rgba(157,165,255,0.12)] hover:text-[var(--accent)]"
               >
-                <Pin size={13} className={conv.isPinned ? 'fill-current' : ''} />
+                <Pin size={13} className={conv.isPinned ? "fill-current" : ""} />
               </button>
               <button
                 onClick={(event) => {
@@ -161,22 +178,26 @@ export function Sidebar({ onNewChat }: SidebarProps) {
       <motion.aside
         variants={sidebarVariants}
         initial={false}
-        animate={sidebarOpen ? 'open' : 'closed'}
+        animate={sidebarOpen ? "open" : "closed"}
         className="fixed inset-y-0 left-0 z-50 flex shrink-0 overflow-hidden border-r border-[var(--border-soft)] bg-[rgba(8,9,12,0.88)] shadow-xl shadow-black/20 backdrop-blur-2xl lg:relative lg:z-30"
       >
         <div className="flex h-full w-[var(--sidebar-width)] flex-col">
           {/* ── Brand ── */}
           <div className="flex h-[var(--header-height)] items-center justify-between border-b border-[var(--border-soft)] px-4 bg-[rgba(255,255,255,0.015)]">
             <button
-              onClick={() => navigate('/app')}
+              onClick={() => navigate("/app")}
               className="flex min-w-0 items-center gap-3 rounded-xl pr-2 text-left transition-colors hover:opacity-90"
             >
               <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-[rgba(157,165,255,0.2)] bg-[rgba(157,165,255,0.12)] text-[var(--accent)] shadow-[0_10px_24px_rgba(157,165,255,0.08)]">
                 <Sparkles size={16} />
               </span>
               <span className="min-w-0">
-                <span className="block truncate text-sm font-semibold text-[var(--text-primary)]">{APP_NAME}</span>
-                <span className="block text-[11px] text-[var(--text-muted)]">AI learning workspace</span>
+                <span className="block truncate text-sm font-semibold text-[var(--text-primary)]">
+                  {APP_NAME}
+                </span>
+                <span className="block text-[11px] text-[var(--text-muted)]">
+                  AI learning workspace
+                </span>
               </span>
             </button>
 
@@ -199,42 +220,53 @@ export function Sidebar({ onNewChat }: SidebarProps) {
                 <Plus size={16} strokeWidth={2.5} />
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block text-sm font-semibold text-[var(--text-primary)]">New conversation</span>
-                <span className="block text-[11px] text-[var(--text-muted)]">Index YouTube / PDF</span>
+                <span className="block text-sm font-semibold text-[var(--text-primary)]">
+                  New conversation
+                </span>
+                <span className="block text-[11px] text-[var(--text-muted)]">
+                  Index YouTube / PDF
+                </span>
               </span>
-              <ChevronRight size={15} className="text-[var(--text-muted)] transition-transform group-hover:translate-x-0.5" />
+              <ChevronRight
+                size={15}
+                className="text-[var(--text-muted)] transition-transform group-hover:translate-x-0.5"
+              />
             </button>
           </div>
 
           {/* ── Navigation ── */}
           <nav className="px-3 space-y-0.5">
             <button
-              onClick={() => navigate('/app')}
+              onClick={() => navigate("/app")}
               className={cn(
                 "flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-colors",
-                !location.pathname.includes('/bookmarks') && !conversationId
+                !location.pathname.includes("/bookmarks") && !conversationId
                   ? "bg-[rgba(157,165,255,0.12)] text-[var(--text-primary)]"
-                  : "text-[var(--text-muted)] hover:bg-[rgba(255,255,255,0.045)] hover:text-[var(--text-primary)]"
+                  : "text-[var(--text-muted)] hover:bg-[rgba(255,255,255,0.045)] hover:text-[var(--text-primary)]",
               )}
             >
               <LayoutDashboard
                 size={15}
-                className={!location.pathname.includes('/bookmarks') && !conversationId ? "text-[var(--accent)]" : ""}
+                className={
+                  !location.pathname.includes("/bookmarks") && !conversationId
+                    ? "text-[var(--accent)]"
+                    : ""
+                }
               />
               Workspace
             </button>
             <button
-              onClick={() => navigate('/bookmarks')}
+              onClick={() => navigate("/bookmarks")}
               className={cn(
                 "flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-colors",
-                location.pathname === '/bookmarks'
+                location.pathname === "/bookmarks"
                   ? "bg-[rgba(157,165,255,0.12)] text-[var(--text-primary)]"
-                  : "text-[var(--text-muted)] hover:bg-[rgba(255,255,255,0.045)] hover:text-[var(--text-primary)]"
+                  : "text-[var(--text-muted)] hover:bg-[rgba(255,255,255,0.045)] hover:text-[var(--text-primary)]",
               )}
             >
               <Bookmark
                 size={15}
-                className={location.pathname === '/bookmarks' ? "text-[var(--accent)]" : ""}
+                className={location.pathname === "/bookmarks" ? "text-[var(--accent)]" : ""}
               />
               <span className="flex-1">Bookmarks</span>
               {bookmarks.length > 0 && (
@@ -277,7 +309,9 @@ export function Sidebar({ onNewChat }: SidebarProps) {
                 <div className="rounded-2xl border border-dashed border-[var(--border-soft)] px-4 py-6 text-center bg-[rgba(255,255,255,0.02)]">
                   <MessageSquare size={17} className="mx-auto mb-2 text-[var(--text-muted)]" />
                   <p className="text-sm font-medium text-[var(--text-primary)]">No chats yet</p>
-                  <p className="mt-1 text-xs text-[var(--text-muted)]">Your indexed sources appear here.</p>
+                  <p className="mt-1 text-xs text-[var(--text-muted)]">
+                    Your indexed sources appear here.
+                  </p>
                 </div>
               ) : (
                 <motion.div
@@ -291,22 +325,26 @@ export function Sidebar({ onNewChat }: SidebarProps) {
                     const isPdf = conv.type === "pdf";
 
                     return (
-                      <motion.div key={conv._id} variants={listItemVariants} className="group relative">
+                      <motion.div
+                        key={conv._id}
+                        variants={listItemVariants}
+                        className="group relative"
+                      >
                         <button
                           onClick={() => handleConversationClick(conv._id)}
                           className={cn(
-                          'flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left transition-colors',
+                            "flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left transition-colors",
                             isActive
-                              ? 'bg-[rgba(157,165,255,0.12)] text-[var(--text-primary)]'
-                              : 'text-[var(--text-secondary)] hover:bg-[rgba(255,255,255,0.045)] hover:text-[var(--text-primary)]'
+                              ? "bg-[rgba(157,165,255,0.12)] text-[var(--text-primary)]"
+                              : "text-[var(--text-secondary)] hover:bg-[rgba(255,255,255,0.045)] hover:text-[var(--text-primary)]",
                           )}
                         >
                           <span
                             className={cn(
-                              'grid h-6 w-6 shrink-0 place-items-center rounded-md border',
-                            isActive
-                                ? 'border-[rgba(157,165,255,0.22)] bg-[rgba(157,165,255,0.12)] text-[var(--accent)]'
-                                : 'border-[var(--border-soft)] bg-[rgba(255,255,255,0.035)] text-[var(--text-muted)]'
+                              "grid h-6 w-6 shrink-0 place-items-center rounded-md border",
+                              isActive
+                                ? "border-[rgba(157,165,255,0.22)] bg-[rgba(157,165,255,0.12)] text-[var(--accent)]"
+                                : "border-[var(--border-soft)] bg-[rgba(255,255,255,0.035)] text-[var(--text-muted)]",
                             )}
                           >
                             {isPdf ? <FileText size={12} /> : <MessageSquare size={12} />}
@@ -354,10 +392,14 @@ export function Sidebar({ onNewChat }: SidebarProps) {
           {/* ── User Footer ── */}
           <div className="border-t border-[var(--border-soft)] p-3 space-y-1 bg-[rgba(255,255,255,0.012)]">
             <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-[rgba(255,255,255,0.04)] backdrop-blur-sm">
-              <UserAvatar name={user?.name || 'Guest'} avatar={user?.avatar} size={34} />
+              <UserAvatar name={user?.name || "Guest"} avatar={user?.avatar} size={34} />
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-sm font-medium text-[var(--text-primary)]">{user?.name || 'Guest'}</span>
-                <span className="block text-[11px] text-[var(--text-muted)] truncate">{user?.email}</span>
+                <span className="block truncate text-sm font-medium text-[var(--text-primary)]">
+                  {user?.name || "Guest"}
+                </span>
+                <span className="block text-[11px] text-[var(--text-muted)] truncate">
+                  {user?.email}
+                </span>
               </span>
               <button
                 onClick={() => setLogoutOpen(true)}
@@ -387,11 +429,7 @@ export function Sidebar({ onNewChat }: SidebarProps) {
         onConfirm={handleConfirmDelete}
         chatTitle={conversationToDelete?.title || ""}
       />
-      <LogoutModal
-        isOpen={logoutOpen}
-        onClose={() => setLogoutOpen(false)}
-        onConfirm={logout}
-      />
+      <LogoutModal isOpen={logoutOpen} onClose={() => setLogoutOpen(false)} onConfirm={logout} />
     </>
   );
 }

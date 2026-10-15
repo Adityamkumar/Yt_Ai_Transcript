@@ -1,28 +1,29 @@
-import { Children, cloneElement, isValidElement, useCallback, useState, useRef, useEffect, lazy, Suspense } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Bot,
-  Check,
-  Copy,
-  RotateCcw,
-  User,
-  Pencil,
-  SendHorizontal,
-  X
-} from 'lucide-react';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import { chatBubbleVariants } from '@/animations/variants';
-import AITextLoading from './ui/ai-text-loading';
-import type { ChatMessage } from '@/types';
-import { formatRelativeTime } from '@/utils';
-import { cn } from '@/utils/cn';
-import { stripMarkdown } from '@/utils/stripMarkdown';
-import { fixInlineLists } from '@/utils/fixInlineLists';
-import { useFollowUpQuestions } from '@/hooks/useFollowUpQuestions';
-import { FollowUpQuestions } from '@/components/chat/FollowUpQuestions';
-const CodeBlock = lazy(() => import('./chat/CodeBlock').then(m => ({ default: m.CodeBlock })));
-import { CitationChip } from './chat/CitationChip';
+  Children,
+  cloneElement,
+  isValidElement,
+  useCallback,
+  useState,
+  useRef,
+  useEffect,
+  lazy,
+  Suspense,
+} from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Bot, Check, Copy, RotateCcw, User, Pencil, SendHorizontal, X } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import { chatBubbleVariants } from "@/animations/variants";
+import AITextLoading from "./ui/ai-text-loading";
+import type { ChatMessage } from "@/types";
+import { formatRelativeTime } from "@/utils";
+import { cn } from "@/utils/cn";
+import { stripMarkdown } from "@/utils/stripMarkdown";
+import { fixInlineLists } from "@/utils/fixInlineLists";
+import { useFollowUpQuestions } from "@/hooks/useFollowUpQuestions";
+import { FollowUpQuestions } from "@/components/chat/FollowUpQuestions";
+const CodeBlock = lazy(() => import("./chat/CodeBlock").then((m) => ({ default: m.CodeBlock })));
+import { CitationChip } from "./chat/CitationChip";
 
 export function renderCitations(content: string): string {
   if (!content) return content;
@@ -31,29 +32,29 @@ export function renderCitations(content: string): string {
     (match, link, pagePattern, pageNum) => {
       if (link) return link;
       return `[📄 Page ${pageNum}](citation:${pageNum})`;
-    }
+    },
   );
 }
 
 export function urlTransform(url: string): string {
-  if (url.startsWith('citation:')) return url;
+  if (url.startsWith("citation:")) return url;
   try {
     const parsed = new URL(url);
     if (
-      parsed.protocol === 'http:' ||
-      parsed.protocol === 'https:' ||
-      parsed.protocol === 'mailto:' ||
-      parsed.protocol === 'tel:' ||
-      parsed.protocol === 'citation:'
+      parsed.protocol === "http:" ||
+      parsed.protocol === "https:" ||
+      parsed.protocol === "mailto:" ||
+      parsed.protocol === "tel:" ||
+      parsed.protocol === "citation:"
     ) {
       return url;
     }
   } catch {
-    if (url.startsWith('/') || url.startsWith('citation:')) {
+    if (url.startsWith("/") || url.startsWith("citation:")) {
       return url;
     }
   }
-  return '';
+  return "";
 }
 
 interface MessageBubbleProps {
@@ -80,17 +81,17 @@ export function MessageBubble({
   const [editValue, setEditValue] = useState(message.content);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const isUser = message.role === 'user';
+  const isUser = message.role === "user";
 
   const { questions, isLoading: isLoadingSuggestions } = useFollowUpQuestions(
     message,
     isLatestAssistant || false,
-    userQuestion
+    userQuestion,
   );
 
   useEffect(() => {
     if (isEditing && textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = "auto";
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
     }
   }, [isEditing, editValue]);
@@ -139,7 +140,7 @@ export function MessageBubble({
   };
 
   const highlightInlineCodeNodes = (node: any): any => {
-    if (typeof node === 'string') {
+    if (typeof node === "string") {
       return highlightInlineCodeInText(node);
     }
 
@@ -149,12 +150,12 @@ export function MessageBubble({
 
     if (isValidElement(node)) {
       const element = node as any;
-      const typeName = typeof element.type === 'string' ? element.type : '';
+      const typeName = typeof element.type === "string" ? element.type : "";
       if (
-        typeName === 'code' ||
-        typeName === 'pre' ||
-        typeName === 'a' ||
-        typeof element.type === 'function'
+        typeName === "code" ||
+        typeName === "pre" ||
+        typeName === "a" ||
+        typeof element.type === "function"
       ) {
         return node;
       }
@@ -176,24 +177,27 @@ export function MessageBubble({
   const markdownComponents = {
     pre: ({ children }: any) => <>{children}</>,
     code: ({ className, children, ...props }: any) => {
-      const language = typeof className === 'string' ? className.replace('language-', '') : '';
-      const isBlockCode = Boolean(language) || (typeof children === 'string' && children.includes('\n'));
+      const language = typeof className === "string" ? className.replace("language-", "") : "";
+      const isBlockCode =
+        Boolean(language) || (typeof children === "string" && children.includes("\n"));
 
       if (isBlockCode) {
-        const rawCode = String(children).replace(/\n$/, '');
+        const rawCode = String(children).replace(/\n$/, "");
         return (
-          <Suspense fallback={
-            <div className="my-4 overflow-hidden rounded-xl border border-[var(--border-soft)] bg-[#0b0e14] shadow-lg">
-              <div className="flex h-11 items-center justify-between border-b border-[var(--border-soft)] bg-[#0e121a] px-4 text-xs font-medium text-[var(--text-secondary)] select-none">
-                <div className="flex items-center gap-2 h-7 px-2.5 rounded-md border border-[var(--border-soft)] bg-[#111622]/65 text-[var(--text-secondary)] font-sans text-[11px] font-medium tracking-wide">
-                  {language || 'Code'}
+          <Suspense
+            fallback={
+              <div className="my-4 overflow-hidden rounded-xl border border-[var(--border-soft)] bg-[#0b0e14] shadow-lg">
+                <div className="flex h-11 items-center justify-between border-b border-[var(--border-soft)] bg-[#0e121a] px-4 text-xs font-medium text-[var(--text-secondary)] select-none">
+                  <div className="flex items-center gap-2 h-7 px-2.5 rounded-md border border-[var(--border-soft)] bg-[#111622]/65 text-[var(--text-secondary)] font-sans text-[11px] font-medium tracking-wide">
+                    {language || "Code"}
+                  </div>
+                </div>
+                <div className="relative overflow-x-auto pl-6 pr-4 py-4 font-mono text-[13px] leading-relaxed no-scrollbar max-w-full">
+                  <pre className="whitespace-pre text-gray-100">{rawCode}</pre>
                 </div>
               </div>
-              <div className="relative overflow-x-auto pl-6 pr-4 py-4 font-mono text-[13px] leading-relaxed no-scrollbar max-w-full">
-                <pre className="whitespace-pre text-gray-100">{rawCode}</pre>
-              </div>
-            </div>
-          }>
+            }
+          >
             <CodeBlock code={rawCode} language={language} />
           </Suspense>
         );
@@ -202,8 +206,8 @@ export function MessageBubble({
       return (
         <code
           className={cn(
-            'inline rounded-md border border-[var(--border-soft)] bg-[var(--surface-3)] px-1.5 py-0.5 font-mono text-[0.85em] text-[var(--text-primary)]',
-            className
+            "inline rounded-md border border-[var(--border-soft)] bg-[var(--surface-3)] px-1.5 py-0.5 font-mono text-[0.85em] text-[var(--text-primary)]",
+            className,
           )}
           {...props}
         >
@@ -211,12 +215,16 @@ export function MessageBubble({
         </code>
       );
     },
-    p: ({ children }: any) => <p>{Children.map(children, (child) => highlightInlineCodeNodes(child))}</p>,
-    li: ({ children }: any) => <li>{Children.map(children, (child) => highlightInlineCodeNodes(child))}</li>,
+    p: ({ children }: any) => (
+      <p>{Children.map(children, (child) => highlightInlineCodeNodes(child))}</p>
+    ),
+    li: ({ children }: any) => (
+      <li>{Children.map(children, (child) => highlightInlineCodeNodes(child))}</li>
+    ),
     a: ({ href, children, ...props }: any) => {
-      const url = href || '';
-      if (url.startsWith('citation:') || url.startsWith('unsafe:citation:')) {
-        const pageNum = parseInt(url.replace(/^(?:unsafe:)?citation:/i, ''), 10);
+      const url = href || "";
+      if (url.startsWith("citation:") || url.startsWith("unsafe:citation:")) {
+        const pageNum = parseInt(url.replace(/^(?:unsafe:)?citation:/i, ""), 10);
         if (!isNaN(pageNum)) {
           return <CitationChip page={pageNum} />;
         }
@@ -236,27 +244,35 @@ export function MessageBubble({
       animate="animate"
       className="group py-3 sm:py-4"
     >
-      <div className={cn('chat-container flex gap-3 sm:gap-5', isUser && 'flex-row-reverse')}>
+      <div className={cn("chat-container flex gap-3 sm:gap-5", isUser && "flex-row-reverse")}>
         {/* Avatar */}
         <div className="mt-1 shrink-0">
           <div
             className={cn(
-              'grid h-8 w-8 sm:h-9 sm:w-9 place-items-center rounded-xl border',
+              "grid h-8 w-8 sm:h-9 sm:w-9 place-items-center rounded-xl border",
               isUser
-                ? 'border-[var(--border-soft)] bg-[var(--surface-3)] text-[var(--text-primary)]'
-                : 'border-[rgba(139,156,247,0.20)] bg-[var(--accent-subtle)] text-[var(--accent)]'
+                ? "border-[var(--border-soft)] bg-[var(--surface-3)] text-[var(--text-primary)]"
+                : "border-[rgba(139,156,247,0.20)] bg-[var(--accent-subtle)] text-[var(--accent)]",
             )}
           >
-            {isUser ? <User size={15} className="sm:w-[17px] sm:h-[17px]" /> : <Bot size={16} className="sm:w-[18px] sm:h-[18px]" />}
+            {isUser ? (
+              <User size={15} className="sm:w-[17px] sm:h-[17px]" />
+            ) : (
+              <Bot size={16} className="sm:w-[18px] sm:h-[18px]" />
+            )}
           </div>
         </div>
 
         {/* Content */}
-        <div className={cn('min-w-0 flex-1', isUser && 'flex flex-col items-end')}>
-          <div className={cn(isUser ? 'w-fit max-w-[90%] sm:max-w-[75%] md:max-w-[65%]' : 'w-full')}>
+        <div className={cn("min-w-0 flex-1", isUser && "flex flex-col items-end")}>
+          <div
+            className={cn(isUser ? "w-fit max-w-[90%] sm:max-w-[75%] md:max-w-[65%]" : "w-full")}
+          >
             {/* Meta */}
-            <div className={cn('mb-2.5 flex items-center gap-2 px-1', isUser && 'justify-end')}>
-              <span className="text-[13px] font-semibold text-[var(--text-primary)]/85">{isUser ? 'You' : 'Lumora'}</span>
+            <div className={cn("mb-2.5 flex items-center gap-2 px-1", isUser && "justify-end")}>
+              <span className="text-[13px] font-semibold text-[var(--text-primary)]/85">
+                {isUser ? "You" : "Lumora"}
+              </span>
               <span className="text-[11px] text-[var(--text-muted)]">
                 {formatRelativeTime(message.createdAt)}
               </span>
@@ -265,12 +281,12 @@ export function MessageBubble({
             {/* Bubble */}
             <div
               className={cn(
-                'relative rounded-2xl text-[16px] leading-relaxed transition-all',
+                "relative rounded-2xl text-[16px] leading-relaxed transition-all",
                 isUser
                   ? isEditing
-                    ? 'bg-[var(--surface-3)] border border-[var(--border-medium)] p-1.5 w-full sm:min-w-[450px] lg:min-w-[550px]'
-                    : 'bg-[var(--text-primary)] px-4 py-3 sm:px-5 sm:py-4 shadow-md w-full'
-                  : 'px-1 py-1 text-[var(--text-primary)]/95'
+                    ? "bg-[var(--surface-3)] border border-[var(--border-medium)] p-1.5 w-full sm:min-w-[450px] lg:min-w-[550px]"
+                    : "bg-[var(--text-primary)] px-4 py-3 sm:px-5 sm:py-4 shadow-md w-full"
+                  : "px-1 py-1 text-[var(--text-primary)]/95",
               )}
             >
               {isEditing ? (
@@ -314,9 +330,8 @@ export function MessageBubble({
                           urlTransform={urlTransform}
                           children={renderCitations(fixInlineLists(message.content))}
                         />
-                        
+
                         <span className="streaming-cursor" />
-                        
                       </div>
                     ) : (
                       <AITextLoading />
@@ -334,7 +349,6 @@ export function MessageBubble({
                         children={renderCitations(fixInlineLists(message.content))}
                       />
                     </div>
-                    
                   )}
                 </>
               )}
@@ -358,7 +372,7 @@ export function MessageBubble({
                   transition={{ duration: 0.2, delay: 0.1 }}
                   className={cn(
                     "mt-2.5 flex items-center gap-3.5 px-1",
-                    isUser ? "justify-end" : "justify-start"
+                    isUser ? "justify-end" : "justify-start",
                   )}
                 >
                   <button
@@ -366,7 +380,7 @@ export function MessageBubble({
                     className="flex items-center gap-1.5 text-[11px] font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--text-primary)]"
                   >
                     {copied ? <Check size={13} /> : <Copy size={13} />}
-                    {copied ? 'Copied' : 'Copy'}
+                    {copied ? "Copied" : "Copy"}
                   </button>
 
                   {isUser && onEdit && (

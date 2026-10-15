@@ -2,8 +2,7 @@ import axios from "axios";
 
 export const EMAIL_NOT_VERIFIED_CODE = "EMAIL_NOT_VERIFIED";
 export const MAX_SESSIONS_REACHED_CODE = "MAX_SESSIONS_REACHED";
-export const EMAIL_VERIFICATION_REQUIRED_EVENT =
-  "lumora:email-verification-required";
+export const EMAIL_VERIFICATION_REQUIRED_EVENT = "lumora:email-verification-required";
 
 export const notifyEmailVerificationRequired = () => {
   if (typeof window !== "undefined") {
@@ -17,11 +16,7 @@ export const getApiBaseUrl = (): string => {
   if (typeof window !== "undefined") {
     const currentHostname = window.location.hostname;
 
-    if (
-      currentHostname &&
-      currentHostname !== "localhost" &&
-      currentHostname !== "127.0.0.1"
-    ) {
+    if (currentHostname && currentHostname !== "localhost" && currentHostname !== "127.0.0.1") {
       if (envUrl) {
         try {
           const url = new URL(envUrl);
@@ -30,7 +25,7 @@ export const getApiBaseUrl = (): string => {
             return url.origin;
           }
           return envUrl;
-        } catch (e) {
+        } catch {
           // ignore
         }
       }
@@ -81,15 +76,9 @@ axiosInstance.interceptors.response.use(
       originalRequest.url?.includes("register") ||
       originalRequest.url?.includes("refresh-token");
 
-    const isCurrentUserRequest = originalRequest?.url?.includes(
-      "/api/v1/user/current-user",
-    );
+    const isCurrentUserRequest = originalRequest?.url?.includes("/api/v1/user/current-user");
 
-    if (
-      error.response?.status === 401 &&
-      !originalRequest._retry &&
-      !isAuthRequest
-    ) {
+    if (error.response?.status === 401 && !originalRequest._retry && !isAuthRequest) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
@@ -127,22 +116,15 @@ axiosInstance.interceptors.response.use(
       }
     }
 
-    if (
-      errorCode !== EMAIL_NOT_VERIFIED_CODE &&
-      errorCode !== MAX_SESSIONS_REACHED_CODE
-    ) {
+    if (errorCode !== EMAIL_NOT_VERIFIED_CODE && errorCode !== MAX_SESSIONS_REACHED_CODE) {
       console.error("Axios request failed:", error);
     }
     let message =
-      error.response?.data?.message ||
-      error.message ||
-      "Something went wrong. Please try again.";
+      error.response?.data?.message || error.message || "Something went wrong. Please try again.";
     if (error.code === "ECONNABORTED") {
-      message =
-        "Request timeout: The upload is taking too long on this network connection.";
+      message = "Request timeout: The upload is taking too long on this network connection.";
     } else if (message === "Network Error") {
-      message =
-        "Network Error: The backend server is unreachable or CORS blocked the request.";
+      message = "Network Error: The backend server is unreachable or CORS blocked the request.";
     }
 
     const customError = new Error(message) as any;
@@ -151,17 +133,14 @@ axiosInstance.interceptors.response.use(
     if (errorCode === MAX_SESSIONS_REACHED_CODE) {
       customError.data = error.response?.data?.data;
     }
-    customError.isEmailVerificationRequired =
-      errorCode === EMAIL_NOT_VERIFIED_CODE;
+    customError.isEmailVerificationRequired = errorCode === EMAIL_NOT_VERIFIED_CODE;
     customError.retryAfter =
       error.response?.data?.retryAfter ??
       error.response?.data?.data?.retryAfter ??
-      (error.response?.status === 429 &&
-      typeof error.response?.data?.data === "number"
+      (error.response?.status === 429 && typeof error.response?.data?.data === "number"
         ? error.response.data.data
         : undefined);
-    customError.reason =
-      error.response?.data?.reason ?? error.response?.data?.data?.reason;
+    customError.reason = error.response?.data?.reason ?? error.response?.data?.data?.reason;
     return Promise.reject(customError);
   },
 );

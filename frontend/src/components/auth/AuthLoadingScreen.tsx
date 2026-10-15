@@ -1,6 +1,6 @@
-import React from 'react';
-import { Sparkles, Loader2 } from 'lucide-react';
-import { APP_NAME } from '@/constants';
+import React from "react";
+import { Sparkles, Loader2 } from "lucide-react";
+import { APP_NAME } from "@/constants";
 
 export function AuthLoadingScreen() {
   return (
@@ -58,7 +58,7 @@ export function AuthLoadingScreen() {
         {/* Dashboard Content Skeleton with Loading Message */}
         <main className="flex-1 flex flex-col items-center justify-center p-6 text-center relative overflow-hidden">
           <div className="absolute inset-0 z-0 bg-[radial-gradient(ellipse_at_center,rgba(124,92,255,0.05)_0%,transparent_60%)]"></div>
-          
+
           <div className="relative z-10 flex flex-col items-center space-y-6">
             <div className="relative">
               <div className="absolute inset-0 bg-[#7C5CFF] blur-xl opacity-20 rounded-full animate-pulse"></div>
@@ -66,15 +66,17 @@ export function AuthLoadingScreen() {
                 <Loader2 size={28} className="animate-spin text-[#7C5CFF]" />
               </div>
             </div>
-            
+
             <div className="space-y-2">
-              <h2 className="text-xl font-medium text-[var(--text-primary)]">Loading your dashboard...</h2>
+              <h2 className="text-xl font-medium text-[var(--text-primary)]">
+                Loading your dashboard...
+              </h2>
               <p className="text-sm text-[var(--text-muted)] max-w-sm mx-auto">
                 Preparing your {APP_NAME} workspace. This will just take a moment.
               </p>
             </div>
           </div>
-          
+
           {/* Subtle background shimmer cards to make it feel like the dashboard is loading */}
           <div className="absolute top-20 left-10 lg:left-20 w-64 h-32 bg-[var(--surface-1)] rounded-2xl border border-[var(--border-soft)] opacity-20 animate-pulse hidden md:block"></div>
           <div className="absolute bottom-20 right-10 lg:right-20 w-72 h-40 bg-[var(--surface-1)] rounded-2xl border border-[var(--border-soft)] opacity-20 animate-pulse hidden md:block"></div>

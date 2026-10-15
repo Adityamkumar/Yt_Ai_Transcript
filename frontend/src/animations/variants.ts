@@ -1,8 +1,4 @@
-import { Variants } from 'framer-motion';
-
-
-
-
+import { Variants } from "framer-motion";
 
 const EASE_PREMIUM = [0.25, 0.1, 0.25, 1.0] as const;
 const EASE_OUT_EXPO = [0.16, 1, 0.3, 1] as const;
@@ -17,7 +13,7 @@ export const fadeUp: Variants = {
   exit: {
     opacity: 0,
     y: -8,
-    transition: { duration: 0.25, ease: 'easeIn' },
+    transition: { duration: 0.25, ease: "easeIn" },
   },
 };
 
@@ -38,13 +34,9 @@ export const fadeIn: Variants = {
   },
   exit: {
     opacity: 0,
-    transition: { duration: 0.2, ease: 'easeIn' },
+    transition: { duration: 0.2, ease: "easeIn" },
   },
 };
-
-
-
-
 
 export const scaleIn: Variants = {
   initial: { opacity: 0, scale: 0.95 },
@@ -56,7 +48,7 @@ export const scaleIn: Variants = {
   exit: {
     opacity: 0,
     scale: 0.97,
-    transition: { duration: 0.2, ease: 'easeIn' },
+    transition: { duration: 0.2, ease: "easeIn" },
   },
 };
 
@@ -70,7 +62,7 @@ export const slideUp: Variants = {
   exit: {
     opacity: 0,
     y: -12,
-    transition: { duration: 0.25, ease: 'easeIn' },
+    transition: { duration: 0.25, ease: "easeIn" },
   },
 };
 
@@ -84,20 +76,16 @@ export const slideDown: Variants = {
   exit: {
     opacity: 0,
     y: -8,
-    transition: { duration: 0.2, ease: 'easeIn' },
+    transition: { duration: 0.2, ease: "easeIn" },
   },
 };
 
-
-
-
-
 export const sidebarVariants: Variants = {
   open: {
-    width: 'var(--sidebar-width)',
+    width: "var(--sidebar-width)",
     x: 0,
     transition: {
-      type: 'spring',
+      type: "spring",
       stiffness: 320,
       damping: 32,
       staggerChildren: 0.04,
@@ -106,9 +94,9 @@ export const sidebarVariants: Variants = {
   },
   closed: {
     width: 0,
-    x: '-100%',
+    x: "-100%",
     transition: {
-      type: 'spring',
+      type: "spring",
       stiffness: 320,
       damping: 36,
     },
@@ -133,10 +121,6 @@ export const listItemVariants: Variants = {
   },
 };
 
-
-
-
-
 export const chatBubbleVariants: Variants = {
   initial: { opacity: 0, y: 8 },
   animate: {
@@ -148,10 +132,6 @@ export const chatBubbleVariants: Variants = {
     },
   },
 };
-
-
-
-
 
 export const promptStagger: Variants = {
   initial: {},
@@ -172,14 +152,10 @@ export const promptCardVariants: Variants = {
   },
   hover: {
     y: -3,
-    transition: { duration: 0.2, ease: 'easeOut' },
+    transition: { duration: 0.2, ease: "easeOut" },
   },
   tap: { scale: 0.985 },
 };
-
-
-
-
 
 export const pageVariants: Variants = {
   initial: { opacity: 0, scale: 0.995 },
@@ -191,13 +167,9 @@ export const pageVariants: Variants = {
   exit: {
     opacity: 0,
     scale: 1.005,
-    transition: { duration: 0.25, ease: 'easeIn' },
+    transition: { duration: 0.25, ease: "easeIn" },
   },
 };
-
-
-
-
 
 export const panelRevealStagger: Variants = {
   initial: {},
@@ -217,10 +189,6 @@ export const panelRevealItem: Variants = {
     transition: { duration: 0.35, ease: EASE_PREMIUM },
   },
 };
-
-
-
-
 
 export const followUpStagger: Variants = {
   initial: {},
@@ -244,12 +212,11 @@ export const followUpChipVariants: Variants = {
     opacity: 0,
     y: -4,
     scale: 0.98,
-    transition: { duration: 0.2, ease: 'easeIn' },
+    transition: { duration: 0.2, ease: "easeIn" },
   },
   hover: {
     y: -1,
-    transition: { duration: 0.15, ease: 'easeOut' },
+    transition: { duration: 0.15, ease: "easeOut" },
   },
   tap: { scale: 0.98 },
 };
-

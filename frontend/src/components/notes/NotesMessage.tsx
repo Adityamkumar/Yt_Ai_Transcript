@@ -1,6 +1,16 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { Copy, Bookmark, BookmarkCheck, FileText, Check, Lightbulb, ListChecks, Target, Zap } from "lucide-react";
+import {
+  Copy,
+  Bookmark,
+  BookmarkCheck,
+  FileText,
+  Check,
+  Lightbulb,
+  ListChecks,
+  Target,
+  Zap,
+} from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { ChatMessage, IBookmark, NotesResponse } from "@/types";
@@ -66,7 +76,7 @@ export function NotesMessage({
   const { questions, isLoading: isLoadingSuggestions } = useFollowUpQuestions(
     message,
     isLatestAssistant || false,
-    userQuestion
+    userQuestion,
   );
   const { bookmarks, createBookmark, isCreating } = useBookmarks();
   const [copied, setCopied] = React.useState(false);
@@ -154,7 +164,11 @@ export function NotesMessage({
                   : "bg-white/5 text-gray-400 hover:text-white hover:bg-white/10 border border-white/5"
               }`}
             >
-              {isBookmarked ? <BookmarkCheck className="w-5 h-5 fill-current" /> : <Bookmark className="w-5 h-5" />}
+              {isBookmarked ? (
+                <BookmarkCheck className="w-5 h-5 fill-current" />
+              ) : (
+                <Bookmark className="w-5 h-5" />
+              )}
             </button>
           </div>
         </div>
@@ -181,7 +195,10 @@ export function NotesMessage({
             </div>
             <div className="grid grid-cols-1 gap-8">
               {parsedNotes.mainConcepts?.map((concept, index) => (
-                <div key={index} className="rounded-2xl border border-white/5 bg-white/[0.02] p-6 hover:bg-white/[0.04] transition-colors">
+                <div
+                  key={index}
+                  className="rounded-2xl border border-white/5 bg-white/[0.02] p-6 hover:bg-white/[0.04] transition-colors"
+                >
                   <h4 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
                     <Target className="w-5 h-5 text-purple-400" />
                     {concept.heading}
@@ -191,7 +208,9 @@ export function NotesMessage({
                       <li key={pIdx} className="flex items-start gap-3 group">
                         <div className="mt-2.5 h-1.5 w-1.5 rounded-full bg-purple-500/50 shrink-0 group-hover:bg-purple-400 transition-colors" />
                         <div className="text-gray-300 text-[15px] leading-relaxed">
-                          <MarkdownRenderer content={typeof point === 'string' ? point : (point as any).text} />
+                          <MarkdownRenderer
+                            content={typeof point === "string" ? point : (point as any).text}
+                          />
                         </div>
                       </li>
                     ))}
@@ -212,7 +231,9 @@ export function NotesMessage({
                   <li key={index} className="flex items-start gap-3">
                     <div className="mt-2 h-1.5 w-1.5 rounded-full bg-yellow-400/60 shrink-0" />
                     <div className="text-gray-300 text-sm leading-relaxed">
-                      <MarkdownRenderer content={typeof insight === 'string' ? insight : (insight as any).text} />
+                      <MarkdownRenderer
+                        content={typeof insight === "string" ? insight : (insight as any).text}
+                      />
                     </div>
                   </li>
                 ))}
@@ -229,7 +250,13 @@ export function NotesMessage({
                   <li key={index} className="flex items-start gap-3">
                     <Zap className="w-4 h-4 text-green-400 mt-1 shrink-0" />
                     <div className="text-gray-300 text-sm leading-relaxed flex-1 min-w-0">
-                      <MarkdownRenderer content={typeof takeaway === 'string' ? takeaway : (takeaway as any).text || String(takeaway)} />
+                      <MarkdownRenderer
+                        content={
+                          typeof takeaway === "string"
+                            ? takeaway
+                            : (takeaway as any).text || String(takeaway)
+                        }
+                      />
                     </div>
                   </li>
                 ))}
@@ -239,10 +266,15 @@ export function NotesMessage({
 
           {parsedNotes.examples?.length > 0 && (
             <section className="rounded-2xl border border-purple-500/10 bg-purple-500/5 p-6">
-              <h3 className="text-xl font-bold text-white mb-4 tracking-tight">Real-world Examples</h3>
+              <h3 className="text-xl font-bold text-white mb-4 tracking-tight">
+                Real-world Examples
+              </h3>
               <ul className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {parsedNotes.examples?.map((example, index) => (
-                  <li key={index} className="flex items-start gap-3 bg-black/20 p-4 rounded-xl border border-white/5">
+                  <li
+                    key={index}
+                    className="flex items-start gap-3 bg-black/20 p-4 rounded-xl border border-white/5"
+                  >
                     <div className="mt-1.5 h-1.5 w-1.5 rounded-full bg-purple-400 shrink-0" />
                     <div className="text-gray-300 text-sm leading-relaxed flex-1 min-w-0">
                       <MarkdownRenderer content={example} />
@@ -269,4 +301,3 @@ export function NotesMessage({
     </motion.div>
   );
 }
-

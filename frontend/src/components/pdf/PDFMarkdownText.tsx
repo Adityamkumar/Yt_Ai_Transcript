@@ -35,4 +35,3 @@ export function PDFMarkdownText({ children, style }: Props) {
     </Text>
   );
 }
-

@@ -6,31 +6,27 @@ import axiosInstance, {
 import { ApiResponse, IConversation, PdfAskPayload } from "@/types";
 
 export const pdfService = {
- uploadPdf: async (file: File): Promise<IConversation> => {
- const fileBuffer  = await file.arrayBuffer();
+  uploadPdf: async (file: File): Promise<IConversation> => {
+    const fileBuffer = await file.arrayBuffer();
 
-  const uploadFile = new File(
-    [fileBuffer],
-    file.name,
-    {
+    const uploadFile = new File([fileBuffer], file.name, {
       type: file.type,
       lastModified: file.lastModified,
-    }
-  );
+    });
 
-  const formData = new FormData();
-  formData.append("file", uploadFile);
+    const formData = new FormData();
+    formData.append("file", uploadFile);
 
-  const response = await axiosInstance.post<ApiResponse<IConversation>>(
-    "/api/v1/pdf/upload",
-    formData,
-    {
-      timeout: 120000,
-    },
-  );
+    const response = await axiosInstance.post<ApiResponse<IConversation>>(
+      "/api/v1/pdf/upload",
+      formData,
+      {
+        timeout: 120000,
+      },
+    );
 
-  return response.data.data;
-},
+    return response.data.data;
+  },
 
   getPdfStatus: async (documentId: string) => {
     const response = await axiosInstance.get<
@@ -74,7 +70,7 @@ export const pdfService = {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Accept": "text/plain",
+        Accept: "text/plain",
       },
       credentials: "include",
       body: JSON.stringify({ ...payload, stream: true }),
@@ -86,7 +82,9 @@ export const pdfService = {
       if (error.code === EMAIL_NOT_VERIFIED_CODE) {
         notifyEmailVerificationRequired();
       }
-      const requestError = new Error(error.message || "Streaming failed") as Error & { code?: string };
+      const requestError = new Error(error.message || "Streaming failed") as Error & {
+        code?: string;
+      };
       requestError.code = error.code;
       throw requestError;
     }
@@ -103,9 +101,8 @@ export const pdfService = {
         onToken(chunk);
       }
     } catch (err: any) {
-      reader.cancel();
-      if (err?.name !== 'AbortError') throw err;
+      await reader.cancel().catch(() => undefined);
+      if (err?.name !== "AbortError") throw err;
     }
   },
 };
-

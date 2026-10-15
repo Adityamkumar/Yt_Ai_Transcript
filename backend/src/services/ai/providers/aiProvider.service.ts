@@ -2,7 +2,7 @@ import { providerRegistry } from "./providerRegistry.js";
 import logger from "../../../lib/logger.js";
 
 export interface AIRequestOptions {
-  purpose?: "summary" | "long-summary" | "normal" | "followup";
+  purpose?: "summary" | "long-summary" | "normal" | "followup" | "assessment-generation";
 }
 
 export interface IAIProvider {
@@ -203,6 +203,7 @@ export class AIProviderService {
   private providerCircuits: Map<string, ProviderCircuit> = new Map();
 
   private readonly PROVIDER_MAX_ATTEMPTS = 2;
+  private readonly ASSESSMENT_PROVIDER_MAX_ATTEMPTS = 1;
   private readonly PROVIDER_BASE_DELAY_MS = 500;
   private readonly PROVIDER_MAX_JITTER_MS = 250;
 
@@ -418,6 +419,10 @@ export class AIProviderService {
     );
 
     let lastError: any = null;
+    const maxAttempts =
+      options?.purpose === "assessment-generation"
+        ? this.ASSESSMENT_PROVIDER_MAX_ATTEMPTS
+        : this.PROVIDER_MAX_ATTEMPTS;
 
     for (let i = 0; i < providers.length; i++) {
       const provider = providers[i]!;
@@ -434,7 +439,7 @@ export class AIProviderService {
         continue;
       }
 
-      for (let attempt = 1; attempt <= this.PROVIDER_MAX_ATTEMPTS; attempt++) {
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
         const startTime = Date.now();
 
         try {
@@ -512,7 +517,7 @@ export class AIProviderService {
             break;
           }
 
-          if (attempt < this.PROVIDER_MAX_ATTEMPTS) {
+          if (attempt < maxAttempts) {
             const exponentialDelay =
               this.PROVIDER_BASE_DELAY_MS * Math.pow(2, attempt - 1);
 

@@ -1,5 +1,5 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 interface UIState {
   sidebarOpen: boolean;
@@ -15,8 +15,7 @@ export const useUIStore = create<UIState>()(
       toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
     }),
     {
-      name: 'lumora-ui-storage',
-    }
-  )
+      name: "lumora-ui-storage",
+    },
+  ),
 );
-

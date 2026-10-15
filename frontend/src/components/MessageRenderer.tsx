@@ -1,9 +1,11 @@
-import React, { lazy, Suspense } from 'react';
-import { ChatMessage as ChatMessageType } from '@/types';
-import { MessageBubble } from './MessageBubble';
-import { SummaryMessage } from './chat/SummaryMessage';
+import React, { lazy, Suspense } from "react";
+import { ChatMessage as ChatMessageType } from "@/types";
+import { MessageBubble } from "./MessageBubble";
+import { SummaryMessage } from "./chat/SummaryMessage";
 
-const NotesMessage = lazy(() => import('./notes/NotesMessage').then(m => ({ default: m.NotesMessage })));
+const NotesMessage = lazy(() =>
+  import("./notes/NotesMessage").then((m) => ({ default: m.NotesMessage })),
+);
 
 interface MessageRendererProps {
   message: ChatMessageType;
@@ -22,13 +24,15 @@ export const MessageRenderer = React.memo(function MessageRenderer({
   userQuestion,
   onSelectQuestion,
 }: MessageRendererProps) {
-  if (message.type === 'notes') {
+  if (message.type === "notes") {
     return (
-      <Suspense fallback={
-        <div className="flex h-20 items-center justify-center text-xs text-[var(--text-muted)] animate-pulse border border-[var(--border-soft)] bg-[var(--surface-3)] rounded-2xl p-4">
-          Loading notes editor...
-        </div>
-      }>
+      <Suspense
+        fallback={
+          <div className="flex h-20 items-center justify-center text-xs text-[var(--text-muted)] animate-pulse border border-[var(--border-soft)] bg-[var(--surface-3)] rounded-2xl p-4">
+            Loading notes editor...
+          </div>
+        }
+      >
         <NotesMessage
           message={message}
           videoId={videoId}
@@ -40,7 +44,7 @@ export const MessageRenderer = React.memo(function MessageRenderer({
     );
   }
 
-  if (message.type === 'summary') {
+  if (message.type === "summary") {
     return (
       <MessageBubble
         message={message}
@@ -64,5 +68,3 @@ export const MessageRenderer = React.memo(function MessageRenderer({
     />
   );
 });
-
-

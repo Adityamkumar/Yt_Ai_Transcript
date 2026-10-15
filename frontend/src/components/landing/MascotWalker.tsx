@@ -1,15 +1,15 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from "react";
 
 const sprites = {
   right: [
-    '/assets/mascot/walking/right1.svg',
-    '/assets/mascot/walking/right2.svg',
-    '/assets/mascot/walking/right3.svg',
+    "/assets/mascot/walking/right1.svg",
+    "/assets/mascot/walking/right2.svg",
+    "/assets/mascot/walking/right3.svg",
   ],
   left: [
-    '/assets/mascot/walking/left1.svg',
-    '/assets/mascot/walking/left2.svg',
-    '/assets/mascot/walking/left3.svg',
+    "/assets/mascot/walking/left1.svg",
+    "/assets/mascot/walking/left2.svg",
+    "/assets/mascot/walking/left3.svg",
   ],
 };
 
@@ -19,11 +19,11 @@ interface MascotWalkerProps {
 
 export function MascotWalker({ containerWidth = 380 }: MascotWalkerProps) {
   const [posX, setPosX] = useState(10);
-  const [direction, setDirection] = useState<'right' | 'left'>('right');
+  const [direction, setDirection] = useState<"right" | "left">("right");
   const [frame, setFrame] = useState(0);
 
   const posXRef = useRef(10);
-  const dirRef = useRef<'right' | 'left'>('right');
+  const dirRef = useRef<"right" | "left">("right");
 
   // Cycle walking animation frames (140ms per step)
   useEffect(() => {
@@ -49,19 +49,19 @@ export function MascotWalker({ containerWidth = 380 }: MascotWalkerProps) {
       const minLimit = -24;
       const maxLimit = Math.max(minLimit + 40, containerWidth - 140 + 32);
 
-      if (dirRef.current === 'right') {
+      if (dirRef.current === "right") {
         posXRef.current += speed * dt;
         if (posXRef.current >= maxLimit) {
           posXRef.current = maxLimit;
-          dirRef.current = 'left';
-          setDirection('left');
+          dirRef.current = "left";
+          setDirection("left");
         }
       } else {
         posXRef.current -= speed * dt;
         if (posXRef.current <= minLimit) {
           posXRef.current = minLimit;
-          dirRef.current = 'right';
-          setDirection('right');
+          dirRef.current = "right";
+          setDirection("right");
         }
       }
 
@@ -78,9 +78,9 @@ export function MascotWalker({ containerWidth = 380 }: MascotWalkerProps) {
       className="absolute pointer-events-none select-none z-20"
       style={{
         left: 0,
-        bottom: '100%',
+        bottom: "100%",
         transform: `translate3d(${posX}px, 0, 0)`,
-        willChange: 'transform',
+        willChange: "transform",
       }}
       aria-hidden="true"
     >
@@ -88,7 +88,7 @@ export function MascotWalker({ containerWidth = 380 }: MascotWalkerProps) {
         src={sprites[direction][frame]}
         alt=""
         className="w-[140px] h-[106px] object-contain drop-shadow-[0_6px_20px_rgba(157,165,255,0.35)]"
-        style={{ imageRendering: 'pixelated' }}
+        style={{ imageRendering: "pixelated" }}
         draggable={false}
       />
     </div>

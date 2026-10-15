@@ -1,5 +1,6 @@
 import mongoose, { Types } from "mongoose";
 import { PdfDocument } from "../models/pdfDocument.model.js";
+import { SourceAccess } from "../models/sourceAccess.model.js";
 import { Conversation } from "../models/conversation.model.js";
 import { hashPdfBuffer, processPdfUpload } from "../services/pdf.service.js";
 import {
@@ -58,19 +59,11 @@ const resolvePdfTitle = (aiTitle: string | undefined, originalName: string) => {
   return filenameTitle || "Document";
 };
 
-const getOrCreateConversation = async (
+const createPdfConversation = async (
   pdfDocId: mongoose.Types.ObjectId,
   userId: string,
   title: string,
 ) => {
-  const existing = await Conversation.findOne({
-    pdfDocumentId: pdfDocId,
-    userId,
-    type: "pdf",
-  }).populate("pdfDocumentId");
-
-  if (existing) return existing;
-
   const created = await Conversation.create({
     userId,
     pdfDocumentId: pdfDocId,
@@ -98,10 +91,26 @@ export const uploadPdf = asyncHandler(async (req: any, res) => {
   const existing = await PdfDocument.findOne({ documentHash });
 
   if (existing) {
+    await SourceAccess.updateOne(
+      {
+        userId: req.authUserId,
+        sourceType: "pdf",
+        sourceId: existing._id,
+      },
+      {
+        $setOnInsert: {
+          userId: req.authUserId,
+          sourceType: "pdf",
+          sourceId: existing._id,
+        },
+      },
+      { upsert: true },
+    );
+
     const effectiveRagStatus = existing.ragStatus ?? existing.status;
 
     if (effectiveRagStatus === "ready") {
-      const conversation = await getOrCreateConversation(
+      const conversation = await createPdfConversation(
         existing._id as mongoose.Types.ObjectId,
         req.authUserId,
         existing.title,
@@ -118,7 +127,7 @@ export const uploadPdf = asyncHandler(async (req: any, res) => {
     }
 
     if (effectiveRagStatus === "processing") {
-      const conversation = await getOrCreateConversation(
+      const conversation = await createPdfConversation(
         existing._id as mongoose.Types.ObjectId,
         req.authUserId,
         existing.title,
@@ -160,7 +169,7 @@ export const uploadPdf = asyncHandler(async (req: any, res) => {
         });
       }
 
-      const conversation = await getOrCreateConversation(
+      const conversation = await createPdfConversation(
         existing._id as mongoose.Types.ObjectId,
         req.authUserId,
         existing.title,
@@ -196,6 +205,22 @@ export const uploadPdf = asyncHandler(async (req: any, res) => {
     documentHash,
   );
 
+  await SourceAccess.updateOne(
+    {
+      userId: req.authUserId,
+      sourceType: "pdf",
+      sourceId: pdfDoc._id,
+    },
+    {
+      $setOnInsert: {
+        userId: req.authUserId,
+        sourceType: "pdf",
+        sourceId: pdfDoc._id,
+      },
+    },
+    { upsert: true },
+  );
+
   ingestPdfForRag({
     pdfDocumentId: pdfDoc._id,
     title,
@@ -207,16 +232,11 @@ export const uploadPdf = asyncHandler(async (req: any, res) => {
     logger.error({ err }, "[RAG] Background PDF ingestion failed");
   });
 
-  const conversation = await Conversation.create({
-    userId: req.authUserId,
-    pdfDocumentId: pdfDoc._id,
-    type: "pdf",
+  const populatedConversation = await createPdfConversation(
+    pdfDoc._id as mongoose.Types.ObjectId,
+    req.authUserId,
     title,
-  });
-
-  const populatedConversation = await Conversation.findById(
-    conversation._id,
-  ).populate("pdfDocumentId");
+  );
 
   return res
     .status(200)

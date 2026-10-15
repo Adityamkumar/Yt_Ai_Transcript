@@ -4,8 +4,7 @@ import { X, Maximize2, Minimize2, Headphones, MonitorPlay } from "lucide-react";
 import { useYouTubePlayer } from "@/store/YouTubePlayerContext";
 
 export function YouTubePlayerModal() {
-  const { state, closePlayer, minimizePlayer, expandPlayer } =
-    useYouTubePlayer();
+  const { state, closePlayer, minimizePlayer, expandPlayer } = useYouTubePlayer();
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   // Escape key handler
@@ -67,24 +66,17 @@ export function YouTubePlayerModal() {
     if (!state.isOpen) return;
 
     const handleMessage = (event: MessageEvent) => {
-      if (
-        event.origin !== "https://www.youtube.com" &&
-        event.origin !== "http://www.youtube.com"
-      )
+      if (event.origin !== "https://www.youtube.com" && event.origin !== "http://www.youtube.com")
         return;
 
       if (typeof event.data === "string") {
         try {
           const data = JSON.parse(event.data);
           // playerState === 0 means the video has ended
-          if (
-            data.event === "infoDelivery" &&
-            data.info &&
-            data.info.playerState === 0
-          ) {
+          if (data.event === "infoDelivery" && data.info && data.info.playerState === 0) {
             closePlayer();
           }
-        } catch (e) {
+        } catch {
           // Ignore JSON parse errors
         }
       }
@@ -141,9 +133,7 @@ export function YouTubePlayerModal() {
               : { opacity: 0, scale: 0.92, y: 20 }
           }
           animate={
-            state.isMinimized
-              ? { opacity: 1, y: 0, scale: 1 }
-              : { opacity: 1, scale: 1, y: 0 }
+            state.isMinimized ? { opacity: 1, y: 0, scale: 1 } : { opacity: 1, scale: 1, y: 0 }
           }
           exit={
             state.isMinimized
@@ -179,11 +169,7 @@ export function YouTubePlayerModal() {
                   title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
                   aria-label={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
                 >
-                  {isFullscreen ? (
-                    <Minimize2 size={15} />
-                  ) : (
-                    <Maximize2 size={15} />
-                  )}
+                  {isFullscreen ? <Minimize2 size={15} /> : <Maximize2 size={15} />}
                 </button>
                 <button
                   onClick={closePlayer}
@@ -200,9 +186,7 @@ export function YouTubePlayerModal() {
           {/* Persistent Iframe Container */}
           <div
             className={
-              state.isMinimized
-                ? "yt-mini-player-iframe-container"
-                : "yt-player-iframe-wrapper"
+              state.isMinimized ? "yt-mini-player-iframe-container" : "yt-player-iframe-wrapper"
             }
           >
             <iframe
@@ -212,9 +196,7 @@ export function YouTubePlayerModal() {
               title="YouTube video player"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
               allowFullScreen
-              className={
-                state.isMinimized ? "yt-mini-player-iframe" : "yt-player-iframe"
-              }
+              className={state.isMinimized ? "yt-mini-player-iframe" : "yt-player-iframe"}
             />
           </div>
 

@@ -1,6 +1,6 @@
-import axiosInstance from '@/lib/axios';
+import axiosInstance from "@/lib/axios";
 
-export type ResponseLanguage = 'en' | 'hi' | 'ta' | 'te' | 'kn' | 'ml' | 'bn' | 'mr';
+export type ResponseLanguage = "en" | "hi" | "ta" | "te" | "kn" | "ml" | "bn" | "mr";
 
 interface UpdatePreferencesResponse {
   data: {
@@ -13,7 +13,7 @@ interface UpdatePreferencesResponse {
 export const settingsService = {
   updateResponseLanguage: async (responseLanguage: ResponseLanguage) => {
     const response = await axiosInstance.patch<UpdatePreferencesResponse>(
-      '/api/v1/settings/preferences',
+      "/api/v1/settings/preferences",
       { responseLanguage },
     );
 

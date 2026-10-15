@@ -45,15 +45,15 @@ export function useConversations(activeConversationId?: string) {
   const createConversationMutation = useMutation({
     mutationFn: ({ videoId, title }: { videoId: string; title: string }) =>
       conversationService.createConversation(videoId, title),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["conversations"] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["conversations"] });
     },
   });
 
   const deleteConversationMutation = useMutation({
     mutationFn: conversationService.deleteConversation,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["conversations"] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["conversations"] });
     },
   });
 
@@ -81,8 +81,8 @@ export function useConversations(activeConversationId?: string) {
     onError: (_error, _variables, context) => {
       queryClient.setQueryData(["conversations"], context?.previousConversations);
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["conversations"] });
+    onSettled: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["conversations"] });
     },
   });
 

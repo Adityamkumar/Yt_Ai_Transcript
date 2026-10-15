@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { motion } from "framer-motion";
 import {
   ArrowRight,
   BarChart3,
@@ -10,10 +10,11 @@ import {
   Sparkles,
   Youtube,
   FileText,
-} from 'lucide-react';
-import { SmartNotesCard } from './notes/SmartNotesCard';
-import { APP_NAME, APP_TAGLINE, SUGGESTED_PROMPTS } from '@/constants';
-import { promptCardVariants, promptStagger } from '@/animations/variants';
+} from "lucide-react";
+import { SmartNotesCard } from "./notes/SmartNotesCard";
+import { TestUnderstandingCta } from "./TestUnderstandingCta";
+import { APP_NAME, APP_TAGLINE, SUGGESTED_PROMPTS } from "@/constants";
+import { promptCardVariants, promptStagger } from "@/animations/variants";
 
 interface EmptyStateProps {
   onPromptSelect?: (text: string) => void;
@@ -30,7 +31,7 @@ export function EmptyState({
   onNotesClick,
   onSummaryClick,
   isLoadingNotes,
-  hasTranscript = false
+  hasTranscript = false,
 }: EmptyStateProps) {
   if (hasTranscript) {
     return (
@@ -44,8 +45,13 @@ export function EmptyState({
             Ask anything about this video.
           </h1>
           <p className="mt-4 max-w-xl text-base leading-7 text-[var(--text-secondary)]">
-            Start with a direct question, pull out the main ideas, or turn the transcript into structured notes.
+            Start with a direct question, pull out the main ideas, or turn the transcript into
+            structured notes.
           </p>
+        </div>
+
+        <div className="mb-8 max-w-2xl">
+          <TestUnderstandingCta />
         </div>
 
         {onPromptSelect && (
@@ -58,10 +64,7 @@ export function EmptyState({
             {onNotesClick && (
               <>
                 <motion.div variants={promptCardVariants}>
-                  <SmartNotesCard
-                     onClick={onNotesClick}
-                     isLoading={isLoadingNotes}
-                  />
+                  <SmartNotesCard onClick={onNotesClick} isLoading={isLoadingNotes} />
                 </motion.div>
                 <motion.div variants={promptCardVariants}>
                   <SmartNotesCard
@@ -96,7 +99,9 @@ export function EmptyState({
                       className="text-[var(--text-muted)] opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100"
                     />
                   </div>
-                  <span className="text-sm font-semibold text-[var(--text-primary)]">{prompt.label}</span>
+                  <span className="text-sm font-semibold text-[var(--text-primary)]">
+                    {prompt.label}
+                  </span>
                   <span className="mt-1.5 line-clamp-2 text-sm leading-relaxed text-[var(--text-muted)]">
                     {prompt.text}
                   </span>
@@ -137,9 +142,21 @@ export function EmptyState({
 
         <div className="mx-auto mt-8 grid max-w-2xl grid-cols-1 gap-3 text-left sm:grid-cols-3">
           {[
-            { icon: Youtube, title: 'Analyze YouTube', text: 'Index transcripts of any educational video.' },
-            { icon: FileText, title: 'Chat with PDF', text: 'Upload documents to query grounded facts.' },
-            { icon: BrainCircuit, title: 'Generate Study Notes', text: 'Turn sources into structured study materials.' },
+            {
+              icon: Youtube,
+              title: "Analyze YouTube",
+              text: "Index transcripts of any educational video.",
+            },
+            {
+              icon: FileText,
+              title: "Chat with PDF",
+              text: "Upload documents to query grounded facts.",
+            },
+            {
+              icon: BrainCircuit,
+              title: "Generate Study Notes",
+              text: "Turn sources into structured study materials.",
+            },
           ].map(({ icon: Icon, title, text }) => (
             <div
               key={title}

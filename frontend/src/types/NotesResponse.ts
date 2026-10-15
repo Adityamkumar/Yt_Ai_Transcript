@@ -9,4 +9,4 @@ export interface NotesResponse {
   keyInsights: string[];
   actionableTakeaways: string[];
   examples: string[];
-}
+}

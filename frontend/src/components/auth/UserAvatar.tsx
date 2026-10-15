@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { getApiBaseUrl } from '@/lib/axios';
+import { useState } from "react";
+import { getApiBaseUrl } from "@/lib/axios";
 
 interface UserAvatarProps {
   name?: string;
@@ -9,22 +9,20 @@ interface UserAvatarProps {
 }
 
 function getAvatarGradient(name: string): string {
-  const hue = name
-    .split('')
-    .reduce((acc, char) => acc + char.charCodeAt(0), 0) % 360;
+  const hue = name.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0) % 360;
   return `linear-gradient(135deg, hsl(${hue}, 70%, 55%), hsl(${(hue + 60) % 360}, 70%, 45%))`;
 }
 
 function getInitials(name: string): string {
   return name
-    .split(' ')
+    .split(" ")
     .map((word) => word[0])
     .slice(0, 2)
-    .join('')
+    .join("")
     .toUpperCase();
 }
 
-export function UserAvatar({ name = 'User', avatar, size = 36, className = '' }: UserAvatarProps) {
+export function UserAvatar({ name = "User", avatar, size = 36, className = "" }: UserAvatarProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   const initials = getInitials(name);
@@ -32,9 +30,10 @@ export function UserAvatar({ name = 'User', avatar, size = 36, className = '' }:
 
   const baseURL = getApiBaseUrl();
 
-  const avatarUrl = avatar && avatar.includes('googleusercontent.com')
-    ? `${baseURL}/api/v1/user/avatar-proxy?url=${encodeURIComponent(avatar)}`
-    : avatar;
+  const avatarUrl =
+    avatar && avatar.includes("googleusercontent.com")
+      ? `${baseURL}/api/v1/user/avatar-proxy?url=${encodeURIComponent(avatar)}`
+      : avatar;
 
   if (avatar && !imageError) {
     return (
@@ -47,7 +46,7 @@ export function UserAvatar({ name = 'User', avatar, size = 36, className = '' }:
         style={{
           width: size,
           height: size,
-          display: imageLoaded ? 'block' : 'none',
+          display: imageLoaded ? "block" : "none",
         }}
         onLoad={() => setImageLoaded(true)}
         onError={() => setImageError(true)}
@@ -70,4 +69,3 @@ export function UserAvatar({ name = 'User', avatar, size = 36, className = '' }:
     </span>
   );
 }
-

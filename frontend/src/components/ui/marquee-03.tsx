@@ -62,24 +62,16 @@ const reviews: Review[] = [
 
 const ReviewCard = ({ profile, name, username, body }: Review) => {
   return (
-    <Card className="relative w-full max-w-sm cursor-pointer overflow-hidden border border-[var(--border-medium)] bg-[var(--surface-2)] p-4 text-[var(--text-primary)] shadow-none">
+    <Card className="relative w-full max-w-sm cursor-pointer overflow-hidden border border(--border-medium) bg(--surface-2) p-4 text(--text-primary) shadow-none">
       <CardContent className="flex flex-col gap-2 p-0">
         <div className="flex flex-row items-center gap-2">
-          <img
-            className="rounded-full"
-            width="32"
-            height="32"
-            alt={name}
-            src={profile}
-          />
+          <img className="rounded-full" width="32" height="32" alt={name} src={profile} />
           <div className="flex flex-col">
-            <p className="text-sm font-medium text-[var(--text-primary)]">{name}</p>
-            <p className="text-xs font-medium text-[var(--text-muted)]">
-              {username}
-            </p>
+            <p className="text-sm font-medium text(--text-primary)">{name}</p>
+            <p className="text-xs font-medium text(--text-muted)">{username}</p>
           </div>
         </div>
-        <p className="text-sm leading-relaxed text-[var(--text-secondary)]">{body}</p>
+        <p className="text-sm leading-relaxed text(--text-secondary)">{body}</p>
       </CardContent>
     </Card>
   );
@@ -89,11 +81,7 @@ const VerticalMarqueeDemo = () => {
   return (
     <div className="relative flex h-[34rem] w-full flex-row items-center justify-center overflow-hidden">
       <div className="flex flex-row items-center justify-center w-full gap-4 px-4 h-full">
-        <Marquee
-          pauseOnHover
-          vertical
-          className="[--duration:20s] h-full sm:flex hidden flex-1"
-        >
+        <Marquee pauseOnHover vertical className="[--duration:20s] h-full sm:flex hidden flex-1">
           {reviews
             .filter((_, i) => i % 3 === 0)
             .map((review, idx) => (
@@ -112,22 +100,14 @@ const VerticalMarqueeDemo = () => {
               <ReviewCard key={idx} {...review} />
             ))}
         </Marquee>
-        <Marquee
-          pauseOnHover
-          vertical
-          className="[--duration:20s] h-full hidden lg:flex flex-1"
-        >
+        <Marquee pauseOnHover vertical className="[--duration:20s] h-full hidden lg:flex flex-1">
           {reviews
             .filter((_, i) => i % 3 === 2)
             .map((review, idx) => (
               <ReviewCard key={idx} {...review} />
             ))}
         </Marquee>
-        <Marquee
-          pauseOnHover
-          vertical
-          className="[--duration:20s] h-full sm:hidden flex flex-1"
-        >
+        <Marquee pauseOnHover vertical className="[--duration:20s] h-full sm:hidden flex flex-1">
           {reviews.map((review, idx) => (
             <ReviewCard key={idx} {...review} />
           ))}

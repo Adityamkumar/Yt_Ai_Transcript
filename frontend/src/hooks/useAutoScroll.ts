@@ -14,8 +14,7 @@ export function useAutoScroll(messages: ChatMessage[]) {
 
   useEffect(() => {
     const container =
-      bottomRef.current?.closest(".overflow-y-auto") ||
-      bottomRef.current?.parentElement;
+      bottomRef.current?.closest(".overflow-y-auto") || bottomRef.current?.parentElement;
 
     if (!container) return;
 
@@ -24,8 +23,7 @@ export function useAutoScroll(messages: ChatMessage[]) {
 
       const { scrollTop, scrollHeight, clientHeight } = container;
 
-      const distanceFromBottom =
-        scrollHeight - scrollTop - clientHeight;
+      const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
 
       const isNearBottom = distanceFromBottom < 150;
 
@@ -57,8 +55,7 @@ export function useAutoScroll(messages: ChatMessage[]) {
 
   useLayoutEffect(() => {
     const container =
-      bottomRef.current?.closest(".overflow-y-auto") ||
-      bottomRef.current?.parentElement;
+      bottomRef.current?.closest(".overflow-y-auto") || bottomRef.current?.parentElement;
 
     if (!container) return;
 

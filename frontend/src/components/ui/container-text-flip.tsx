@@ -66,10 +66,16 @@ export function ContainerTextFlip({
       )}
       aria-live="polite"
     >
-      <span aria-hidden="true" className="absolute -left-[4px] -top-[4px] h-2 w-2 bg-[var(--accent)]" />
-      <span aria-hidden="true" className="absolute -right-[4px] -top-[4px] h-2 w-2 bg-[var(--accent)]" />
-      <span aria-hidden="true" className="absolute -bottom-[4px] -left-[4px] h-2 w-2 bg-[var(--accent)]" />
-      <span aria-hidden="true" className="absolute -bottom-[4px] -right-[4px] h-2 w-2 bg-[var(--accent)]" />
+      <span aria-hidden="true" className="absolute -left-[4px] -top-[4px] h-2 w-2 bg(--accent)" />
+      <span aria-hidden="true" className="absolute -right-[4px] -top-[4px] h-2 w-2 bg(--accent)" />
+      <span
+        aria-hidden="true"
+        className="absolute -bottom-[4px] -left-[4px] h-2 w-2 bg(--accent)"
+      />
+      <span
+        aria-hidden="true"
+        className="absolute -bottom-[4px] -right-[4px] h-2 w-2 bg(--accent)"
+      />
 
       <motion.span
         key={currentWord}

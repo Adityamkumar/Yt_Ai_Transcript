@@ -8,5 +8,5 @@ export const DYNAMIC_GREETINGS = [
   "What are we building today, {name}?",
   "Ready to dive deeper, {name}?",
   "Need help understanding something, {name}?",
-  "Continue where you left off, {name}."
+  "Continue where you left off, {name}.",
 ];

@@ -4,6 +4,7 @@ import type { AIRequestOptions, IAIProvider } from "./aiProvider.service.js";
 
 const TIMEOUT_MS = 8000;
 const LONG_SUMMARY_TIMEOUT_MS = 60000;
+const ASSESSMENT_TIMEOUT_MS = 25000;
 const withTimeout = <T>(
   promise: Promise<T>,
   providerName: string,
@@ -85,7 +86,9 @@ export class GeminiProvider implements IAIProvider {
     const timeoutMs =
       options?.purpose === "long-summary"
         ? LONG_SUMMARY_TIMEOUT_MS
-        : TIMEOUT_MS;
+        : options?.purpose === "assessment-generation"
+          ? ASSESSMENT_TIMEOUT_MS
+          : TIMEOUT_MS;
 
     const response = await withTimeout(
       ai.models.generateContent({

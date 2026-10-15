@@ -1,17 +1,17 @@
-import { useEffect, useState, useRef } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
-import { chatService } from '@/services/chat.service';
-import { messageService } from '@/services/message.service';
-import { ChatMessage } from '@/types';
+import { useEffect, useState, useRef } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { chatService } from "@/services/chat.service";
+import { messageService } from "@/services/message.service";
+import { ChatMessage } from "@/types";
 
 export function useFollowUpQuestions(
   message: ChatMessage | undefined,
   isLatest: boolean,
-  userQuestion: string | undefined
+  userQuestion: string | undefined,
 ) {
   const [isLoading, setIsLoading] = useState(false);
   const queryClient = useQueryClient();
-  
+
   const abortControllerRef = useRef<AbortController | null>(null);
   const currentFetchedIdRef = useRef<string | null>(null);
 
@@ -20,13 +20,12 @@ export function useFollowUpQuestions(
     const conversationId = message?.conversationId;
     const messageContent = message?.content;
 
-    
     if (
       !message ||
       !messageId ||
       !conversationId ||
       !messageContent ||
-      message.role !== 'assistant' ||
+      message.role !== "assistant" ||
       !isLatest ||
       message.isLoading ||
       (message.suggestedQuestions && message.suggestedQuestions.length > 0)
@@ -34,7 +33,6 @@ export function useFollowUpQuestions(
       return;
     }
 
-    
     if (currentFetchedIdRef.current === messageId) {
       return;
     }
@@ -48,11 +46,11 @@ export function useFollowUpQuestions(
       try {
         const questions = await chatService.getFollowUpQuestions(
           {
-            question: userQuestion || 'What are the key highlights?',
+            question: userQuestion || "What are the key highlights?",
             answer: messageContent,
             conversationId,
           },
-          controller.signal
+          controller.signal,
         );
 
         if (controller.signal.aborted) {
@@ -60,22 +58,17 @@ export function useFollowUpQuestions(
         }
 
         if (questions && questions.length > 0) {
-          
           await messageService.patchSuggestedQuestions(messageId, questions);
 
-          
-          queryClient.setQueryData(
-            ['messages', conversationId],
-            (old: ChatMessage[] = []) => {
-              return old.map((m) =>
-                m._id === messageId ? { ...m, suggestedQuestions: questions } : m
-              );
-            }
-          );
+          queryClient.setQueryData(["messages", conversationId], (old: ChatMessage[] = []) => {
+            return old.map((m) =>
+              m._id === messageId ? { ...m, suggestedQuestions: questions } : m,
+            );
+          });
         }
       } catch (error: any) {
-        if (error?.name !== 'AbortError') {
-          console.error('[FollowUp Hook] Failed to generate suggestions:', error);
+        if (error?.name !== "AbortError") {
+          console.error("[FollowUp Hook] Failed to generate suggestions:", error);
         }
       } finally {
         if (!controller.signal.aborted) {
@@ -84,7 +77,7 @@ export function useFollowUpQuestions(
       }
     };
 
-    fetchSuggestions();
+    void fetchSuggestions();
 
     return () => {
       controller.abort();

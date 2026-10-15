@@ -37,8 +37,6 @@ export function useSearch(): UseSearchReturn {
 
   const { conversations } = useConversations();
 
-  
-
   const formatConversation = (conv: any): SearchResult => ({
     id: conv._id,
     title: conv.title,
@@ -57,11 +55,11 @@ export function useSearch(): UseSearchReturn {
 
   if (last7DaysConversations.length > 0) {
     activeRecentResults = last7DaysConversations.slice(0, 5).map(formatConversation);
-  } else if(conversations.length > 0) {
+  } else if (conversations.length > 0) {
     activeRecentResults = conversations.slice(0, 5).map(formatConversation);
-  }else{
-    activeRecentResults = []
-  } 
+  } else {
+    activeRecentResults = [];
+  }
 
   const isRecent = query.trim().length === 0;
   const results = isRecent ? activeRecentResults : searchResults;
@@ -109,10 +107,7 @@ export function useSearch(): UseSearchReturn {
   }, [debouncedQuery]);
 
   useEffect(() => {
-    if (
-      query.trim().length >= SEARCH_MIN_QUERY_LENGTH &&
-      query !== debouncedQuery
-    ) {
+    if (query.trim().length >= SEARCH_MIN_QUERY_LENGTH && query !== debouncedQuery) {
       setLoading(true);
     }
   }, [query, debouncedQuery]);

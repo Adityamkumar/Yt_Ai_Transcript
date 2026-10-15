@@ -1,9 +1,9 @@
-import { useState, useRef, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { SonarGrid } from '@/components/ui/sonar-grid';
-import { ContainerTextFlip } from '@/components/ui/container-text-flip';
-import { MascotWalker } from '@/components/landing/MascotWalker';
+import { useState, useRef, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
+import { SonarGrid } from "@/components/ui/sonar-grid";
+import { ContainerTextFlip } from "@/components/ui/container-text-flip";
+import { MascotWalker } from "@/components/landing/MascotWalker";
 
 export function HeroSection() {
   const buttonRef = useRef<HTMLDivElement>(null);
@@ -44,9 +44,9 @@ export function HeroSection() {
           transition={{ duration: 0.6, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
           className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-[3.5rem] font-normal tracking-[-0.025em] text-[#f0f2f7] leading-[1.15] max-w-3xl"
         >
-            Turn YouTube videos and documents into{' '}
+          Turn YouTube videos and documents into{" "}
           <span className="bg-gradient-to-r from-[#ffffff] via-[#c7ccff] to-[#9da5ff] bg-clip-text text-transparent">
-            grounded{' '}
+            grounded{" "}
             <ContainerTextFlip
               words={["conversations", "summaries", "insights", "notes"]}
               className="mx-auto sm:mx-0"
@@ -60,9 +60,10 @@ export function HeroSection() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.18, ease: [0.16, 1, 0.3, 1] }}
-          className="text-sm sm:text-base md:text-lg text-[var(--text-secondary)] leading-relaxed max-w-xl sm:max-w-2xl mt-6 sm:mt-7 font-normal font-sans"
+          className="text-sm sm:text-base md:text-lg text(--text-secondary) leading-relaxed max-w-xl sm:max-w-2xl mt-6 sm:mt-7 font-normal font-sans"
         >
-          Extract transcripts, synthesize chapters, and chat directly with your YouTube videos and documents.
+          Extract transcripts, synthesize chapters, and chat directly with your YouTube videos and
+          documents.
         </motion.p>
 
         {/* Elongated Centered Action Button with Animated Walking Robot */}
@@ -72,7 +73,10 @@ export function HeroSection() {
           transition={{ duration: 0.6, delay: 0.28, ease: [0.16, 1, 0.3, 1] }}
           className="mt-32 sm:mt-36 flex justify-center w-full px-4"
         >
-          <div ref={buttonRef} className="relative inline-flex flex-col items-center w-full max-w-[380px]">
+          <div
+            ref={buttonRef}
+            className="relative inline-flex flex-col items-center w-full max-w-[380px]"
+          >
             {/* Lumora Robot Mascot walking back and forth */}
             <MascotWalker containerWidth={btnWidth} />
 

@@ -1,8 +1,8 @@
-import { useCallback, useRef, useState, type KeyboardEvent } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
-import { AlertCircle, ArrowRight, Link as LinkIcon, Youtube } from 'lucide-react';
-import { isValidYouTubeUrl } from '@/utils';
-import { cn } from '@/utils/cn';
+import { useCallback, useRef, useState, type KeyboardEvent } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { AlertCircle, ArrowRight, Link as LinkIcon, Youtube } from "lucide-react";
+import { isValidYouTubeUrl } from "@/utils";
+import { cn } from "@/utils/cn";
 
 interface TranscriptLoaderProps {
   onSubmit: (url: string) => void;
@@ -11,7 +11,7 @@ interface TranscriptLoaderProps {
 }
 
 export function TranscriptLoader({ onSubmit, isLoading = false, error }: TranscriptLoaderProps) {
-  const [url, setUrl] = useState('');
+  const [url, setUrl] = useState("");
   const [touched, setTouched] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -24,7 +24,7 @@ export function TranscriptLoader({ onSubmit, isLoading = false, error }: Transcr
   }, [isValid, isLoading, onSubmit, url]);
 
   const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'Enter') handleSubmit();
+    if (event.key === "Enter") handleSubmit();
   };
 
   return (
@@ -37,18 +37,20 @@ export function TranscriptLoader({ onSubmit, isLoading = false, error }: Transcr
             </span>
             <div>
               <p className="text-sm font-semibold text-[var(--text-primary)]">Add source video</p>
-              <p className="text-[11px] text-[var(--text-muted)]">Paste a YouTube URL to create a chat workspace.</p>
+              <p className="text-[11px] text-[var(--text-muted)]">
+                Paste a YouTube URL to create a chat workspace.
+              </p>
             </div>
           </div>
         </div>
 
         <div
           className={cn(
-            'flex flex-col gap-3 rounded-[var(--radius-xl)] border bg-[var(--canvas)]/70 p-2 transition-all sm:flex-row sm:items-center',
+            "flex flex-col gap-3 rounded-[var(--radius-xl)] border bg-[var(--canvas)]/70 p-2 transition-all sm:flex-row sm:items-center",
             isValid && !isLoading
-              ? 'border-[rgba(139,156,247,0.28)] shadow-[0_0_0_1px_rgba(139,156,247,0.05),0_12px_48px_rgba(102,117,246,0.10)]'
-              : 'border-[var(--border-soft)] focus-within:border-[var(--border-strong)]',
-            showError && 'border-[rgba(248,113,113,0.45)]'
+              ? "border-[rgba(139,156,247,0.28)] shadow-[0_0_0_1px_rgba(139,156,247,0.05),0_12px_48px_rgba(102,117,246,0.10)]"
+              : "border-[var(--border-soft)] focus-within:border-[var(--border-strong)]",
+            showError && "border-[rgba(248,113,113,0.45)]",
           )}
         >
           <div className="flex min-w-0 flex-1 items-center gap-3 px-2">
@@ -72,10 +74,10 @@ export function TranscriptLoader({ onSubmit, isLoading = false, error }: Transcr
             onClick={handleSubmit}
             disabled={!isValid || isLoading}
             className={cn(
-              'inline-flex h-11 items-center justify-center gap-2 rounded-2xl px-5 text-sm font-semibold transition-all sm:w-auto',
+              "inline-flex h-11 items-center justify-center gap-2 rounded-2xl px-5 text-sm font-semibold transition-all sm:w-auto",
               isValid && !isLoading
-                ? 'bg-[var(--text-primary)] text-[var(--canvas)] hover:opacity-90'
-                : 'cursor-not-allowed bg-[var(--surface-3)] text-[var(--text-muted)]'
+                ? "bg-[var(--text-primary)] text-[var(--canvas)] hover:opacity-90"
+                : "cursor-not-allowed bg-[var(--surface-3)] text-[var(--text-muted)]",
             )}
           >
             {isLoading ? (

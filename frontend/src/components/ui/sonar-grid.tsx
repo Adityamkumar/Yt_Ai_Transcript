@@ -1,7 +1,7 @@
-import * as React from 'react';
-import { cn } from '@/lib/utils';
+import * as React from "react";
+import { cn } from "@/lib/utils";
 
-export interface SonarGridProps extends React.ComponentPropsWithRef<'div'> {
+export interface SonarGridProps extends React.ComponentPropsWithRef<"div"> {
   spacing?: number;
   dotRadius?: number;
   baseOpacity?: number;
@@ -16,7 +16,11 @@ export interface SonarGridProps extends React.ComponentPropsWithRef<'div'> {
   pingArea?: [number, number, number, number];
 }
 
-interface Ring { x: number; y: number; born: number; }
+interface Ring {
+  x: number;
+  y: number;
+  born: number;
+}
 
 const MAX_DPR = 2;
 const TAU = Math.PI * 2;
@@ -46,33 +50,62 @@ export const SonarGrid = React.forwardRef<HTMLDivElement, SonarGridProps>(functi
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
   const ringsRef = React.useRef<Ring[]>([]);
   const refreshRef = React.useRef<() => void>(() => {});
-  const optionsRef = React.useRef({ spacing, dotRadius, baseOpacity, pingEvery, speed, ringWidth, amplitude, interactive, maxRings, seedPing, pingArea });
-  optionsRef.current = { spacing, dotRadius, baseOpacity, pingEvery, speed, ringWidth, amplitude, interactive, maxRings, seedPing, pingArea };
+  const optionsRef = React.useRef({
+    spacing,
+    dotRadius,
+    baseOpacity,
+    pingEvery,
+    speed,
+    ringWidth,
+    amplitude,
+    interactive,
+    maxRings,
+    seedPing,
+    pingArea,
+  });
+  optionsRef.current = {
+    spacing,
+    dotRadius,
+    baseOpacity,
+    pingEvery,
+    speed,
+    ringWidth,
+    amplitude,
+    interactive,
+    maxRings,
+    seedPing,
+    pingArea,
+  };
 
-  const setHost = React.useCallback((node: HTMLDivElement | null) => {
-    hostRef.current = node;
-    if (typeof forwardedRef === 'function') forwardedRef(node);
-    else if (forwardedRef) forwardedRef.current = node;
-  }, [forwardedRef]);
+  const setHost = React.useCallback(
+    (node: HTMLDivElement | null) => {
+      hostRef.current = node;
+      if (typeof forwardedRef === "function") forwardedRef(node);
+      else if (forwardedRef) forwardedRef.current = node;
+    },
+    [forwardedRef],
+  );
 
   React.useEffect(() => {
     const host = hostRef.current;
     const canvas = canvasRef.current;
     if (!host || !canvas) return;
-    const context = canvas.getContext('2d');
+    const context = canvas.getContext("2d");
     if (!context) return;
 
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
     let width = 1;
     let height = 1;
     let animationFrame = 0;
     let timer = 0;
     let visible = true;
     let seeded = false;
-    let stroke = '';
+    let stroke = "";
     let nextPing = performance.now() + optionsRef.current.pingEvery * 1000;
 
-    const readColor = () => { stroke = getComputedStyle(canvas).color; };
+    const readColor = () => {
+      stroke = getComputedStyle(canvas).color;
+    };
     const addRing = (x: number, y: number, born: number) => {
       readColor();
       const rings = ringsRef.current;
@@ -123,7 +156,13 @@ export const SonarGrid = React.forwardRef<HTMLDivElement, SonarGridProps>(functi
         const energy = hot[index + 2] ?? 0;
         context.globalAlpha = o.baseOpacity + (1 - o.baseOpacity) * energy;
         context.beginPath();
-        context.arc(hot[index] ?? 0, hot[index + 1] ?? 0, o.dotRadius * (1 + o.amplitude * energy), 0, TAU);
+        context.arc(
+          hot[index] ?? 0,
+          hot[index + 1] ?? 0,
+          o.dotRadius * (1 + o.amplitude * energy),
+          0,
+          TAU,
+        );
         context.fill();
       }
       context.globalAlpha = 1;
@@ -132,19 +171,31 @@ export const SonarGrid = React.forwardRef<HTMLDivElement, SonarGridProps>(functi
     const tick = (now: number) => {
       animationFrame = 0;
       if (!visible || document.hidden) return;
-      if (reducedMotion.matches) { ringsRef.current = []; draw(now); return; }
+      if (reducedMotion.matches) {
+        ringsRef.current = [];
+        draw(now);
+        return;
+      }
       const o = optionsRef.current;
       if (o.pingEvery > 0 && now >= nextPing) {
         const [x0, y0, x1, y1] = o.pingArea;
-        addRing(width * (x0 + Math.random() * (x1 - x0)), height * (y0 + Math.random() * (y1 - y0)), now);
+        addRing(
+          width * (x0 + Math.random() * (x1 - x0)),
+          height * (y0 + Math.random() * (y1 - y0)),
+          now,
+        );
         nextPing = now + o.pingEvery * 1000;
       }
       draw(now);
       if (ringsRef.current.length > 0) animationFrame = requestAnimationFrame(tick);
-      else if (o.pingEvery > 0) timer = window.setTimeout(() => tick(performance.now()), Math.max(16, nextPing - now));
+      else if (o.pingEvery > 0)
+        timer = window.setTimeout(() => tick(performance.now()), Math.max(16, nextPing - now));
     };
     const wake = () => {
-      if (!animationFrame) { window.clearTimeout(timer); animationFrame = requestAnimationFrame(tick); }
+      if (!animationFrame) {
+        window.clearTimeout(timer);
+        animationFrame = requestAnimationFrame(tick);
+      }
     };
     const resize = () => {
       const rect = host.getBoundingClientRect();
@@ -157,7 +208,12 @@ export const SonarGrid = React.forwardRef<HTMLDivElement, SonarGridProps>(functi
       if (!seeded) {
         seeded = true;
         const [x0, y0, x1, y1] = optionsRef.current.pingArea;
-        if (optionsRef.current.seedPing && !reducedMotion.matches) addRing(width * (x0 + (x1 - x0) * 0.68), height * (y0 + (y1 - y0) * 0.34), performance.now() - 500);
+        if (optionsRef.current.seedPing && !reducedMotion.matches)
+          addRing(
+            width * (x0 + (x1 - x0) * 0.68),
+            height * (y0 + (y1 - y0) * 0.34),
+            performance.now() - 500,
+          );
       }
       draw(performance.now());
     };
@@ -167,37 +223,77 @@ export const SonarGrid = React.forwardRef<HTMLDivElement, SonarGridProps>(functi
       addRing(event.clientX - rect.left, event.clientY - rect.top, performance.now());
       wake();
     };
-    const onVisibilityChange = () => { if (!document.hidden) wake(); };
-    refreshRef.current = () => { readColor(); nextPing = Math.min(nextPing, performance.now() + optionsRef.current.pingEvery * 1000); wake(); };
+    const onVisibilityChange = () => {
+      if (!document.hidden) wake();
+    };
+    refreshRef.current = () => {
+      readColor();
+      nextPing = Math.min(nextPing, performance.now() + optionsRef.current.pingEvery * 1000);
+      wake();
+    };
     const resizeObserver = new ResizeObserver(resize);
-    const intersectionObserver = new IntersectionObserver(([entry]) => { visible = entry?.isIntersecting ?? true; if (visible) wake(); });
+    const intersectionObserver = new IntersectionObserver(([entry]) => {
+      visible = entry?.isIntersecting ?? true;
+      if (visible) wake();
+    });
     const mutationObserver = new MutationObserver(() => refreshRef.current());
     readColor();
     resize();
     resizeObserver.observe(host);
     intersectionObserver.observe(host);
-    mutationObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'style', 'data-theme'] });
-    host.addEventListener('pointerdown', onPointerDown);
-    document.addEventListener('visibilitychange', onVisibilityChange);
-    reducedMotion.addEventListener('change', wake);
+    mutationObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class", "style", "data-theme"],
+    });
+    host.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    reducedMotion.addEventListener("change", wake);
     wake();
     return () => {
-      resizeObserver.disconnect(); intersectionObserver.disconnect(); mutationObserver.disconnect();
-      host.removeEventListener('pointerdown', onPointerDown);
-      document.removeEventListener('visibilitychange', onVisibilityChange);
-      reducedMotion.removeEventListener('change', wake);
-      cancelAnimationFrame(animationFrame); window.clearTimeout(timer); refreshRef.current = () => {};
+      resizeObserver.disconnect();
+      intersectionObserver.disconnect();
+      mutationObserver.disconnect();
+      host.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      reducedMotion.removeEventListener("change", wake);
+      cancelAnimationFrame(animationFrame);
+      window.clearTimeout(timer);
+      refreshRef.current = () => {};
     };
   }, []);
 
-  React.useEffect(() => { refreshRef.current(); }, [spacing, dotRadius, baseOpacity, color, pingEvery, speed, ringWidth, amplitude, interactive, maxRings, pingArea]);
+  React.useEffect(() => {
+    refreshRef.current();
+  }, [
+    spacing,
+    dotRadius,
+    baseOpacity,
+    color,
+    pingEvery,
+    speed,
+    ringWidth,
+    amplitude,
+    interactive,
+    maxRings,
+    pingArea,
+  ]);
 
   return (
-    <div ref={setHost} data-slot="sonar-grid" className={cn('relative isolate overflow-hidden', className)} {...rest}>
-      <canvas ref={canvasRef} aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 size-full" style={{ color: color ?? 'var(--text-primary)' }} />
+    <div
+      ref={setHost}
+      data-slot="sonar-grid"
+      className={cn("relative isolate overflow-hidden", className)}
+      {...rest}
+    >
+      <canvas
+        ref={canvasRef}
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 -z-10 size-full"
+        style={{ color: color ?? "var(--text-primary)" }}
+      />
       {children}
     </div>
   );
 });
 
-SonarGrid.displayName = 'SonarGrid';
+SonarGrid.displayName = "SonarGrid";

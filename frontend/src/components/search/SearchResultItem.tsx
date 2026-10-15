@@ -50,9 +50,8 @@ export function SearchResultItem({
     }
   }, [isSelected]);
 
-  const isPdf = result.type === "conversation"
-    ? result.preview === "PDF workspace"
-    : result.type === "pdf";
+  const isPdf =
+    result.type === "conversation" ? result.preview === "PDF workspace" : result.type === "pdf";
 
   return (
     <button

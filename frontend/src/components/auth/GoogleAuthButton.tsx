@@ -1,9 +1,9 @@
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Loader2 } from 'lucide-react';
-import toast from 'react-hot-toast';
-import { useAuth } from '@/store/AuthContext';
-import type { PreAuthSessionManagementData } from '@/types';
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { Loader2 } from "lucide-react";
+import toast from "react-hot-toast";
+import { useAuth } from "@/store/AuthContext";
+import type { PreAuthSessionManagementData } from "@/types";
 
 const GoogleIcon = () => (
   <svg
@@ -38,7 +38,11 @@ interface GoogleAuthButtonProps {
   onSessionManagement?: (data: PreAuthSessionManagementData) => void;
 }
 
-export function GoogleAuthButton({ label = 'Continue with Google', onError, onSessionManagement }: GoogleAuthButtonProps) {
+export function GoogleAuthButton({
+  label = "Continue with Google",
+  onError,
+  onSessionManagement,
+}: GoogleAuthButtonProps) {
   const { loginWithGoogle } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -53,8 +57,8 @@ export function GoogleAuthButton({ label = 'Continue with Google', onError, onSe
 
       const client = google.accounts.oauth2.initCodeClient({
         client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
-        scope: 'openid email profile',
-        ux_mode: 'popup',
+        scope: "openid email profile",
+        ux_mode: "popup",
         callback: async (response: any) => {
           if (response.error) {
             setIsLoading(false);
@@ -73,9 +77,7 @@ export function GoogleAuthButton({ label = 'Continue with Google', onError, onSe
                   return;
                 }
               }
-              const message =
-                err?.message ||
-                "Authentication failed. Please try again.";
+              const message = err?.message || "Authentication failed. Please try again.";
               if (onError) {
                 onError(message);
               } else {
@@ -111,19 +113,19 @@ export function GoogleAuthButton({ label = 'Continue with Google', onError, onSe
       transition={{ duration: 0.15 }}
       className="relative w-full flex items-center justify-center gap-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed overflow-hidden group"
       style={{
-        background: 'var(--surface-3)',
-        border: '1px solid var(--border-soft)',
-        color: 'var(--text-primary)',
+        background: "var(--surface-3)",
+        border: "1px solid var(--border-soft)",
+        color: "var(--text-primary)",
       }}
       onMouseEnter={(e) => {
         if (!isLoading) {
-          e.currentTarget.style.background = 'var(--surface-hover)';
-          e.currentTarget.style.borderColor = 'var(--border-medium)';
+          e.currentTarget.style.background = "var(--surface-hover)";
+          e.currentTarget.style.borderColor = "var(--border-medium)";
         }
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.background = 'var(--surface-3)';
-        e.currentTarget.style.borderColor = 'var(--border-soft)';
+        e.currentTarget.style.background = "var(--surface-3)";
+        e.currentTarget.style.borderColor = "var(--border-soft)";
       }}
     >
       {isLoading ? (

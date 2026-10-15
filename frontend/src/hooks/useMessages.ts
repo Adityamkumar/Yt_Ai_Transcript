@@ -1,10 +1,11 @@
-import { useQuery } from '@tanstack/react-query';
-import { messageService } from '@/services/message.service';
+import { useQuery } from "@tanstack/react-query";
+import { messageService } from "@/services/message.service";
 
 export function useMessages(conversationId: string | undefined) {
   const messagesQuery = useQuery({
-    queryKey: ['messages', conversationId],
-    queryFn: () => (conversationId ? messageService.getMessages(conversationId) : Promise.resolve([])),
+    queryKey: ["messages", conversationId],
+    queryFn: () =>
+      conversationId ? messageService.getMessages(conversationId) : Promise.resolve([]),
     enabled: !!conversationId,
   });
 
@@ -14,4 +15,3 @@ export function useMessages(conversationId: string | undefined) {
     isError: messagesQuery.isError,
   };
 }
-

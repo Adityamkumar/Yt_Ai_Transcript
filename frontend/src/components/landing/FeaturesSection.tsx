@@ -59,10 +59,9 @@ export function FeaturesSection() {
   return (
     <section
       id="features"
-      className="relative overflow-hidden border-t border-[var(--border-soft)] bg-[#07080c] pb-0 pt-24 sm:pt-32"
+      className="relative overflow-hidden border-t border(--border-soft) bg-[#07080c] pb-0 pt-24 sm:pt-32"
     >
       <div className="relative z-10">
-        
         {/* Section Header */}
         <div className="mx-auto mb-16 max-w-3xl px-4 text-center sm:px-6 lg:px-8">
           <motion.h2
@@ -70,12 +69,13 @@ export function FeaturesSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.05 }}
-            className="text-3xl font-semibold leading-[1.08] tracking-tight text-[var(--text-primary)] sm:text-4xl lg:text-4xl"
+            className="text-3xl font-semibold leading-[1.08] tracking-tight text(--text-primary) sm:text-4xl lg:text-4xl"
           >
             A calm structure for your files{" "}
-            <span className="font-serif italic font-normal text-[var(--accent)] leading-[1.2]">
+            <span className="font-serif italic font-normal text(--accent) leading-[1.2]">
               and conversations
-            </span>.
+            </span>
+            .
           </motion.h2>
 
           <motion.p
@@ -83,9 +83,10 @@ export function FeaturesSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="mt-5 text-sm leading-relaxed text-[var(--text-secondary)] sm:text-[15px]"
+            className="mt-5 text-sm leading-relaxed text(--text-secondary) sm:text-[15px]"
           >
-            Lumora streamlines material ingestion, analysis, and grounding. Experience the AI-native workspace architecture and real-time citation synchronization.
+            Lumora streamlines material ingestion, analysis, and grounding. Experience the AI-native
+            workspace architecture and real-time citation synchronization.
           </motion.p>
         </div>
 
@@ -93,9 +94,9 @@ export function FeaturesSection() {
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-60px' }}
+          viewport={{ once: true, margin: "-60px" }}
           transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          className="relative z-10 overflow-hidden border border-[var(--border-soft)] bg-[#07080c]"
+          className="relative z-10 overflow-hidden border border(--border-soft) bg-[#07080c]"
         >
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12">
             {features.map((feature, index) => (
@@ -122,12 +123,12 @@ const Feature = ({
   return (
     <div
       className={cn(
-        "group/feature relative flex min-h-[250px] flex-col overflow-hidden border-b border-r border-[var(--border-soft)] px-6 py-8 transition-colors duration-300 hover:bg-[rgba(157,165,255,0.035)] sm:px-8 lg:px-10",
+        "group/feature relative flex min-h-[250px] flex-col overflow-hidden border-b border-r border(--border-soft) px-6 py-8 transition-colors duration-300 hover:bg-[rgba(157,165,255,0.035)] sm:px-8 lg:px-10",
         index < 2 && "lg:col-span-6 lg:row-span-2 lg:min-h-[430px]",
         index >= 2 && "lg:col-span-4 lg:min-h-[210px]",
         index === 6 && "sm:border-b-0",
         index >= 5 && "lg:border-b-0",
-        index === 7 && "sm:border-b-0"
+        index === 7 && "sm:border-b-0",
       )}
     >
       {index < 2 && (
@@ -141,16 +142,14 @@ const Feature = ({
           className="bg-[rgba(157,165,255,0.45)] shadow-[0_0_0_1px_rgba(157,165,255,0.12)]"
         />
       )}
-      <div className="relative z-10 mb-8 text-[var(--text-secondary)]">
-        {icon}
-      </div>
+      <div className="relative z-10 mb-8 text(--text-secondary)">{icon}</div>
       <div className="relative z-10 mb-3 text-lg font-bold">
-        <div className="absolute -left-6 inset-y-0 h-6 w-0.5 bg-[var(--border-strong)] transition-all duration-200 group-hover/feature:h-8 group-hover/feature:bg-[var(--accent)] sm:-left-8 lg:-left-10" />
-        <span className="inline-block text-[var(--text-primary)] transition duration-200 group-hover/feature:translate-x-1">
+        <div className="absolute -left-6 inset-y-0 h-6 w-0.5 bg(--border-strong) transition-all duration-200 group-hover/feature:h-8 group-hover/feature:bg(--accent) sm:-left-8 lg:-left-10" />
+        <span className="inline-block text(--text-primary) transition duration-200 group-hover/feature:translate-x-1">
           {title}
         </span>
       </div>
-      <p className="relative z-10 max-w-xl text-sm leading-relaxed text-[var(--text-secondary)]">
+      <p className="relative z-10 max-w-xl text-sm leading-relaxed text(--text-secondary)">
         {description}
       </p>
     </div>

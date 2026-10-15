@@ -2,12 +2,12 @@ import axiosInstance, {
   EMAIL_NOT_VERIFIED_CODE,
   getApiBaseUrl,
   notifyEmailVerificationRequired,
-} from '@/lib/axios';
-import { AskQuestionPayload } from '@/types';
+} from "@/lib/axios";
+import { AskQuestionPayload } from "@/types";
 
 export const chatService = {
   askQuestion: async (payload: AskQuestionPayload) => {
-    const response = await axiosInstance.post('/api/v1/chat/ask', payload);
+    const response = await axiosInstance.post("/api/v1/chat/ask", payload);
     return response.data;
   },
 
@@ -19,28 +19,30 @@ export const chatService = {
     const url = `${getApiBaseUrl()}/api/v1/chat/ask`;
 
     const response = await fetch(url, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'text/plain',
+        "Content-Type": "application/json",
+        Accept: "text/plain",
       },
-      credentials: 'include',
+      credentials: "include",
       body: JSON.stringify({ ...payload, stream: true }),
       signal,
     });
 
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: 'Streaming failed' }));
+      const error = await response.json().catch(() => ({ message: "Streaming failed" }));
       if (error.code === EMAIL_NOT_VERIFIED_CODE) {
         notifyEmailVerificationRequired();
       }
-      const requestError = new Error(error.message || 'Streaming failed') as Error & { code?: string };
+      const requestError = new Error(error.message || "Streaming failed") as Error & {
+        code?: string;
+      };
       requestError.code = error.code;
       throw requestError;
     }
 
     const reader = response.body?.getReader();
-    if (!reader) throw new Error('No reader available');
+    if (!reader) throw new Error("No reader available");
 
     const decoder = new TextDecoder();
     try {
@@ -51,38 +53,32 @@ export const chatService = {
         onToken(chunk);
       }
     } catch (err: any) {
-      reader.cancel();
-      if (err?.name !== 'AbortError') throw err;
+      await reader.cancel().catch(() => undefined);
+      if (err?.name !== "AbortError") throw err;
     }
   },
 
   getFollowUpQuestions: async (
-  payload: {
-    question: string;
-    answer: string;
-    context?: string;
-    conversationId?: string;
-  },
-  signal?: AbortSignal,
-): Promise<string[]> => {
-  try {
-    const response = await axiosInstance.post(
-      "/api/v1/chat/followup",
-      payload,
-      { signal },
-    );
+    payload: {
+      question: string;
+      answer: string;
+      context?: string;
+      conversationId?: string;
+    },
+    signal?: AbortSignal,
+  ): Promise<string[]> => {
+    try {
+      const response = await axiosInstance.post("/api/v1/chat/followup", payload, { signal });
 
-    return response.data?.data?.followUpQuestions || [];
-  } catch (error: any) {
-    console.error("[FollowUp] Request failed:", error);
+      return response.data?.data?.followUpQuestions || [];
+    } catch (error: any) {
+      console.error("[FollowUp] Request failed:", error);
 
-    if (error?.name === "CanceledError" || error?.code === "ERR_CANCELED") {
-      console.log("[FollowUp] Request was cancelled by the caller.");
+      if (error?.name === "CanceledError" || error?.code === "ERR_CANCELED") {
+        console.log("[FollowUp] Request was cancelled by the caller.");
+      }
+
+      throw error;
     }
-
-    throw error;
-  }
-},
+  },
 };
-
-

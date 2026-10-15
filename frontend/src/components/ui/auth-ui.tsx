@@ -59,7 +59,7 @@ export function Typewriter({
           }
         }
       },
-      isDeleting ? deleteSpeed : speed
+      isDeleting ? deleteSpeed : speed,
     );
 
     return () => clearTimeout(timeout);
@@ -84,19 +84,14 @@ export function Typewriter({
 }
 
 const labelVariants = cva(
-  "text-xs font-medium text-[var(--text-secondary)] leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+  "text-xs font-medium text(--text-secondary) leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70",
 );
 
 export const Label = React.forwardRef<
   React.ElementRef<typeof LabelPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root> &
-    VariantProps<typeof labelVariants>
+  React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root> & VariantProps<typeof labelVariants>
 >(({ className, ...props }, ref) => (
-  <LabelPrimitive.Root
-    ref={ref}
-    className={cn(labelVariants(), className)}
-    {...props}
-  />
+  <LabelPrimitive.Root ref={ref} className={cn(labelVariants(), className)} {...props} />
 ));
 Label.displayName = LabelPrimitive.Root.displayName;
 
@@ -125,12 +120,11 @@ const buttonVariants = cva(
       variant: "default",
       size: "default",
     },
-  }
+  },
 );
 
 export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
   asChild?: boolean;
 }
 
@@ -138,13 +132,9 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, ...props }, ref) => {
     const Comp = asChild ? Slot : "button";
     return (
-      <Comp
-        className={cn(buttonVariants({ variant, size, className }))}
-        ref={ref}
-        {...props}
-      />
+      <Comp className={cn(buttonVariants({ variant, size, className }))} ref={ref} {...props} />
     );
-  }
+  },
 );
 Button.displayName = "Button";
 
@@ -155,13 +145,13 @@ export const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"in
         type={type}
         className={cn(
           "flex h-11 w-full rounded-xl border border-white/10 bg-white/[0.03] px-3.5 py-2.5 text-sm text-foreground shadow-sm shadow-black/10 transition-all placeholder:text-muted-foreground/60 focus:border-indigo-500/50 focus:bg-white/[0.06] focus:outline-none focus:ring-2 focus:ring-indigo-500/20 disabled:cursor-not-allowed disabled:opacity-50",
-          className
+          className,
         )}
         ref={ref}
         {...props}
       />
     );
-  }
+  },
 );
 Input.displayName = "Input";
 
@@ -201,7 +191,7 @@ export const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputPro
         </div>
       </div>
     );
-  }
+  },
 );
 PasswordInput.displayName = "PasswordInput";
 
@@ -219,7 +209,7 @@ export function AuthSplitLayout({
   quoteAuthor = "Lumora AI",
 }: AuthSplitLayoutProps) {
   return (
-    <div className="w-full min-h-screen grid lg:grid-cols-2 bg-[#08090c] text-[var(--text-primary)]">
+    <div className="w-full min-h-screen grid lg:grid-cols-2 bg-[#08090c] text(--text-primary)">
       <style>{`
         input[type="password"]::-ms-reveal,
         input[type="password"]::-ms-clear {
@@ -231,7 +221,10 @@ export function AuthSplitLayout({
       <div className="flex min-h-screen items-center justify-center p-6 lg:p-12 relative z-10">
         <div className="w-full max-w-[380px] space-y-6">
           <div className="flex flex-col items-center mb-6">
-            <Link to="/" className="inline-flex items-center gap-2 mb-2 hover:opacity-90 transition-opacity">
+            <Link
+              to="/"
+              className="inline-flex items-center gap-2 mb-2 hover:opacity-90 transition-opacity"
+            >
               <LumoraLogo size="md" />
             </Link>
           </div>
@@ -252,12 +245,7 @@ export function AuthSplitLayout({
           <blockquote className="max-w-md space-y-3">
             <p className="text-xl font-medium text-white/95 drop-shadow-md">
               “
-              <Typewriter
-                key={quoteText}
-                text={quoteText}
-                speed={50}
-              />
-              ”
+              <Typewriter key={quoteText} text={quoteText} speed={50} />”
             </p>
             <cite className="block text-sm font-light text-white/60 not-italic">
               — {quoteAuthor}

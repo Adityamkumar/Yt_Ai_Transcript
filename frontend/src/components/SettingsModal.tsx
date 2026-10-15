@@ -3,8 +3,6 @@ import {
   Settings,
   X,
   User,
-  Mail,
-  Shield,
   Trash2,
   Check,
   ChevronRight,
@@ -19,8 +17,6 @@ import {
   Download,
   MessageSquareOff,
   Files,
-  Image as ImageIcon,
-  Edit2,
   LogOut,
   LayoutDashboard,
   Loader2,
@@ -31,10 +27,7 @@ import { useNavigate } from "react-router-dom";
 import { DeleteAccountModal } from "./DeleteAccountModal";
 import { UserAvatar } from "@/components/auth/UserAvatar";
 import toast from "react-hot-toast";
-import {
-  settingsService,
-  type ResponseLanguage,
-} from "@/services/settings.service";
+import { settingsService, type ResponseLanguage } from "@/services/settings.service";
 import { authService } from "@/services/auth.service";
 import { EMAIL_NOT_VERIFIED_CODE } from "@/lib/axios";
 import { useResendEmailVerificationRateLimit } from "@/hooks/useResendEmailVerificationRateLimit";
@@ -146,9 +139,7 @@ const SettingRow = ({
       >
         {title}
       </p>
-      <p className="text-xs text-[var(--text-muted)] mt-0.5 leading-relaxed">
-        {description}
-      </p>
+      <p className="text-xs text-[var(--text-muted)] mt-0.5 leading-relaxed">{description}</p>
     </div>
     <div className="shrink-0">{children}</div>
   </div>
@@ -168,10 +159,7 @@ const SettingSelect = ({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
     };
@@ -232,9 +220,7 @@ const SettingSelect = ({
                   }`}
                 >
                   {opt.label}
-                  {value === opt.value && (
-                    <Check size={14} className="text-indigo-400" />
-                  )}
+                  {value === opt.value && <Check size={14} className="text-indigo-400" />}
                 </button>
               ))}
             </div>
@@ -270,14 +256,8 @@ const SettingAction = ({
 function ProfileTab({ user, onShowDeleteModal }: any) {
   const isGoogle = user?.provider === "google";
   const navigate = useNavigate();
-  const {
-    resendState,
-    cooldownSeconds,
-    isDisabled,
-    setLoading,
-    reset,
-    handleRateLimitError,
-  } = useResendEmailVerificationRateLimit();
+  const { resendState, cooldownSeconds, isDisabled, setLoading, reset, handleRateLimitError } =
+    useResendEmailVerificationRateLimit();
 
   const handleVerifyEmail = async () => {
     if (!user?.email || isDisabled) return;
@@ -285,14 +265,12 @@ function ProfileTab({ user, onShowDeleteModal }: any) {
     setLoading();
     try {
       await authService.resendEmailVerification(user.email);
-      navigate("/verify-email", {
+      void navigate("/verify-email", {
         state: { email: user.email, resendCooldownUntil: Date.now() + 60_000 },
       });
     } catch (error) {
       if (!handleRateLimitError(error)) {
-        toast.error(
-          "We couldn't send another verification email. Please try again.",
-        );
+        toast.error("We couldn't send another verification email. Please try again.");
         reset();
       }
     }
@@ -306,15 +284,9 @@ function ProfileTab({ user, onShowDeleteModal }: any) {
         </h3>
 
         <div className="flex items-center gap-4 mb-6">
-          <UserAvatar
-            name={user?.name || "Guest"}
-            avatar={user?.avatar}
-            size={64}
-          />
+          <UserAvatar name={user?.name || "Guest"} avatar={user?.avatar} size={64} />
           <div>
-            <p className="text-lg font-semibold text-white">
-              {user?.name || "Guest"}
-            </p>
+            <p className="text-lg font-semibold text-white">{user?.name || "Guest"}</p>
             <p className="text-sm text-[var(--text-muted)]">{user?.email}</p>
             <button className="mt-2 text-xs font-medium text-indigo-400 hover:text-indigo-300 transition-colors">
               Change avatar
@@ -325,12 +297,8 @@ function ProfileTab({ user, onShowDeleteModal }: any) {
         <div className="rounded-xl border border-[var(--border-soft)] bg-[var(--surface-3)] px-5">
           <div className="flex items-center justify-between py-4 border-b border-white/[0.04]">
             <div>
-              <p className="text-xs text-[var(--text-muted)] mb-1">
-                Display name
-              </p>
-              <p className="text-sm font-medium text-white">
-                {user?.name || "Guest"}
-              </p>
+              <p className="text-xs text-[var(--text-muted)] mb-1">Display name</p>
+              <p className="text-sm font-medium text-white">{user?.name || "Guest"}</p>
             </div>
             <button className="text-sm font-medium text-indigo-400 hover:text-indigo-300 transition-colors">
               Edit
@@ -339,9 +307,7 @@ function ProfileTab({ user, onShowDeleteModal }: any) {
 
           <div className="flex items-center justify-between py-4">
             <div>
-              <p className="text-xs text-[var(--text-muted)] mb-1">
-                Email address
-              </p>
+              <p className="text-xs text-[var(--text-muted)] mb-1">Email address</p>
               <div className="flex flex-wrap items-center gap-2">
                 <p className="text-sm font-medium text-white">{user?.email}</p>
                 {user?.isEmailVerified ? (
@@ -363,9 +329,7 @@ function ProfileTab({ user, onShowDeleteModal }: any) {
                     disabled={isDisabled}
                     className="mt-2 text-xs font-medium text-indigo-400 transition-colors hover:text-indigo-300 disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    {resendState === "loading"
-                      ? "Sending verification email..."
-                      : "Verify email"}
+                    {resendState === "loading" ? "Sending verification email..." : "Verify email"}
                   </button>
                   {resendState === "cooldown" && (
                     <p className="mt-1 text-xs text-[var(--text-muted)]">
@@ -373,12 +337,8 @@ function ProfileTab({ user, onShowDeleteModal }: any) {
                     </p>
                   )}
                   {resendState === "hourly_limit" && (
-                    <p
-                      className="mt-1 text-xs font-medium"
-                      style={{ color: "#ff4d4f" }}
-                    >
-                      Too many Email verification attempts. Please try again in
-                      1 hour.
+                    <p className="mt-1 text-xs font-medium" style={{ color: "#ff4d4f" }}>
+                      Too many Email verification attempts. Please try again in 1 hour.
                     </p>
                   )}
                 </div>
@@ -409,8 +369,7 @@ function ProfileTab({ user, onShowDeleteModal }: any) {
                   Delete your account
                 </p>
                 <p className="mt-1.5 max-w-md text-xs leading-5 text-[var(--text-muted)]">
-                  Permanently remove your profile and all data associated with
-                  it.
+                  Permanently remove your profile and all data associated with it.
                 </p>
               </div>
             </div>
@@ -619,10 +578,7 @@ function WorkspaceTab({ prefs, updatePref }: any) {
 
 function SecurityTab({ onClose }: { onClose?: () => void }) {
   const { logoutAllDevices, user } = useAuth();
-  const [error, setError] = useState<string | null>(null);
-  const [revokingSessionId, setRevokingSessionId] = useState<string | null>(
-    null,
-  );
+  const [revokingSessionId, setRevokingSessionId] = useState<string | null>(null);
   const [isSigningOutAll, setIsSigningOutAll] = useState(false);
   const queryClient = useQueryClient();
   const userId = user?.id;
@@ -635,7 +591,7 @@ function SecurityTab({ onClose }: { onClose?: () => void }) {
     queryKey: ["sessions", userId],
     queryFn: authService.getActiveSessions,
     staleTime: 60 * 1000,
-    enabled:Boolean(userId)
+    enabled: Boolean(userId),
   });
 
   const handleLogoutSession = async (sessionId: string) => {
@@ -648,16 +604,12 @@ function SecurityTab({ onClose }: { onClose?: () => void }) {
 
       queryClient.setQueryData<Session[]>(
         ["sessions", userId],
-        (currentSessions) =>
-          currentSessions?.filter((session) => session._id !== sessionId) ?? [],
+        (currentSessions) => currentSessions?.filter((session) => session._id !== sessionId) ?? [],
       );
 
       toast.success("Session signed out successfully");
     } catch (err: any) {
-      const msg =
-        err?.message ||
-        err?.response?.data?.message ||
-        "Failed to sign out session";
+      const msg = err?.message || err?.response?.data?.message || "Failed to sign out session";
 
       toast.error(msg);
     } finally {
@@ -677,9 +629,7 @@ function SecurityTab({ onClose }: { onClose?: () => void }) {
       toast.success("Signed out of all devices");
     } catch (err: any) {
       const msg =
-        err?.message ||
-        err?.response?.data?.message ||
-        "Failed to sign out of all devices";
+        err?.message || err?.response?.data?.message || "Failed to sign out of all devices";
       toast.error(msg);
       setIsSigningOutAll(false);
     }
@@ -696,9 +646,13 @@ function SecurityTab({ onClose }: { onClose?: () => void }) {
             <div className="flex items-center justify-center py-12">
               <Loader2 size={24} className="animate-spin text-indigo-400" />
             </div>
-          ) : error && sessions.length === 0 ? (
+          ) : sessionsError && sessions.length === 0 ? (
             <div className="p-8 text-center">
-              <p className="text-sm text-red-400">{error}</p>
+              <p className="text-sm text-red-400">
+                {sessionsError instanceof Error
+                  ? sessionsError.message
+                  : "Failed to load active sessions"}
+              </p>
               <button
                 type="button"
                 onClick={() => refetch()}
@@ -723,11 +677,7 @@ function SecurityTab({ onClose }: { onClose?: () => void }) {
               const deviceType = getUserAgentDeviceType(session.userAgent);
               const isRevoking = revokingSessionId === session._id;
               const DeviceIcon =
-                deviceType === "mobile"
-                  ? Smartphone
-                  : deviceType === "tablet"
-                    ? Tablet
-                    : Monitor;
+                deviceType === "mobile" ? Smartphone : deviceType === "tablet" ? Tablet : Monitor;
 
               return (
                 <div
@@ -740,9 +690,7 @@ function SecurityTab({ onClose }: { onClose?: () => void }) {
                     </div>
                     <div className="min-w-0 flex-1 space-y-1">
                       <div className="flex flex-wrap items-center gap-2">
-                        <p className="truncate text-sm font-medium text-white">
-                          {deviceName}
-                        </p>
+                        <p className="truncate text-sm font-medium text-white">{deviceName}</p>
                         {session.isCurrent && (
                           <span className="inline-flex shrink-0 items-center rounded-full border border-indigo-400/25 bg-indigo-400/10 px-2 py-0.5 text-[10px] font-medium text-indigo-200">
                             Current session
@@ -751,18 +699,10 @@ function SecurityTab({ onClose }: { onClose?: () => void }) {
                       </div>
                       <p className="text-xs text-[var(--text-muted)]">
                         {session.provider === "google" ? "Google" : "Email"} •{" "}
-                        {relativeTime
-                          ? `Signed in ${relativeTime}`
-                          : "Active session"}
+                        {relativeTime ? `Signed in ${relativeTime}` : "Active session"}
                       </p>
-                      <p className="text-xs text-[var(--text-muted)]">
-                        {signedInAt}
-                      </p>
-                      {location && (
-                        <p className="text-xs text-[var(--text-muted)]">
-                          {location}
-                        </p>
-                      )}
+                      <p className="text-xs text-[var(--text-muted)]">{signedInAt}</p>
+                      {location && <p className="text-xs text-[var(--text-muted)]">{location}</p>}
                     </div>
                   </div>
                   {!session.isCurrent && (
@@ -845,11 +785,7 @@ function DataTab() {
             title="Clear Chat History"
             description="This permanently removes your conversations."
           >
-            <SettingAction
-              icon={MessageSquareOff}
-              label="Clear History"
-              danger
-            />
+            <SettingAction icon={MessageSquareOff} label="Clear History" danger />
           </SettingRow>
           <SettingRow
             title="Delete All Documents"
@@ -894,8 +830,7 @@ export function SettingsModal({ isOpen, onClose }: Props) {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [activeTab, setActiveTab] = useState<TabId>("profile");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(true);
-  const [isUpdatingResponseLanguage, setIsUpdatingResponseLanguage] =
-    useState(false);
+  const [isUpdatingResponseLanguage, setIsUpdatingResponseLanguage] = useState(false);
 
   // Other settings remain local-only until their backend integrations are added.
   const [prefs, setPrefs] = useState({
@@ -926,10 +861,7 @@ export function SettingsModal({ isOpen, onClose }: Props) {
   }, [user?.id, user?.preferences?.responseLanguage]);
 
   const updateResponseLanguage = async (responseLanguage: string) => {
-    if (
-      responseLanguage === prefs.responseLanguage ||
-      isUpdatingResponseLanguage
-    ) {
+    if (responseLanguage === prefs.responseLanguage || isUpdatingResponseLanguage) {
       return;
     }
 
@@ -949,11 +881,7 @@ export function SettingsModal({ isOpen, onClose }: Props) {
     } catch (error) {
       setPrefs((p) => ({ ...p, responseLanguage: previousResponseLanguage }));
       if ((error as { code?: string })?.code !== EMAIL_NOT_VERIFIED_CODE) {
-        toast.error(
-          error instanceof Error
-            ? error.message
-            : "Failed to update response language",
-        );
+        toast.error(error instanceof Error ? error.message : "Failed to update response language");
       }
     } finally {
       setIsUpdatingResponseLanguage(false);
@@ -1038,60 +966,51 @@ export function SettingsModal({ isOpen, onClose }: Props) {
                 <div className="hidden items-center justify-between px-6 py-6 sm:flex">
                   <div>
                     <h2 className="flex items-center gap-2 text-base font-semibold text-white">
-                      <Settings
-                        size={16}
-                        className="text-[var(--text-muted)]"
-                      />
+                      <Settings size={16} className="text-[var(--text-muted)]" />
                       Settings
                     </h2>
                   </div>
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-4 sm:px-4 sm:py-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
-                  {Object.entries(categories).map(
-                    ([category, categoryTabs]) => (
-                      <div key={category} className="mb-6 last:mb-0">
-                        <h4 className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)]/70">
-                          {category}
-                        </h4>
-                        <div className="space-y-0.5">
-                          {categoryTabs.map((tab) => {
-                            const isActive = activeTab === tab.id;
-                            return (
-                              <button
-                                key={tab.id}
-                                onClick={() => {
-                                  setActiveTab(tab.id);
-                                  setIsMobileMenuOpen(false);
-                                }}
-                                className={`flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
-                                  isActive
-                                    ? "bg-white/10 text-white shadow-sm"
-                                    : "text-[var(--text-muted)] hover:bg-white/[0.04] hover:text-white"
-                                }`}
-                              >
-                                <div className="flex items-center gap-3">
-                                  <tab.icon
-                                    size={16}
-                                    className={
-                                      isActive
-                                        ? "text-indigo-400"
-                                        : "text-white/40"
-                                    }
-                                  />
-                                  {tab.label}
-                                </div>
-                                <ChevronRight
-                                  size={14}
-                                  className={`sm:hidden ${isActive ? "text-white/60" : "text-transparent"}`}
+                  {Object.entries(categories).map(([category, categoryTabs]) => (
+                    <div key={category} className="mb-6 last:mb-0">
+                      <h4 className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)]/70">
+                        {category}
+                      </h4>
+                      <div className="space-y-0.5">
+                        {categoryTabs.map((tab) => {
+                          const isActive = activeTab === tab.id;
+                          return (
+                            <button
+                              key={tab.id}
+                              onClick={() => {
+                                setActiveTab(tab.id);
+                                setIsMobileMenuOpen(false);
+                              }}
+                              className={`flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
+                                isActive
+                                  ? "bg-white/10 text-white shadow-sm"
+                                  : "text-[var(--text-muted)] hover:bg-white/[0.04] hover:text-white"
+                              }`}
+                            >
+                              <div className="flex items-center gap-3">
+                                <tab.icon
+                                  size={16}
+                                  className={isActive ? "text-indigo-400" : "text-white/40"}
                                 />
-                              </button>
-                            );
-                          })}
-                        </div>
+                                {tab.label}
+                              </div>
+                              <ChevronRight
+                                size={14}
+                                className={`sm:hidden ${isActive ? "text-white/60" : "text-transparent"}`}
+                              />
+                            </button>
+                          );
+                        })}
                       </div>
-                    ),
-                  )}
+                    </div>
+                  ))}
                 </div>
               </div>
 
@@ -1102,9 +1021,7 @@ export function SettingsModal({ isOpen, onClose }: Props) {
                 {/* Desktop Content Header */}
                 <div className="hidden shrink-0 items-center justify-between border-b border-[var(--border-soft)] px-8 py-5 sm:flex">
                   <div>
-                    <h2 className="text-lg font-semibold text-white">
-                      {activeTabDef?.label}
-                    </h2>
+                    <h2 className="text-lg font-semibold text-white">{activeTabDef?.label}</h2>
                   </div>
                   <button
                     onClick={onClose}
@@ -1116,9 +1033,7 @@ export function SettingsModal({ isOpen, onClose }: Props) {
 
                 {/* Mobile Content Header */}
                 <div className="flex shrink-0 items-center justify-between border-b border-[var(--border-soft)] px-5 py-4 sm:hidden">
-                  <h2 className="text-base font-semibold text-white">
-                    {activeTabDef?.label}
-                  </h2>
+                  <h2 className="text-base font-semibold text-white">{activeTabDef?.label}</h2>
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-5 sm:p-8 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
@@ -1139,15 +1054,11 @@ export function SettingsModal({ isOpen, onClose }: Props) {
                         updateResponseLanguage={updateResponseLanguage}
                       />
                     )}
-                    {activeTab === "ai" && (
-                      <AiTab prefs={prefs} updatePref={updatePref} />
-                    )}
+                    {activeTab === "ai" && <AiTab prefs={prefs} updatePref={updatePref} />}
                     {activeTab === "workspace" && (
                       <WorkspaceTab prefs={prefs} updatePref={updatePref} />
                     )}
-                    {activeTab === "security" && (
-                      <SecurityTab onClose={onClose} />
-                    )}
+                    {activeTab === "security" && <SecurityTab onClose={onClose} />}
                     {activeTab === "data" && <DataTab />}
                   </div>
                 </div>
@@ -1157,10 +1068,7 @@ export function SettingsModal({ isOpen, onClose }: Props) {
         )}
       </AnimatePresence>
 
-      <DeleteAccountModal
-        isOpen={showDeleteModal}
-        onClose={() => setShowDeleteModal(false)}
-      />
+      <DeleteAccountModal isOpen={showDeleteModal} onClose={() => setShowDeleteModal(false)} />
     </>
   );
 }

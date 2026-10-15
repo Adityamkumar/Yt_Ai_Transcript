@@ -2,7 +2,7 @@ import { useState, useCallback, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { messageService } from "@/services/message.service";
 import { pdfService } from "@/services/pdf.service";
-import { IMessage, MessageType, MessageRole } from "@/types";
+import { IMessage, MessageType } from "@/types";
 import { WorkspaceAction } from "@/components/workspace-actions/workspaceActionConfig";
 
 export function usePdfChat(conversationId: string | undefined, documentId: string | undefined) {
@@ -26,15 +26,22 @@ export function usePdfChat(conversationId: string | undefined, documentId: strin
       .trim();
   }, []);
 
-
   const sendMessage = useCallback(
-    async (content: string, source?: 'user' | 'suggested_question') => {
+    async (content: string, source?: "user" | "suggested_question") => {
       if (!conversationId || !documentId || isStreaming) return;
 
-      const isNotesIntent = /create notes|generate notes|make notes|structured notes/i.test(content);
-      const isSummaryIntent = /summarize this document|key highlights|document summary/i.test(content);
-      
-      const messageType: MessageType = isNotesIntent ? "notes" : isSummaryIntent ? "summary" : "chat";
+      const isNotesIntent = /create notes|generate notes|make notes|structured notes/i.test(
+        content,
+      );
+      const isSummaryIntent = /summarize this document|key highlights|document summary/i.test(
+        content,
+      );
+
+      const messageType: MessageType = isNotesIntent
+        ? "notes"
+        : isSummaryIntent
+          ? "summary"
+          : "chat";
 
       const tempId = `temp-${Date.now()}`;
       const tempUserMsg: IMessage = {
@@ -64,21 +71,21 @@ export function usePdfChat(conversationId: string | undefined, documentId: strin
           "user",
           content,
           messageType,
-          source
+          source,
         );
 
         queryClient.setQueryData(["messages", conversationId], (old: IMessage[] = []) =>
-          old.map(m => (m._id === tempId ? { ...userMsg, clientId: tempId } : m))
+          old.map((m) => (m._id === tempId ? { ...userMsg, clientId: tempId } : m)),
         );
 
         const history: IMessage[] = queryClient.getQueryData(["messages", conversationId]) || [];
-        const recentMessages = history.slice(-10).map(m => ({
+        const recentMessages = history.slice(-10).map((m) => ({
           role: m.role,
-          content: m.content
+          content: m.content,
         }));
 
         let fullResponse = "";
-        
+
         if (messageType === "notes" || messageType === "summary") {
           const response = await pdfService.askQuestion({
             documentId,
@@ -108,10 +115,16 @@ export function usePdfChat(conversationId: string | undefined, documentId: strin
         fullResponse = sanitizePdfChatResponse(fullResponse, messageType);
 
         if (!fullResponse.trim()) {
-          fullResponse = "I'm sorry, I encountered an issue while generating a response. Please try again.";
+          fullResponse =
+            "I'm sorry, I encountered an issue while generating a response. Please try again.";
         }
 
-        const assistantMsg = await messageService.createMessage(conversationId, "assistant", fullResponse, messageType);
+        const assistantMsg = await messageService.createMessage(
+          conversationId,
+          "assistant",
+          fullResponse,
+          messageType,
+        );
 
         queryClient.setQueryData(["messages", conversationId], (old: IMessage[] = []) => [
           ...old,
@@ -125,58 +138,68 @@ export function usePdfChat(conversationId: string | undefined, documentId: strin
         setStreamingMessage("");
       }
     },
-    [conversationId, documentId, isStreaming, queryClient]
+    [conversationId, documentId, isStreaming, queryClient],
   );
 
-  const generateNotes = useCallback(
-    async () => {
-      if (!conversationId || !documentId || isStreaming) return;
-      try {
-        setIsStreaming(true);
-        setIsNotesRequest(true);
-        setStreamingMessage("");
-        const response = await pdfService.askQuestion({
-          documentId,
-          question: "Generate complete structured educational notes for this document.",
-          recentMessages: [],
-          type: "notes",
-        });
-        const assistantMsg = await messageService.createMessage(conversationId, "assistant", response.data, "notes");
-        queryClient.setQueryData(["messages", conversationId], (old: IMessage[] = []) => [...old, assistantMsg]);
-        setStreamingMessage("");
-      } catch (error) {
-        console.error("PDF notes generation error:", error);
-      } finally {
-        setIsStreaming(false);
-      }
-    },
-    [conversationId, documentId, isStreaming, queryClient]
-  );
+  const generateNotes = useCallback(async () => {
+    if (!conversationId || !documentId || isStreaming) return;
+    try {
+      setIsStreaming(true);
+      setIsNotesRequest(true);
+      setStreamingMessage("");
+      const response = await pdfService.askQuestion({
+        documentId,
+        question: "Generate complete structured educational notes for this document.",
+        recentMessages: [],
+        type: "notes",
+      });
+      const assistantMsg = await messageService.createMessage(
+        conversationId,
+        "assistant",
+        response.data,
+        "notes",
+      );
+      queryClient.setQueryData(["messages", conversationId], (old: IMessage[] = []) => [
+        ...old,
+        assistantMsg,
+      ]);
+      setStreamingMessage("");
+    } catch (error) {
+      console.error("PDF notes generation error:", error);
+    } finally {
+      setIsStreaming(false);
+    }
+  }, [conversationId, documentId, isStreaming, queryClient]);
 
-  const generateSummary = useCallback(
-    async () => {
-      if (!conversationId || !documentId || isStreaming) return;
-      try {
-        setIsStreaming(true);
-        setIsNotesRequest(false);
-        setStreamingMessage("");
-        const response = await pdfService.askQuestion({
-          documentId,
-          question: "Provide a quick summary of this document with key highlights.",
-          recentMessages: [],
-          type: "summary",
-        });
-        const assistantMsg = await messageService.createMessage(conversationId, "assistant", response.data, "summary");
-        queryClient.setQueryData(["messages", conversationId], (old: IMessage[] = []) => [...old, assistantMsg]);
-        setStreamingMessage("");
-      } catch (error) {
-        console.error("PDF summary generation error:", error);
-      } finally {
-        setIsStreaming(false);
-      }
-    },
-    [conversationId, documentId, isStreaming, queryClient]
-  );
+  const generateSummary = useCallback(async () => {
+    if (!conversationId || !documentId || isStreaming) return;
+    try {
+      setIsStreaming(true);
+      setIsNotesRequest(false);
+      setStreamingMessage("");
+      const response = await pdfService.askQuestion({
+        documentId,
+        question: "Provide a quick summary of this document with key highlights.",
+        recentMessages: [],
+        type: "summary",
+      });
+      const assistantMsg = await messageService.createMessage(
+        conversationId,
+        "assistant",
+        response.data,
+        "summary",
+      );
+      queryClient.setQueryData(["messages", conversationId], (old: IMessage[] = []) => [
+        ...old,
+        assistantMsg,
+      ]);
+      setStreamingMessage("");
+    } catch (error) {
+      console.error("PDF summary generation error:", error);
+    } finally {
+      setIsStreaming(false);
+    }
+  }, [conversationId, documentId, isStreaming, queryClient]);
 
   const editMessage = useCallback(
     async (messageId: string, newContent: string) => {
@@ -189,15 +212,15 @@ export function usePdfChat(conversationId: string | undefined, documentId: strin
         const updatedMsg = await messageService.updateMessage(messageId, newContent);
 
         queryClient.setQueryData(["messages", conversationId], (old: IMessage[] = []) => {
-          const index = old.findIndex(m => m._id === messageId);
+          const index = old.findIndex((m) => m._id === messageId);
           if (index === -1) return old;
           return [...old.slice(0, index), updatedMsg];
         });
 
         const history: IMessage[] = queryClient.getQueryData(["messages", conversationId]) || [];
-        const recentMessages = history.slice(-10).map(m => ({
+        const recentMessages = history.slice(-10).map((m) => ({
           role: m.role,
-          content: m.content
+          content: m.content,
         }));
 
         let fullResponse = "";
@@ -217,7 +240,11 @@ export function usePdfChat(conversationId: string | undefined, documentId: strin
         );
 
         fullResponse = sanitizePdfChatResponse(fullResponse, "chat");
-        const assistantMsg = await messageService.createMessage(conversationId, "assistant", fullResponse);
+        const assistantMsg = await messageService.createMessage(
+          conversationId,
+          "assistant",
+          fullResponse,
+        );
 
         queryClient.setQueryData(["messages", conversationId], (old: IMessage[] = []) => [
           ...old,
@@ -231,7 +258,7 @@ export function usePdfChat(conversationId: string | undefined, documentId: strin
         setStreamingMessage("");
       }
     },
-    [conversationId, documentId, isStreaming, queryClient]
+    [conversationId, documentId, isStreaming, queryClient],
   );
 
   const triggerAction = useCallback(
@@ -267,7 +294,7 @@ export function usePdfChat(conversationId: string | undefined, documentId: strin
 
         const userMsg = await messageService.createMessage(conversationId, "user", action.prompt);
         queryClient.setQueryData(["messages", conversationId], (old: IMessage[] = []) =>
-          old.map(m => (m._id === tempId ? { ...userMsg, clientId: tempId } : m))
+          old.map((m) => (m._id === tempId ? { ...userMsg, clientId: tempId } : m)),
         );
 
         const response = await pdfService.askQuestion({
@@ -292,13 +319,11 @@ export function usePdfChat(conversationId: string | undefined, documentId: strin
           assistantMsg,
         ]);
         setStreamingMessage("");
-      } catch (error) {
-        throw error;
       } finally {
         setIsStreaming(false);
       }
     },
-    [conversationId, documentId, isStreaming, queryClient, sendMessage]
+    [conversationId, documentId, isStreaming, queryClient, sendMessage],
   );
 
   return {
@@ -313,4 +338,3 @@ export function usePdfChat(conversationId: string | undefined, documentId: strin
     isNotesRequest,
   };
 }
-

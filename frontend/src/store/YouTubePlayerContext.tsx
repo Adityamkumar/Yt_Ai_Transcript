@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback } from 'react';
+import { createContext, useContext, useState, useCallback } from "react";
 
 interface YouTubePlayerState {
   isOpen: boolean;
@@ -21,7 +21,7 @@ export function YouTubePlayerProvider({ children }: { children: React.ReactNode 
   const [state, setState] = useState<YouTubePlayerState>({
     isOpen: false,
     isMinimized: false,
-    videoId: '',
+    videoId: "",
     startSeconds: 0,
   });
 
@@ -30,7 +30,7 @@ export function YouTubePlayerProvider({ children }: { children: React.ReactNode 
   }, []);
 
   const closePlayer = useCallback(() => {
-    setState({ isOpen: false, isMinimized: false, videoId: '', startSeconds: 0 });
+    setState({ isOpen: false, isMinimized: false, videoId: "", startSeconds: 0 });
   }, []);
 
   const minimizePlayer = useCallback(() => {
@@ -42,7 +42,9 @@ export function YouTubePlayerProvider({ children }: { children: React.ReactNode 
   }, []);
 
   return (
-    <YouTubePlayerContext.Provider value={{ state, openPlayer, closePlayer, minimizePlayer, expandPlayer }}>
+    <YouTubePlayerContext.Provider
+      value={{ state, openPlayer, closePlayer, minimizePlayer, expandPlayer }}
+    >
       {children}
     </YouTubePlayerContext.Provider>
   );
@@ -51,7 +53,7 @@ export function YouTubePlayerProvider({ children }: { children: React.ReactNode 
 export function useYouTubePlayer() {
   const context = useContext(YouTubePlayerContext);
   if (!context) {
-    throw new Error('useYouTubePlayer must be used within a YouTubePlayerProvider');
+    throw new Error("useYouTubePlayer must be used within a YouTubePlayerProvider");
   }
   return context;
 }

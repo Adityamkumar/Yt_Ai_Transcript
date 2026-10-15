@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect } from "react";
 
 type KeyCombo = {
   key: string;
@@ -26,8 +26,7 @@ export function useKeyboardShortcut(combo: KeyCombo, callback: () => void) {
       }
     };
 
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
   }, [combo, callback]);
 }
-

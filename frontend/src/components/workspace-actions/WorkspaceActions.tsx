@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from "react";
 import {
   BrainCircuit,
   CheckCircle2,
@@ -9,8 +9,8 @@ import {
   ListChecks,
   Sparkles,
   Wand2,
-} from 'lucide-react';
-import { WORKSPACE_ACTIONS, WorkspaceAction } from './workspaceActionConfig';
+} from "lucide-react";
+import { WORKSPACE_ACTIONS, WorkspaceAction } from "./workspaceActionConfig";
 
 const iconMap: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
   FileText,
@@ -38,8 +38,8 @@ export function WorkspaceActions({ onAction, disabled = false }: WorkspaceAction
         setOpen(false);
       }
     };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
   }, [open]);
 
   const handleSelect = (action: WorkspaceAction) => {
@@ -61,7 +61,7 @@ export function WorkspaceActions({ onAction, disabled = false }: WorkspaceAction
         <span className="hidden sm:inline">AI Tools</span>
         <ChevronDown
           size={13}
-          className={`text-[var(--text-muted)] transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+          className={`text-[var(--text-muted)] transition-transform duration-200 ${open ? "rotate-180" : ""}`}
         />
       </button>
 
@@ -98,4 +98,3 @@ export function WorkspaceActions({ onAction, disabled = false }: WorkspaceAction
     </div>
   );
 }
-

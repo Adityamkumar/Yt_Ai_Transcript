@@ -1,22 +1,24 @@
-import axiosInstance, { getApiBaseUrl } from '@/lib/axios';
-import type { Session, ApiResponse } from '@/types';
+import axiosInstance, { getApiBaseUrl } from "@/lib/axios";
+import type { Session, ApiResponse } from "@/types";
 
 const BASE_URL = getApiBaseUrl();
 
 export const authService = {
-
   getCurrentUser: async () => {
-    const response = await axiosInstance.get('/api/v1/user/current-user');
+    const response = await axiosInstance.get("/api/v1/user/current-user");
     return response.data.user;
   },
 
   getActiveSessions: async (): Promise<Session[]> => {
-    const response = await axiosInstance.get<ApiResponse<{ sessions: Session[] }>>('/api/v1/user/sessions');
+    const response =
+      await axiosInstance.get<ApiResponse<{ sessions: Session[] }>>("/api/v1/user/sessions");
     return response.data.data.sessions;
   },
 
   logoutSession: async (sessionId: string): Promise<ApiResponse<null>> => {
-    const response = await axiosInstance.post<ApiResponse<null>>(`/api/v1/user/sessions/${sessionId}/logout`);
+    const response = await axiosInstance.post<ApiResponse<null>>(
+      `/api/v1/user/sessions/${sessionId}/logout`,
+    );
     return response.data;
   },
 
@@ -29,7 +31,7 @@ export const authService = {
       {},
       {
         headers: {
-          'X-Session-Management-Token': sessionManagementToken,
+          "X-Session-Management-Token": sessionManagementToken,
         },
       },
     );
@@ -37,23 +39,22 @@ export const authService = {
   },
 
   logoutAllDevices: async (): Promise<{ message: string }> => {
-    const response = await axiosInstance.post<{ message: string }>('/api/v1/user/logout-all');
+    const response = await axiosInstance.post<{ message: string }>("/api/v1/user/logout-all");
     return response.data;
   },
 
-
   loginWithGoogle: () => {
-    sessionStorage.setItem('oauth_pending', 'true');
+    sessionStorage.setItem("oauth_pending", "true");
     window.location.href = `${BASE_URL}/api/v1/user/google`;
   },
 
   verifyGoogleCode: async (code: string) => {
-    const response = await axiosInstance.post('/api/v1/user/google/verify', { code });
+    const response = await axiosInstance.post("/api/v1/user/google/verify", { code });
     return response.data.user;
   },
 
   forgotPassword: async (email: string) => {
-    const response = await axiosInstance.post('/api/v1/user/forgot-password', { email });
+    const response = await axiosInstance.post("/api/v1/user/forgot-password", { email });
     return response.data;
   },
 
@@ -68,12 +69,14 @@ export const authService = {
   },
 
   verifyEmail: async (token: string) => {
-    const response = await axiosInstance.get(`/api/v1/user/verify-email/${encodeURIComponent(token)}`);
+    const response = await axiosInstance.get(
+      `/api/v1/user/verify-email/${encodeURIComponent(token)}`,
+    );
     return response.data;
   },
 
   resendEmailVerification: async (email: string) => {
-    const response = await axiosInstance.post('/api/v1/user/resend-email-verification', { email });
+    const response = await axiosInstance.post("/api/v1/user/resend-email-verification", { email });
     return response.data;
   },
 };

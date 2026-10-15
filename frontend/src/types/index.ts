@@ -10,7 +10,7 @@ export interface User {
   name: string;
   email: string;
   avatar?: string;
-  provider?: 'local' | 'google';
+  provider?: "local" | "google";
   createdAt: string;
   updatedAt: string;
 }
@@ -18,7 +18,7 @@ export interface User {
 export interface Session {
   _id: string;
   userAgent?: string;
-  provider: 'local' | 'google';
+  provider: "local" | "google";
   createdAt: string;
   expiresAt: string;
   isCurrent: boolean;
@@ -34,7 +34,6 @@ export interface PreAuthSessionManagementData {
   sessions: Session[];
 }
 
-
 export interface ITranscriptChunk {
   text: string;
   start: number;
@@ -49,12 +48,12 @@ export interface VideoData {
   title: string;
   createdAt: string;
   updatedAt: string;
-  ragStatus:string;
-  status:string;
+  ragStatus: string;
+  status: string;
 }
 
-export type MessageRole = 'user' | 'assistant';
-export type MessageType = 'chat' | 'notes' | 'summary';
+export type MessageRole = "user" | "assistant";
+export type MessageType = "chat" | "notes" | "summary";
 
 export interface IMessage {
   _id: string;
@@ -64,7 +63,7 @@ export interface IMessage {
   type: MessageType;
   content: string;
   suggestedQuestions?: string[];
-  source?: 'user' | 'suggested_question';
+  source?: "user" | "suggested_question";
   createdAt: string;
   updatedAt: string;
 }
@@ -85,7 +84,6 @@ export interface PdfDocument {
   createdAt: string;
   updatedAt: string;
 }
-
 
 export interface IConversation {
   _id: string;
@@ -132,7 +130,7 @@ export interface AskQuestionPayload {
   type?: MessageType;
 }
 
-export type AppState = 'idle' | 'extracting' | 'ready' | 'error';
+export type AppState = "idle" | "extracting" | "ready" | "error";
 
 export interface NotesResponse {
   title: string;
