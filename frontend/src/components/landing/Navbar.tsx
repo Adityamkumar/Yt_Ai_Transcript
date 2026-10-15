@@ -33,14 +33,14 @@ function UserDropdown({ name, email, avatar, onLogout, onClose }: UserDropdownPr
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: 8, scale: 0.96 }}
       transition={{ duration: 0.18, ease: "easeOut" }}
-      className="absolute top-full right-0 mt-2 w-56 rounded-2xl overflow-hidden z-50 border border(--border-medium) bg(--surface-1) shadow-2xl backdrop-blur-xl"
+      className="absolute top-full right-0 mt-2 w-56 rounded-2xl overflow-hidden z-50 border border-[var(--border-medium)] bg-[var(--surface-1)] shadow-2xl backdrop-blur-xl"
     >
-      <div className="px-4 py-3.5 border-b border(--border-soft)">
+      <div className="px-4 py-3.5 border-b border-[var(--border-soft)]">
         <div className="flex items-center gap-3">
           <UserAvatar name={name} avatar={avatar} size={38} />
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold text(--text-primary) truncate">{name}</p>
-            <p className="text-xs text(--text-secondary) truncate">{email}</p>
+            <p className="text-sm font-semibold text-[var(--text-primary)] truncate">{name}</p>
+            <p className="text-xs text-[var(--text-secondary)] truncate">{email}</p>
           </div>
         </div>
       </div>
@@ -49,7 +49,7 @@ function UserDropdown({ name, email, avatar, onLogout, onClose }: UserDropdownPr
         <Link
           to="/app"
           onClick={onClose}
-          className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text(--text-secondary) hover:text(--text-primary) hover:bg(--surface-hover) transition-colors duration-150"
+          className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition-colors duration-150"
         >
           <LayoutDashboard size={15} />
           Dashboard
@@ -59,7 +59,7 @@ function UserDropdown({ name, email, avatar, onLogout, onClose }: UserDropdownPr
             onLogout();
             onClose();
           }}
-          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text(--text-secondary) hover:text-red-400 hover:bg-red-500/[0.08] transition-colors duration-150"
+          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-[var(--text-secondary)] hover:text-red-400 hover:bg-red-500/[0.08] transition-colors duration-150"
         >
           <LogOut size={15} />
           Sign out
@@ -139,7 +139,7 @@ export function Navbar() {
         transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
         className="fixed inset-x-0 top-0 z-50 bg-[#07080c]"
       >
-        <div className="mx-auto h-16 w-full max-w-[1216px] border-x border-b border(--border-soft) px-4 sm:h-[72px] sm:w-[calc(100%-2rem)] sm:px-6 lg:px-8">
+        <div className="mx-auto h-16 w-full max-w-[1216px] border-x border-b border-[var(--border-soft)] px-4 sm:h-[72px] sm:w-[calc(100%-2rem)] sm:px-6 lg:px-8">
           <motion.div
             animate={{
               width: navbarScrolled ? "calc(100% - 4rem)" : "100%",
@@ -149,7 +149,7 @@ export function Navbar() {
             transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
             className={`mx-auto ${
               navbarScrolled
-                ? "rounded-full border border(--border-soft) bg-[rgba(8,9,12,0.84)] shadow-[0_18px_50px_rgba(0,0,0,0.32)] backdrop-blur-2xl"
+                ? "rounded-full border border-[var(--border-soft)] bg-[rgba(8,9,12,0.84)] shadow-[0_18px_50px_rgba(0,0,0,0.32)] backdrop-blur-2xl"
                 : ""
             }`}
           >
@@ -167,7 +167,7 @@ export function Navbar() {
               </Link>
 
               <nav
-                className={`absolute left-1/2 hidden -translate-x-1/2 items-center rounded-full border border(--border-soft) bg-[rgba(255,255,255,0.025)] md:flex ${
+                className={`absolute left-1/2 hidden -translate-x-1/2 items-center rounded-full border border-[var(--border-soft)] bg-[rgba(255,255,255,0.025)] md:flex ${
                   navbarScrolled ? "gap-0 p-0.5" : "gap-0.5 p-1"
                 }`}
               >
@@ -178,7 +178,7 @@ export function Navbar() {
                       href={link.href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={`flex items-center gap-1 rounded-full font-medium text(--text-secondary) transition-all duration-200 hover:bg(--surface-hover) hover:text(--text-primary) ${
+                      className={`flex items-center gap-1 rounded-full font-medium text-[var(--text-secondary)] transition-all duration-200 hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] ${
                         navbarScrolled ? "px-3 py-1.5 text-xs" : "gap-1.5 px-3.5 py-2 text-[13px]"
                       }`}
                     >
@@ -189,7 +189,7 @@ export function Navbar() {
                     <button
                       key={link.label}
                       onClick={() => navigateSection(link.href)}
-                      className={`rounded-full font-medium text(--text-secondary) transition-all duration-200 hover:bg(--surface-hover) hover:text(--text-primary) ${
+                      className={`rounded-full font-medium text-[var(--text-secondary)] transition-all duration-200 hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] ${
                         navbarScrolled ? "px-3 py-1.5 text-xs" : "px-3.5 py-2 text-[13px]"
                       }`}
                     >
@@ -207,17 +207,17 @@ export function Navbar() {
                       onClick={() => setDropdownOpen((prev) => !prev)}
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
-                      className="flex items-center gap-2.5 pl-1 pr-3 py-1 rounded-2xl border border(--border-medium) bg(--surface-3) hover:bg(--surface-hover) transition-all duration-200"
+                      className="flex items-center gap-2.5 pl-1 pr-3 py-1 rounded-2xl border border-[var(--border-medium)] bg-[var(--surface-3)] hover:bg-[var(--surface-hover)] transition-all duration-200"
                     >
                       <UserAvatar name={user.name} avatar={user.avatar} size={30} />
-                      <span className="text-sm font-medium text(--text-primary) max-w-[120px] truncate">
+                      <span className="text-sm font-medium text-[var(--text-primary)] max-w-[120px] truncate">
                         {user.name.split(" ")[0]}
                       </span>
                       <motion.div
                         animate={{ rotate: dropdownOpen ? 180 : 0 }}
                         transition={{ duration: 0.2 }}
                       >
-                        <ChevronDown size={14} className="text(--text-secondary)" />
+                        <ChevronDown size={14} className="text-[var(--text-secondary)]" />
                       </motion.div>
                     </motion.button>
 
@@ -237,7 +237,7 @@ export function Navbar() {
                   <>
                     <Link
                       to="/login"
-                      className={`rounded-full font-medium text(--text-secondary) transition-all duration-200 hover:bg(--surface-hover) hover:text(--text-primary) ${
+                      className={`rounded-full font-medium text-[var(--text-secondary)] transition-all duration-200 hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] ${
                         navbarScrolled ? "px-3 py-1.5 text-xs" : "px-4 py-2 text-sm"
                       }`}
                     >
@@ -245,7 +245,7 @@ export function Navbar() {
                     </Link>
                     <Link
                       to="/signup"
-                      className={`group relative inline-flex items-center overflow-hidden rounded-full border border-[rgba(199,204,255,0.22)] bg(--accent) font-semibold text-[#08090c] shadow-[0_8px_24px_rgba(157,165,255,0.2)] transition-all duration-200 hover:-translate-y-0.5 hover:bg(--accent-strong) hover:shadow-[0_12px_30px_rgba(157,165,255,0.3)] ${
+                      className={`group relative inline-flex items-center overflow-hidden rounded-full border border-[rgba(199,204,255,0.22)] bg-[var(--accent)] font-semibold text-[#08090c] shadow-[0_8px_24px_rgba(157,165,255,0.2)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[var(--accent-strong)] hover:shadow-[0_12px_30px_rgba(157,165,255,0.3)] ${
                         navbarScrolled ? "gap-1 px-3 py-1.5 text-xs" : "gap-1.5 px-4 py-2 text-sm"
                       }`}
                     >
@@ -262,7 +262,7 @@ export function Navbar() {
               <button
                 id="mobile-menu-btn"
                 onClick={() => setMobileOpen(!mobileOpen)}
-                className="rounded-full border border(--border-soft) p-2 text(--text-secondary) transition-colors duration-200 hover:bg(--surface-hover) hover:text(--text-primary) md:hidden"
+                className="rounded-full border border-[var(--border-soft)] p-2 text-[var(--text-secondary)] transition-colors duration-200 hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] md:hidden"
                 aria-label="Toggle menu"
               >
                 <AnimatePresence mode="wait">
@@ -310,13 +310,13 @@ export function Navbar() {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              className="fixed bottom-0 right-0 top-0 z-50 flex w-80 max-w-[calc(100vw-1rem)] flex-col border-l border(--border-medium) bg-[rgba(8,9,12,0.96)] shadow-2xl backdrop-blur-2xl"
+              className="fixed bottom-0 right-0 top-0 z-50 flex w-80 max-w-[calc(100vw-1rem)] flex-col border-l border-[var(--border-medium)] bg-[rgba(8,9,12,0.96)] shadow-2xl backdrop-blur-2xl"
             >
-              <div className="flex h-16 items-center justify-between border-b border(--border-soft) px-5">
+              <div className="flex h-16 items-center justify-between border-b border-[var(--border-soft)] px-5">
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setMobileOpen(false)}
-                    className="rounded-full p-2 text(--text-secondary) transition-colors hover:bg(--surface-hover) hover:text(--text-primary)"
+                    className="rounded-full p-2 text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
                   >
                     <X size={18} />
                   </button>
@@ -324,13 +324,13 @@ export function Navbar() {
               </div>
 
               {user && (
-                <div className="mx-4 my-4 mb-2 px-3 py-3 rounded-2xl border border(--border-medium) bg(--surface-3) flex items-center gap-3">
+                <div className="mx-4 my-4 mb-2 px-3 py-3 rounded-2xl border border-[var(--border-medium)] bg-[var(--surface-3)] flex items-center gap-3">
                   <UserAvatar name={user.name} avatar={user.avatar} size={38} />
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold text(--text-primary) truncate">
+                    <p className="text-sm font-semibold text-[var(--text-primary)] truncate">
                       {user.name}
                     </p>
-                    <p className="text-xs text(--text-secondary) truncate">{user.email}</p>
+                    <p className="text-xs text-[var(--text-secondary)] truncate">{user.email}</p>
                   </div>
                 </div>
               )}
@@ -348,7 +348,7 @@ export function Navbar() {
                         href={link.href}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-2.5 rounded-xl px-4 py-3 text-sm text(--text-secondary) transition-colors duration-200 hover:bg(--surface-hover) hover:text(--text-primary)"
+                        className="flex items-center gap-2.5 rounded-xl px-4 py-3 text-sm text-[var(--text-secondary)] transition-colors duration-200 hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
                       >
                         {link.icon && <link.icon size={15} />}
                         {link.label}
@@ -356,7 +356,7 @@ export function Navbar() {
                     ) : (
                       <button
                         onClick={() => navigateSection(link.href)}
-                        className="flex w-full items-center rounded-xl px-4 py-3 text-left text-sm text(--text-secondary) transition-colors duration-200 hover:bg(--surface-hover) hover:text(--text-primary)"
+                        className="flex w-full items-center rounded-xl px-4 py-3 text-left text-sm text-[var(--text-secondary)] transition-colors duration-200 hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
                       >
                         {link.label}
                       </button>
@@ -365,12 +365,12 @@ export function Navbar() {
                 ))}
               </nav>
 
-              <div className="flex flex-col gap-2 border-t border(--border-soft) p-4">
+              <div className="flex flex-col gap-2 border-t border-[var(--border-soft)] p-4">
                 {user ? (
                   <>
                     <Link
                       to="/app"
-                      className="w-full rounded-xl border border(--border-medium) py-2.5 text-center text-sm text(--text-secondary) transition-all duration-200 hover:bg(--surface-hover) hover:text(--text-primary)"
+                      className="w-full rounded-xl border border-[var(--border-medium)] py-2.5 text-center text-sm text-[var(--text-secondary)] transition-all duration-200 hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
                     >
                       Dashboard
                     </Link>
@@ -388,13 +388,13 @@ export function Navbar() {
                   <>
                     <Link
                       to="/login"
-                      className="w-full rounded-xl border border(--border-medium) py-2.5 text-center text-sm text(--text-secondary) transition-all duration-200 hover:bg(--surface-hover) hover:text(--text-primary)"
+                      className="w-full rounded-xl border border-[var(--border-medium)] py-2.5 text-center text-sm text-[var(--text-secondary)] transition-all duration-200 hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
                     >
                       Login
                     </Link>
                     <Link
                       to="/signup"
-                      className="group relative flex w-full items-center justify-center gap-1.5 overflow-hidden rounded-xl border border-[rgba(199,204,255,0.22)] bg(--accent) py-2.5 text-center text-sm font-semibold text-[#08090c] transition-all duration-200 hover:bg(--accent-strong)"
+                      className="group relative flex w-full items-center justify-center gap-1.5 overflow-hidden rounded-xl border border-[rgba(199,204,255,0.22)] bg-[var(--accent)] py-2.5 text-center text-sm font-semibold text-[#08090c] transition-all duration-200 hover:bg-[var(--accent-strong)]"
                     >
                       <span className="relative">Get started free</span>
                       <ArrowUpRight

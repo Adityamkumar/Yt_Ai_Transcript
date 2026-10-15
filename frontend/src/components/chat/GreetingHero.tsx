@@ -37,7 +37,9 @@ export function GreetingHero() {
   const handleQuickActionClick = async (action: string) => {
     try {
       await navigator.clipboard.writeText(action);
-      toast.success(`Copied "${action}" to clipboard! Paste it once a source is loaded.`);
+      toast.success(
+        `Copied "${action}" to clipboard! Paste it once a source is loaded.`,
+      );
     } catch {
       toast.error("Failed to copy to clipboard.");
     }
@@ -98,7 +100,7 @@ export function GreetingHero() {
           <button
             key={action}
             onClick={() => handleQuickActionClick(action)}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold rounded-full border border(--border-soft) bg(--surface-3) text(--text-secondary) hover:text(--text-primary) hover:border(--border-strong) hover:bg(--surface-hover) transition-all cursor-pointer duration-200 active:scale-95 shrink-0"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold rounded-full border border-[var(--border-soft)] bg-[var(--surface-3)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-strong)] hover:bg-[var(--surface-hover)] transition-all cursor-pointer duration-200 active:scale-95 shrink-0"
           >
             <Sparkles size={10} className="text(--accent)" />
             {action}
@@ -130,10 +132,12 @@ export function GreetingHero() {
         ].map(({ icon: Icon, title, text }) => (
           <div
             key={title}
-            className="group rounded-2xl border border(--border-soft) bg(--surface-3) p-4 flex flex-col"
+            className="group rounded-2xl border border-[var(--border-soft)] bg-[var(--surface-3)] p-4 flex flex-col"
           >
             <Icon size={16} className="mb-2.5 text(--accent)" />
-            <p className="text-sm font-semibold text(--text-primary)">{title}</p>
+            <p className="text-sm font-semibold text(--text-primary)">
+              {title}
+            </p>
             <p className="mt-1.5 text-xs leading-relaxed text(--text-muted) group-hover:text(--text-secondary) transition-colors">
               {text}
             </p>
