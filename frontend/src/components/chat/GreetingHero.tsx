@@ -80,10 +80,10 @@ export function GreetingHero() {
       {/* Large Dynamic Conversational Greeting */}
       <motion.h1
         variants={itemVariants}
-        className="text-xl sm:text-2xl md:text-3xl font-medium tracking-tight text-center w-full max-w-full md:max-w-3xl leading-snug break-words px-1"
+        className="text-xl sm:text-2xl md:text-3xl font-medium tracking-tight text-center w-full max-w-full md:max-w-3xl leading-snug wrap-break-word px-1"
       >
         {parsedGreeting.before}
-        <span className="bg-gradient-to-r from(--accent) to-[#6B9EF7] bg-clip-text text-transparent font-bold">
+        <span className="bg-linear-to-r from-accent to-[#6B9EF7] bg-clip-text text-transparent font-bold">
           {userName}
         </span>
         {parsedGreeting.after}
