@@ -21,8 +21,12 @@ const fetchTranscriptFromFallbackApi = async (videoId: string) => {
     const response = await axios.get(url, { responseType: "text" });
     const text = response.data;
     const transcriptSection = text.split(/## Transcript/i)[1] || text;
-    const matches = [...transcriptSection.matchAll(/\[(?:(\d{1,2}):)?(\d{1,2}):(\d{2})\]\s*([^]*?)(?=\s*\[(?:(?:\d{1,2}):)?(?:\d{1,2}):(?:\d{2})\]|$)/g)];
-    
+    const matches = [
+      ...transcriptSection.matchAll(
+        /\[(?:(\d{1,2}):)?(\d{1,2}):(\d{2})\]\s*([^]*?)(?=\s*\[(?:(?:\d{1,2}):)?(?:\d{1,2}):(?:\d{2})\]|$)/g,
+      ),
+    ];
+
     if (matches.length === 0) {
       throw new Error("No timestamped lines matched in fallback transcript");
     }
@@ -32,11 +36,11 @@ const fetchTranscriptFromFallbackApi = async (videoId: string) => {
       const mins = parseInt(m[2] || "0", 10);
       const secs = parseInt(m[3] || "0", 10);
       const offset = hrs * 3600 + mins * 60 + secs;
-      const rawText = (m[4] || "").trim().replace(/\s+/g, ' ');
+      const rawText = (m[4] || "").trim().replace(/\s+/g, " ");
       return {
         text: rawText,
         duration: 10,
-        start: offset
+        start: offset,
       };
     });
 
@@ -54,36 +58,65 @@ const fetchTranscriptFromFallbackApi = async (videoId: string) => {
 
     return parsed;
   } catch (err: any) {
-    logger.error({ err }, "[Transcript Fallback] Failed to fetch from youtube-transcript.ai");
+    logger.error(
+      { err },
+      "[Transcript Fallback] Failed to fetch from youtube-transcript.ai",
+    );
     throw err;
   }
 };
 
 export const getTranscriptFromYoutube = async (videoId: string) => {
   try {
-    logger.info(`[Transcript] Fetching transcript via primary library for video: ${videoId}`);
+    logger.info(
+      `[Transcript] Fetching transcript via primary library for video: ${videoId}`,
+    );
     const transcript = await YoutubeTranscript.fetchTranscript(videoId);
 
-    const rawChunks = transcript.map(item => ({
+    const rawChunks = transcript.map((item) => ({
       text: item.text,
       duration: normalizeToSeconds(item.duration),
-      start: normalizeToSeconds(item.offset)
+      start: normalizeToSeconds(item.offset),
     }));
 
     return chunkTranscript(rawChunks);
   } catch (error: any) {
-    logger.warn({ error, videoId }, "[Transcript] Primary library failed for video. Trying fallback API...");
+    logger.warn(
+      { error, videoId },
+      "[Transcript] Primary library failed for video. Trying fallback API...",
+    );
     try {
       const rawChunks = await fetchTranscriptFromFallbackApi(videoId);
       return chunkTranscript(rawChunks);
     } catch (fallbackError) {
+      logger.error(
+        {
+          err: fallbackError,
+          videoId,
+          primaryError:
+            error instanceof Error
+              ? {
+                  name: error.name,
+                  message: error.message,
+                  stack: error.stack,
+                }
+              : { message: String(error) },
+        },
+        "[Transcript] Both primary and fallback transcript fetching failed",
+      );
+
       throw new Error("Failed to fetch transcript");
     }
   }
 };
 
 export const optimizeStoredTranscript = (
-  chunks: Array<{ text: string; start: number; duration: number; end?: number }>,
+  chunks: Array<{
+    text: string;
+    start: number;
+    duration: number;
+    end?: number;
+  }>,
 ): SemanticTranscriptChunk[] => {
   const normalized = normalizeTranscriptChunks(chunks);
 
