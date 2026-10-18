@@ -1,12 +1,13 @@
 import axios from "axios";
 import { YoutubeTranscript } from "youtube-transcript";
+import { YouTubeTranscriptApi } from "youtube-transcript-api";
 import {
   chunkTranscript,
   normalizeTranscriptChunks,
   type SemanticTranscriptChunk,
 } from "../utils/chunkTranscript.js";
 import logger from "../lib/logger.js";
-import 'dotenv/config.js'
+import "dotenv/config.js";
 
 const normalizeToSeconds = (value: number) => {
   if (!Number.isFinite(value) || value < 0) {
@@ -73,10 +74,59 @@ const fetchTranscriptFromFallbackApi = async (videoId: string) => {
 };
 
 export const getTranscriptFromYoutube = async (videoId: string) => {
+  let newExtractorError: unknown;
+  let primaryError: unknown;
+
+  const describeError = (error: unknown) =>
+    error instanceof Error
+      ? {
+          name: error.name,
+          message: error.message,
+          stack: error.stack,
+        }
+      : { message: String(error) };
+
+  // 1. Try the new TypeScript extractor first.
   try {
     logger.info(
-      `[Transcript] Fetching transcript via primary library for video: ${videoId}`,
+      { videoId },
+      "[Transcript] Fetching transcript via new TypeScript extractor",
     );
+
+    const api = new YouTubeTranscriptApi();
+    const transcript = await api.fetch(videoId);
+
+    if (!transcript.snippets?.length) {
+      throw new Error("New extractor returned an empty transcript");
+    }
+
+    const rawChunks = transcript.snippets.map((item) => ({
+      text: item.text,
+      start: normalizeToSeconds(item.start),
+      duration: normalizeToSeconds(item.duration),
+    }));
+
+    logger.info(
+      {
+        videoId,
+        chunks: rawChunks.length,
+        extractor: "youtube-transcript-api",
+      },
+      "[Transcript] New TypeScript extractor succeeded",
+    );
+
+    return chunkTranscript(rawChunks);
+  } catch (error: unknown) {
+    newExtractorError = error;
+
+    logger.warn(
+      { err: error, videoId },
+      "[Transcript] New TypeScript extractor failed. Trying old primary extractor",
+    );
+  }
+
+  // 2. Try the existing primary extractor.
+  try {
     const transcript = await YoutubeTranscript.fetchTranscript(videoId);
 
     const rawChunks = transcript.map((item) => ({
@@ -85,34 +135,43 @@ export const getTranscriptFromYoutube = async (videoId: string) => {
       start: normalizeToSeconds(item.offset),
     }));
 
-    return chunkTranscript(rawChunks);
-  } catch (error: any) {
-    logger.warn(
-      { error, videoId },
-      "[Transcript] Primary library failed for video. Trying fallback API...",
+    logger.info(
+      { videoId, chunks: rawChunks.length, extractor: "youtube-transcript" },
+      "[Transcript] Old primary extractor succeeded",
     );
-    try {
-      const rawChunks = await fetchTranscriptFromFallbackApi(videoId);
-      return chunkTranscript(rawChunks);
-    } catch (fallbackError) {
-      logger.error(
-        {
-          err: fallbackError,
-          videoId,
-          primaryError:
-            error instanceof Error
-              ? {
-                  name: error.name,
-                  message: error.message,
-                  stack: error.stack,
-                }
-              : { message: String(error) },
-        },
-        "[Transcript] Both primary and fallback transcript fetching failed",
-      );
 
-      throw new Error("Failed to fetch transcript");
-    }
+    return chunkTranscript(rawChunks);
+  } catch (error: unknown) {
+    primaryError = error;
+
+    logger.warn(
+      { err: error, videoId },
+      "[Transcript] Old primary extractor failed. Trying API fallback",
+    );
+  }
+
+  // 3. Use the limited API only if both libraries fail.
+  try {
+    const rawChunks = await fetchTranscriptFromFallbackApi(videoId);
+
+    logger.info(
+      { videoId, chunks: rawChunks.length, extractor: "youtube-transcript.ai" },
+      "[Transcript] API fallback succeeded",
+    );
+
+    return chunkTranscript(rawChunks);
+  } catch (fallbackError: unknown) {
+    logger.error(
+      {
+        videoId,
+        newExtractorError: describeError(newExtractorError),
+        primaryError: describeError(primaryError),
+        fallbackError: describeError(fallbackError),
+      },
+      "[Transcript] All transcript extractors failed",
+    );
+
+    throw new Error("Failed to fetch transcript");
   }
 };
 
