@@ -6,6 +6,7 @@ import {
   type SemanticTranscriptChunk,
 } from "../utils/chunkTranscript.js";
 import logger from "../lib/logger.js";
+import 'dotenv/config.js'
 
 const normalizeToSeconds = (value: number) => {
   if (!Number.isFinite(value) || value < 0) {
@@ -18,7 +19,12 @@ const normalizeToSeconds = (value: number) => {
 const fetchTranscriptFromFallbackApi = async (videoId: string) => {
   try {
     const url = `https://youtube-transcript.ai/transcript/${videoId}.txt`;
-    const response = await axios.get(url, { responseType: "text" });
+    const response = await axios.get(url, {
+      responseType: "text",
+      headers: {
+        Authorization: `Bearer ${process.env.YOUTUBE_TRANSCRIPT_API_KEY}`,
+      },
+    });
     const text = response.data;
     const transcriptSection = text.split(/## Transcript/i)[1] || text;
     const matches = [
