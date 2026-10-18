@@ -119,10 +119,21 @@ export const getTranscriptFromYoutube = async (videoId: string) => {
   } catch (error: unknown) {
     newExtractorError = error;
 
-    logger.warn(
-      { err: error, videoId },
-      "[Transcript] New TypeScript extractor failed. Trying old primary extractor",
+    if (error instanceof Error) {
+    logger.error(
+      {
+        name: error.name,
+        message: error.message,
+        stack: error.stack,
+      },
+      "[Transcript] New extractor diagnostic",
     );
+  } else {
+    logger.error(
+      { error: String(error) },
+      "[Transcript] New extractor diagnostic",
+    );
+  }
   }
 
   // 2. Try the existing primary extractor.
