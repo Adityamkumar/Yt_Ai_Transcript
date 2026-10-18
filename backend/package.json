@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
-    "postinstall": "npm run build",
+    "postinstall": "npm run build && patch-package",
     "start": "node dist/server.js"
   },
   "keywords": [],
@@ -32,6 +32,7 @@
     "multer": "^2.1.1",
     "openai": "^6.43.0",
     "p-limit": "^7.3.1",
+    "patch-package": "^8.0.1",
     "pdf-parse-new": "^2.1.0",
     "pino": "^10.3.1",
     "pino-pretty": "^13.1.3",
