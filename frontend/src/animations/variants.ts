@@ -82,23 +82,19 @@ export const slideDown: Variants = {
 
 export const sidebarVariants: Variants = {
   open: {
-    width: "var(--sidebar-width)",
+    width: "var(--sidebar-width, 264px)",
     x: 0,
     transition: {
-      type: "spring",
-      stiffness: 320,
-      damping: 32,
-      staggerChildren: 0.04,
-      delayChildren: 0.08,
+      duration: 0.24,
+      ease: [0.25, 0.1, 0.25, 1.0],
     },
   },
   closed: {
-    width: 0,
-    x: "-100%",
+    width: "60px",
+    x: 0,
     transition: {
-      type: "spring",
-      stiffness: 320,
-      damping: 36,
+      duration: 0.24,
+      ease: [0.25, 0.1, 0.25, 1.0],
     },
   },
 };

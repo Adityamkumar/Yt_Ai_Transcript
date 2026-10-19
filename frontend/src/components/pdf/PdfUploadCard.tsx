@@ -93,21 +93,7 @@ export function PdfUploadCard({ onUploadSuccess, onUploadingStateChange }: PdfUp
 
   return (
     <div className="mx-auto w-full max-w-3xl">
-      <div className="glass-surface rounded-[24px] p-3 sm:p-4">
-        <div className="mb-3 flex items-center justify-between gap-3 px-1 sm:px-2">
-          <div className="flex items-center gap-2.5">
-            <span className="grid h-8 w-8 place-items-center rounded-xl bg-[rgba(139,156,255,0.12)] text(--accent)">
-              <FileText size={17} />
-            </span>
-            <div className="text-left">
-              <p className="text-sm font-semibold text-white">Upload PDF document</p>
-              <p className="text-xs text(--text-muted)">
-                Upload a PDF to create an AI grounded chat workspace.
-              </p>
-            </div>
-          </div>
-        </div>
-
+      <div className="ruixen-input-panel">
         <div
           onDragEnter={handleDrag}
           onDragOver={handleDrag}
@@ -115,11 +101,11 @@ export function PdfUploadCard({ onUploadSuccess, onUploadingStateChange }: PdfUp
           onDrop={handleDrop}
           onClick={!isUploading ? triggerInput : undefined}
           className={cn(
-            "group relative flex flex-col items-center justify-center rounded-[20px] border border-dashed p-8 text-center transition-all duration-300",
+            "ruixen-input-panel__content group relative flex min-h-[136px] flex-col items-center justify-center rounded-[18px] border border-dashed p-8 text-center transition-all duration-300",
             !isUploading ? "cursor-pointer" : "cursor-default",
             isDragActive
               ? "border-[rgba(139,156,255,0.8)] bg-[rgba(139,156,255,0.06)] shadow-[0_0_24px_rgba(102,117,246,0.1)]"
-              : "border-white/[0.08] bg-[#070a10]/72 hover:border-white/[0.18] hover:bg-white/[0.01]",
+              : "border-white/[0.08] bg-[rgba(10,13,28,0.55)] hover:border-white/[0.18] hover:bg-[rgba(14,18,36,0.65)]",
             errorMsg && "border-[rgba(251,113,133,0.4)] bg-[rgba(251,113,133,0.02)]",
           )}
         >

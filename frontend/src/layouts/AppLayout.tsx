@@ -202,8 +202,8 @@ export function AppLayout({ children }: AppLayoutProps) {
 
       <div className="app-main">
         <Header
-          onNewChat={handleNewChat}
           onSearchOpen={openSearch}
+          onNewChat={handleNewChat}
           workspaceActions={workspaceActionsNode}
         />
         <main className="app-scroll">

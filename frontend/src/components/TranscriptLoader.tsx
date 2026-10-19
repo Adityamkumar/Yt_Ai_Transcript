@@ -29,24 +29,10 @@ export function TranscriptLoader({ onSubmit, isLoading = false, error }: Transcr
 
   return (
     <div className="mx-auto w-full max-w-3xl">
-      <div className="glass-surface rounded-[var(--radius-2xl)] p-3 sm:p-4">
-        <div className="mb-3 flex items-center justify-between gap-3 px-1 sm:px-2">
-          <div className="flex items-center gap-2.5">
-            <span className="grid h-8 w-8 place-items-center rounded-xl bg-[rgba(239,68,68,0.10)] text-red-400">
-              <Youtube size={16} />
-            </span>
-            <div>
-              <p className="text-sm font-semibold text-[var(--text-primary)]">Add source video</p>
-              <p className="text-[11px] text-[var(--text-muted)]">
-                Paste a YouTube URL to create a chat workspace.
-              </p>
-            </div>
-          </div>
-        </div>
-
+      <div className="ruixen-input-panel">
         <div
           className={cn(
-            "flex flex-col gap-3 rounded-[var(--radius-xl)] border bg-[var(--canvas)]/70 p-2 transition-all sm:flex-row sm:items-center",
+            "ruixen-input-panel__content flex flex-col gap-3 rounded-[18px] border p-2 transition-all sm:flex-row sm:items-center",
             isValid && !isLoading
               ? "border-[rgba(139,156,247,0.28)] shadow-[0_0_0_1px_rgba(139,156,247,0.05),0_12px_48px_rgba(102,117,246,0.10)]"
               : "border-[var(--border-soft)] focus-within:border-[var(--border-strong)]",
@@ -54,7 +40,7 @@ export function TranscriptLoader({ onSubmit, isLoading = false, error }: Transcr
           )}
         >
           <div className="flex min-w-0 flex-1 items-center gap-3 px-2">
-            <LinkIcon size={17} className="shrink-0 text-[var(--text-muted)]" />
+            <LinkIcon size={17} className="shrink-0 text-[#e4e4ef]" />
             <input
               ref={inputRef}
               type="url"
@@ -66,7 +52,7 @@ export function TranscriptLoader({ onSubmit, isLoading = false, error }: Transcr
               onKeyDown={handleKeyDown}
               placeholder="https://www.youtube.com/watch?v=..."
               disabled={isLoading}
-              className="h-12 min-w-0 flex-1 bg-transparent text-[15px] font-medium text-[var(--text-primary)] outline-none placeholder:text-[var(--text-muted)] disabled:opacity-50"
+              className="h-12 min-w-0 flex-1 bg-transparent text-[15px] font-medium text-white outline-none placeholder:text-neutral-400 disabled:opacity-50"
             />
           </div>
 
@@ -74,9 +60,9 @@ export function TranscriptLoader({ onSubmit, isLoading = false, error }: Transcr
             onClick={handleSubmit}
             disabled={!isValid || isLoading}
             className={cn(
-              "inline-flex h-11 items-center justify-center gap-2 rounded-2xl px-5 text-sm font-semibold transition-all sm:w-auto",
+              "inline-flex h-11 items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold transition-all sm:w-auto",
               isValid && !isLoading
-                ? "bg-[var(--text-primary)] text-[var(--canvas)] hover:opacity-90"
+                ? "bg-[linear-gradient(135deg,#a94dff,#526cff)] text-white shadow-[0_8px_24px_rgba(106,70,255,0.28)] hover:brightness-110"
                 : "cursor-not-allowed bg-[var(--surface-3)] text-[var(--text-muted)]",
             )}
           >

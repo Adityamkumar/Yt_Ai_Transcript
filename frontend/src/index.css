@@ -331,6 +331,137 @@ p {
   margin-inline: auto;
 }
 
+.app-main:has(.lumora-dashboard) {
+  background-color: #020208;
+  background-image: url("https://cdn.21st.dev/assets/mirror/c3/c333918af688a4a8a3d004652e6c0ee219457a9d84d380eeb31f513d4b59a09f.png");
+  background-position: center bottom;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.app-main:has(.lumora-dashboard)::before {
+  opacity: 0;
+}
+
+/* Dashboard onboarding: decorative horizon remains behind every interactive control. */
+.lumora-dashboard {
+  position: relative;
+  isolation: isolate;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  background-color: transparent;
+  background-image: none;
+}
+
+.lumora-composer {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.lumora-greeting h1 {
+  font-size: clamp(2.25rem, 4vw, 3.5rem);
+  letter-spacing: -0.035em;
+}
+
+.ruixen-input-panel {
+  min-height: 142px;
+  overflow: hidden;
+  border: 1px solid rgba(139, 156, 255, 0.2);
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(18, 20, 42, 0.58), rgba(10, 12, 26, 0.66));
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(16px);
+}
+
+.ruixen-input-panel__content {
+  min-height: 140px;
+  border: 0;
+  background: transparent;
+}
+
+@media (min-width: 640px) {
+  .ruixen-input-panel__content {
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: space-between;
+    padding: 13px 14px;
+  }
+}
+
+.ruixen-input-panel__content > button {
+  align-self: flex-end;
+  min-width: 50px;
+  height: 50px;
+  padding: 0 17px;
+  border-radius: 13px;
+  background: #2c2c38;
+  color: #8f8f9e;
+}
+
+.ruixen-input-panel__content > button:not(:disabled) {
+  background: #f0f0f4;
+  color: #111118;
+}
+
+.ruixen-input-panel__content:focus-within {
+  border: 0;
+  box-shadow: none;
+}
+
+.ruixen-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.ruixen-actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  height: 50px;
+  padding: 0 21px;
+  border: 1px solid #3d3d48;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.54);
+  color: #e5e5ed;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: background 160ms ease, border-color 160ms ease;
+}
+
+.ruixen-actions button:hover {
+  border-color: #777789;
+  background: rgba(40, 40, 50, 0.66);
+}
+
+.ruixen-source-toggle {
+  background: rgba(10, 12, 28, 0.62);
+  border-color: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(12px);
+}
+
+@media (max-width: 640px) {
+  .lumora-composer {
+    border-radius: 20px;
+  }
+
+  .lumora-dashboard {
+    background-size: auto 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lumora-dashboard *, .lumora-dashboard *::before, .lumora-dashboard *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 /* ──────────────────────────────────────────
    5. SURFACE UTILITY CLASSES
    ────────────────────────────────────────── */

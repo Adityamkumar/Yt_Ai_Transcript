@@ -19,7 +19,7 @@ const PdfChatContainer = lazy(() =>
 
 import { PdfUploadCard } from "@/components/pdf/PdfUploadCard";
 import { PdfIndexingStatus } from "@/components/pdf/PdfIndexingStatus";
-import { GreetingHero } from "@/components/chat/GreetingHero";
+import { GreetingHero, SourceSuggestionChips } from "@/components/chat/GreetingHero";
 import { TranscriptLoader } from "@/components/TranscriptLoader";
 import { useConversations } from "@/hooks/useConversations";
 import { videoService } from "@/services/video.service";
@@ -188,10 +188,10 @@ export default function HomePage({ onActionReady }: HomePageProps) {
           initial="initial"
           animate="animate"
           exit="exit"
-          className="h-full overflow-y-auto overflow-x-hidden w-full max-w-full"
+          className="h-full min-h-0 w-full max-w-full overflow-hidden"
         >
-          <div className="content-container flex min-h-full flex-col justify-center py-3 sm:py-4 lg:py-5">
-            <div className="grid items-center gap-3 lg:gap-4 w-full max-w-full overflow-x-hidden">
+          <div className="lumora-dashboard flex h-full min-h-0 w-full flex-col justify-center overflow-hidden py-6 sm:py-8 lg:py-10">
+            <div className="relative z-10 grid items-center gap-4 lg:gap-5 w-full max-w-full overflow-x-hidden">
               <AnimatePresence mode="wait">
                 {isVideoFailed ? (
                   <motion.div
@@ -222,7 +222,7 @@ export default function HomePage({ onActionReady }: HomePageProps) {
                     variants={fadeIn}
                     className="w-full max-w-full min-w-0 overflow-x-hidden"
                   >
-                    <GreetingHero />
+                    <GreetingHero sourceType={sourceType} />
                   </motion.div>
                 ) : isPdfProcessing ? (
                   <motion.div
@@ -307,20 +307,20 @@ export default function HomePage({ onActionReady }: HomePageProps) {
                     duration: 0.35,
                     ease: [0.25, 0.1, 0.25, 1.0],
                   }}
-                  className="flex flex-col gap-4 w-full max-w-full min-w-0 overflow-x-hidden"
+                  className="lumora-composer mx-auto flex w-full max-w-3xl flex-col gap-4 overflow-hidden rounded-[26px] p-3 sm:p-5"
                 >
                   {/* Source Type Toggle */}
-                  <div className="mx-auto flex w-full max-w-sm items-center gap-1 rounded-2xl border border-[var(--border-soft)] bg-[var(--canvas-subtle)]/90 p-1.5 backdrop-blur-md">
+                  <div className="ruixen-source-toggle mx-auto flex w-full max-w-md items-center gap-1 rounded-2xl border border-white/[0.10] bg-[#050817]/75 p-1.5 backdrop-blur-md">
                     <button
                       onClick={() => setSourceType("video")}
-                      className={`flex-1 flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold transition-colors ${sourceType === "video" ? "bg-[var(--surface-active)] text-[var(--text-primary)]" : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"}`}
+                      className={`flex-1 flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold transition-colors ${sourceType === "video" ? "bg-[linear-gradient(135deg,rgba(121,57,255,0.78),rgba(49,87,255,0.62))] text-white shadow-[0_0_24px_rgba(119,75,255,0.28)]" : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"}`}
                     >
                       <Youtube size={15} />
                       YouTube Video
                     </button>
                     <button
                       onClick={() => setSourceType("pdf")}
-                      className={`flex-1 flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold transition-colors ${sourceType === "pdf" ? "bg-[var(--surface-active)] text-[var(--text-primary)]" : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"}`}
+                      className={`flex-1 flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold transition-colors ${sourceType === "pdf" ? "bg-[linear-gradient(135deg,rgba(121,57,255,0.78),rgba(49,87,255,0.62))] text-white shadow-[0_0_24px_rgba(119,75,255,0.28)]" : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"}`}
                     >
                       <FileText size={15} />
                       PDF Document
@@ -346,6 +346,7 @@ export default function HomePage({ onActionReady }: HomePageProps) {
                       }}
                     />
                   )}
+                  <SourceSuggestionChips sourceType={sourceType} />
                 </motion.div>
               )}
             </div>

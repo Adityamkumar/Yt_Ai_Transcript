@@ -37,20 +37,34 @@ export function UserAvatar({ name = "User", avatar, size = 36, className = "" }:
 
   if (avatar && !imageError) {
     return (
-      <img
-        src={avatarUrl}
-        alt={`${name}'s avatar`}
-        width={size}
-        height={size}
-        className={`rounded-full object-cover shrink-0 ${className}`}
+      <div
+        className={`relative inline-flex items-center justify-center rounded-full overflow-hidden shrink-0 ${className}`}
         style={{
           width: size,
           height: size,
-          display: imageLoaded ? "block" : "none",
+          background: gradient,
         }}
-        onLoad={() => setImageLoaded(true)}
-        onError={() => setImageError(true)}
-      />
+        aria-label={`${name}'s avatar`}
+      >
+        <span
+          className="flex items-center justify-center font-semibold text-white select-none"
+          style={{ fontSize: size * 0.38 }}
+        >
+          {initials}
+        </span>
+        <img
+          src={avatarUrl}
+          alt={`${name}'s avatar`}
+          width={size}
+          height={size}
+          className="absolute inset-0 h-full w-full rounded-full object-cover"
+          style={{
+            display: imageLoaded ? "block" : "none",
+          }}
+          onLoad={() => setImageLoaded(true)}
+          onError={() => setImageError(true)}
+        />
+      </div>
     );
   }
 
