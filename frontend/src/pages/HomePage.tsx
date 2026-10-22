@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useState, lazy, Suspense } from "react";
+import { useCallback, useState, lazy, Suspense } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
-import { FileText, Loader2, Sparkles, Youtube } from "lucide-react";
+import { FileText, Youtube } from "lucide-react";
 import toast from "react-hot-toast";
 import { EMAIL_NOT_VERIFIED_CODE } from "@/lib/axios";
 
@@ -18,7 +18,7 @@ const PdfChatContainer = lazy(() =>
 );
 
 import { PdfUploadCard } from "@/components/pdf/PdfUploadCard";
-import { PdfIndexingStatus } from "@/components/pdf/PdfIndexingStatus";
+import { ProgressiveFluxLoader } from "@/components/ui/progressive-flux-loader";
 import { GreetingHero, SourceSuggestionChips } from "@/components/chat/GreetingHero";
 import { TranscriptLoader } from "@/components/TranscriptLoader";
 import { useConversations } from "@/hooks/useConversations";
@@ -46,6 +46,13 @@ const videoProcessingSteps = [
   },
 ];
 
+const pdfProcessingSteps = [
+  { at: 0, label: "Uploading your PDF" },
+  { at: 28, label: "Extracting document text" },
+  { at: 56, label: "Organizing your document" },
+  { at: 80, label: "Preparing your workspace" },
+];
+
 export default function HomePage({ onActionReady }: HomePageProps) {
   const { conversationId } = useParams<{ conversationId: string }>();
   const navigate = useNavigate();
@@ -58,7 +65,6 @@ export default function HomePage({ onActionReady }: HomePageProps) {
 
   const [sourceType, setSourceType] = useState<"video" | "pdf">("video");
   const [isPdfProcessing, setIsPdfProcessing] = useState(false);
-  const [processingFileName, setProcessingFileName] = useState("");
 
   const activeConversation = conversations.find((c) => c._id === conversationId);
 
@@ -83,20 +89,6 @@ export default function HomePage({ onActionReady }: HomePageProps) {
   const isVideoPreparing = activeConversation?.type === "video" && !isVideoReady && !isVideoFailed;
 
   const [isExtracting, setIsExtracting] = useState(false);
-  const [processingStep, setProcessingStep] = useState(0);
-
-  useEffect(() => {
-    if (!isExtracting && !isCreatingConversation && !isVideoPreparing && !isPdfProcessing) {
-      setProcessingStep(0);
-      return;
-    }
-
-    const interval = window.setInterval(() => {
-      setProcessingStep((currentStep) => (currentStep + 1) % videoProcessingSteps.length);
-    }, 2400);
-
-    return () => window.clearInterval(interval);
-  }, [isCreatingConversation, isExtracting, isVideoPreparing, isVideoReady]);
 
   const handleTranscriptSubmit = useCallback(
     async (url: string) => {
@@ -228,66 +220,19 @@ export default function HomePage({ onActionReady }: HomePageProps) {
                   <motion.div
                     key="pdf-loading"
                     variants={fadeIn}
-                    className="mx-auto w-full max-w-[520px] py-10"
+                    className="mx-auto w-full max-w-[560px] py-10"
                   >
-                    <PdfIndexingStatus fileName={processingFileName || "your document"} />
+                    <ProgressiveFluxLoader phases={pdfProcessingSteps} />
                   </motion.div>
                 ) : (
                   <motion.div
                     key="loading"
                     variants={fadeIn}
-                    className="mx-auto w-full max-w-[440px] py-10 sm:py-12"
+                    className="mx-auto w-full max-w-[560px] py-10 sm:py-12"
                   >
-                    <div className="premium-panel relative overflow-hidden rounded-2xl px-5 py-6 sm:px-7">
-                      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(157,165,255,0.07),transparent_36%),radial-gradient(circle_at_80%_0%,rgba(77,162,255,0.05),transparent_30%)] pointer-events-none" />
-                      <div className="relative z-10 flex flex-col items-center text-center">
-                        <div className="mb-4 flex items-center justify-center gap-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-[var(--text-muted)]">
-                          <Sparkles size={12} className="text-[var(--accent)]" />
-                          <span>Preparing your workspace</span>
-                        </div>
-
-                        <motion.div
-                          animate={{ rotate: 360 }}
-                          transition={{
-                            repeat: Infinity,
-                            duration: 1.4,
-                            ease: "linear",
-                          }}
-                          className="mb-4 text-[var(--accent)]"
-                        >
-                          <Loader2 size={24} strokeWidth={2.25} />
-                        </motion.div>
-
-                        <AnimatePresence mode="wait">
-                          <motion.div
-                            key={processingStep}
-                            initial={{ opacity: 0, y: 5 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -5 }}
-                            transition={{ duration: 0.2 }}
-                          >
-                            <h2 className="text-lg font-semibold tracking-tight text-[var(--text-primary)] sm:text-xl">
-                              {videoProcessingSteps[processingStep].title}
-                            </h2>
-                            <p className="mt-1.5 text-sm text-[var(--text-muted)]">
-                              {videoProcessingSteps[processingStep].description}
-                            </p>
-                          </motion.div>
-                        </AnimatePresence>
-
-                        <div className="mt-5 h-1 w-full max-w-[280px] overflow-hidden rounded-full bg-[rgba(255,255,255,0.07)]">
-                          <motion.div
-                            className="h-full w-1/2 rounded-full bg-[linear-gradient(90deg,rgba(157,165,255,0.68),rgba(77,162,255,0.98),rgba(157,165,255,0.68))]"
-                            animate={{ x: ["-35%", "135%"] }}
-                            transition={{
-                              repeat: Infinity,
-                              duration: 1.7,
-                              ease: "easeInOut",
-                            }}
-                          />
-                        </div>
-                      </div>
-                    </div>
+                    <ProgressiveFluxLoader
+                      phases={videoProcessingSteps.map((step, index) => ({ at: index * 33, label: step.title }))}
+                    />
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -335,15 +280,7 @@ export default function HomePage({ onActionReady }: HomePageProps) {
                   ) : (
                     <PdfUploadCard
                       onUploadSuccess={handlePdfUploadSuccess}
-                      onUploadingStateChange={(uploading) => {
-                        handlePdfUploadingState(uploading);
-                        const inputEl = document.querySelector(
-                          'input[type="file"]',
-                        ) as HTMLInputElement;
-                        if (inputEl?.files?.[0]) {
-                          setProcessingFileName(inputEl.files[0].name);
-                        }
-                      }}
+                      onUploadingStateChange={handlePdfUploadingState}
                     />
                   )}
                   <SourceSuggestionChips sourceType={sourceType} />

@@ -245,7 +245,7 @@ export function PdfChatContainer({ conversationId, pdf, onActionReady }: PdfChat
   const hasMessages = messages.length > 0 || isStreaming;
 
   return (
-    <div className="relative flex h-full w-full min-h-0 flex-row overflow-hidden">
+    <div className="workspace-chat relative flex h-full w-full min-h-0 flex-row overflow-hidden">
       <section className="relative flex h-full min-h-0 flex-1 flex-col overflow-hidden">
         <div
           ref={scrollContainerRef}

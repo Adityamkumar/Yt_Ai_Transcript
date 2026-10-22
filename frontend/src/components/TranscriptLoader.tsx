@@ -50,7 +50,7 @@ export function TranscriptLoader({ onSubmit, isLoading = false, error }: Transcr
                 setTouched(true);
               }}
               onKeyDown={handleKeyDown}
-              placeholder="https://www.youtube.com/watch?v=..."
+              placeholder="Paste your video link here..."
               disabled={isLoading}
               className="h-12 min-w-0 flex-1 bg-transparent text-[15px] font-medium text-white outline-none placeholder:text-neutral-400 disabled:opacity-50"
             />
@@ -66,17 +66,10 @@ export function TranscriptLoader({ onSubmit, isLoading = false, error }: Transcr
                 : "cursor-not-allowed bg-[var(--surface-3)] text-[var(--text-muted)]",
             )}
           >
-            {isLoading ? (
-              <>
-                <span className="h-4 w-4 rounded-full border-2 border-[var(--text-muted)]/30 border-t-[var(--canvas)] animate-spin" />
-                Processing
-              </>
-            ) : (
-              <>
-                Analyze
-                <ArrowRight size={15} />
-              </>
-            )}
+            <>
+              Analyze
+              <ArrowRight size={15} />
+            </>
           </button>
         </div>
       </div>

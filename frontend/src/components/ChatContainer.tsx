@@ -145,7 +145,7 @@ export function ChatContainer({ conversationId, video, onActionReady }: ChatCont
   const hasMessages = messages.length > 0 || isStreaming;
 
   return (
-    <section className="relative flex h-full min-h-0 flex-col overflow-hidden">
+    <section className="workspace-chat relative flex h-full min-h-0 flex-col overflow-hidden">
       <div
         ref={scrollContainerRef}
         className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain w-full"

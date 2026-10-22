@@ -343,6 +343,70 @@ p {
   opacity: 0;
 }
 
+/* Focused workspace canvas: true black behind chat content and controls. */
+.app-main:has(.workspace-chat) {
+  background: #0a0908;
+}
+
+.workspace-chat {
+  --foreground: #f0f2f7;
+  --muted-foreground: #7d8494;
+}
+
+.app-main:has(.workspace-chat)::before {
+  opacity: 0;
+}
+
+@layer utilities {
+  .reasoning-shimmer {
+    background: linear-gradient(90deg, var(--muted-foreground) 0%, var(--muted-foreground) 35%, var(--foreground) 50%, var(--muted-foreground) 65%, var(--muted-foreground) 100%);
+    background-size: 250% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: reasoning-shimmer 1.4s linear infinite;
+  }
+
+  .reasoning-dot {
+    opacity: 0.2;
+    animation: reasoning-dot 1s ease-in-out infinite;
+  }
+
+  .reasoning-fade {
+    animation: reasoning-fade 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+}
+
+@keyframes reasoning-shimmer {
+  from { background-position: 100% 0; }
+  to { background-position: 0% 0; }
+}
+
+@keyframes reasoning-dot {
+  0%, 100% { opacity: 0.2; }
+  30% { opacity: 1; }
+}
+
+@keyframes reasoning-fade {
+  from { opacity: 0; transform: translateY(100%); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes sidebar-title-marquee {
+  0%, 18% { transform: translateX(0); }
+  82%, 100% { transform: translateX(var(--title-shift)); }
+}
+
+.sidebar-title-marquee {
+  animation: sidebar-title-marquee 4.8s ease-in-out infinite alternate;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reasoning-shimmer, .reasoning-dot, .reasoning-fade { animation: none; }
+  .reasoning-shimmer { color: var(--muted-foreground); }
+  .sidebar-title-marquee { animation: none; }
+}
+
 /* Dashboard onboarding: decorative horizon remains behind every interactive control. */
 .lumora-dashboard {
   position: relative;

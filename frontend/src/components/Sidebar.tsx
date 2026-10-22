@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, type Variants } from "framer-motion";
 import {
   Bookmark,
@@ -6,7 +6,6 @@ import {
   PanelLeft,
   Sparkles,
   Trash2,
-  FileText,
   Pin,
   SquarePen,
   X,
@@ -17,7 +16,6 @@ import { useConversations } from "@/hooks/useConversations";
 import { useBookmarks } from "@/hooks/useBookmarks";
 import { useUIStore } from "@/store/useUIStore";
 import { APP_NAME } from "@/constants";
-import { formatRelativeTime } from "@/utils";
 import { listItemVariants, sidebarVariants, staggerContainer } from "@/animations/variants";
 import { cn } from "@/utils/cn";
 import { Tooltip } from "@/components/ui/Tooltip";
@@ -25,6 +23,39 @@ import { DeleteChatModal } from "./DeleteChatModal";
 
 interface SidebarProps {
   onNewChat: () => void;
+}
+
+function ConversationTitle({ title }: { title: string }) {
+  const label = title.replace(/\*\*/g, "");
+  const measureRef = useRef<HTMLSpanElement>(null);
+  const [overflow, setOverflow] = useState(0);
+
+  useEffect(() => {
+    const element = measureRef.current;
+    if (!element) return;
+
+    const update = () => setOverflow(Math.max(0, element.scrollWidth - element.clientWidth));
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [label]);
+
+  return (
+    <span ref={measureRef} className="relative block overflow-hidden text-[13px] font-medium leading-5">
+      <span className={cn("block truncate", overflow > 0 && "group-hover:opacity-0")}>{label}</span>
+      {overflow > 0 && (
+        <span className="pointer-events-none absolute inset-0 overflow-hidden opacity-0 transition-opacity duration-150 group-hover:opacity-100">
+          <span
+            className="sidebar-title-marquee block w-max whitespace-nowrap"
+            style={{ "--title-shift": `-${overflow}px` } as React.CSSProperties}
+          >
+            {label}
+          </span>
+        </span>
+      )}
+    </span>
+  );
 }
 
 export function Sidebar({ onNewChat }: SidebarProps) {
@@ -133,36 +164,19 @@ export function Sidebar({ onNewChat }: SidebarProps) {
     >
       {items.map((conv) => {
         const isActive = conversationId === conv._id;
-        const isPdf = conv.type === "pdf";
-
         return (
           <motion.div key={conv._id} variants={listItemVariants} className="group relative">
             <button
               onClick={() => handleConversationClick(conv._id)}
               className={cn(
-                "flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left transition-colors",
+                "flex w-full items-start rounded-lg px-3 py-2.5 text-left transition-colors",
                 isActive
                   ? "bg-[rgba(157,165,255,0.12)] text-[var(--text-primary)]"
                   : "text-[var(--text-secondary)] hover:bg-[rgba(255,255,255,0.045)] hover:text-[var(--text-primary)]",
               )}
             >
-              <span
-                className={cn(
-                  "grid h-6 w-6 shrink-0 place-items-center rounded-md border",
-                  isActive
-                    ? "border-[rgba(157,165,255,0.22)] bg-[rgba(157,165,255,0.12)] text-[var(--accent)]"
-                    : "border-[var(--border-soft)] bg-[rgba(255,255,255,0.035)] text-[var(--text-muted)]",
-                )}
-              >
-                {isPdf ? <FileText size={12} /> : <MessageSquare size={12} />}
-              </span>
-              <span className="min-w-0 flex-1 pr-12">
-                <span className="block truncate text-[13px] font-medium leading-4">
-                  {conv.title.replace(/\*\*/g, "")}
-                </span>
-                <span className="mt-px block text-[10px] leading-3.5 text-[var(--text-muted)]">
-                  {formatRelativeTime(new Date(conv.createdAt))}
-                </span>
+              <span className="min-w-0 flex-1 pr-10">
+                <ConversationTitle title={conv.title} />
               </span>
             </button>
             <div className="absolute right-1.5 top-1/2 flex -translate-y-1/2 items-center opacity-100 transition-all lg:opacity-0 lg:group-hover:opacity-100">
@@ -314,7 +328,7 @@ export function Sidebar({ onNewChat }: SidebarProps) {
                 )}
                 <div className="mb-2 flex items-center justify-between px-2">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">
-                    History
+                    Recents
                   </p>
                   <span className="rounded-full bg-[var(--surface-3)] px-2 py-0.5 text-[10px] font-medium text-[var(--text-muted)]">
                     {historyConversations.length}
@@ -345,8 +359,6 @@ export function Sidebar({ onNewChat }: SidebarProps) {
                     >
                       {historyConversations.map((conv) => {
                         const isActive = conversationId === conv._id;
-                        const isPdf = conv.type === "pdf";
-
                         return (
                           <motion.div
                             key={conv._id}
@@ -356,29 +368,14 @@ export function Sidebar({ onNewChat }: SidebarProps) {
                             <button
                               onClick={() => handleConversationClick(conv._id)}
                               className={cn(
-                                "flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left transition-colors",
+                                "flex w-full items-start rounded-lg px-3 py-2.5 text-left transition-colors",
                                 isActive
                                   ? "bg-[rgba(157,165,255,0.12)] text-[var(--text-primary)]"
                                   : "text-[var(--text-secondary)] hover:bg-[rgba(255,255,255,0.045)] hover:text-[var(--text-primary)]",
                               )}
                             >
-                              <span
-                                className={cn(
-                                  "grid h-6 w-6 shrink-0 place-items-center rounded-md border",
-                                  isActive
-                                    ? "border-[rgba(157,165,255,0.22)] bg-[rgba(157,165,255,0.12)] text-[var(--accent)]"
-                                    : "border-[var(--border-soft)] bg-[rgba(255,255,255,0.035)] text-[var(--text-muted)]",
-                                )}
-                              >
-                                {isPdf ? <FileText size={12} /> : <MessageSquare size={12} />}
-                              </span>
-                              <span className="min-w-0 flex-1 pr-12">
-                                <span className="block truncate text-[13px] font-medium leading-4">
-                                  {conv.title.replace(/\*\*/g, "")}
-                                </span>
-                                <span className="mt-px block text-[10px] leading-3.5 text-[var(--text-muted)]">
-                                  {formatRelativeTime(new Date(conv.createdAt))}
-                                </span>
+                              <span className="min-w-0 flex-1 pr-10">
+                                <ConversationTitle title={conv.title} />
                               </span>
                             </button>
 

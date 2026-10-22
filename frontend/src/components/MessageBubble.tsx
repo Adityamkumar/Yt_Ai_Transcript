@@ -10,13 +10,11 @@ import {
   Suspense,
 } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bot, Check, Copy, RotateCcw, User, Pencil, SendHorizontal, X } from "lucide-react";
+import { Check, Copy, RotateCcw, User, Pencil, SendHorizontal, X } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { chatBubbleVariants } from "@/animations/variants";
-import AITextLoading from "./ui/ai-text-loading";
 import type { ChatMessage } from "@/types";
-import { formatRelativeTime } from "@/utils";
 import { cn } from "@/utils/cn";
 import { stripMarkdown } from "@/utils/stripMarkdown";
 import { fixInlineLists } from "@/utils/fixInlineLists";
@@ -24,6 +22,14 @@ import { useFollowUpQuestions } from "@/hooks/useFollowUpQuestions";
 import { FollowUpQuestions } from "@/components/chat/FollowUpQuestions";
 const CodeBlock = lazy(() => import("./chat/CodeBlock").then((m) => ({ default: m.CodeBlock })));
 import { CitationChip } from "./chat/CitationChip";
+import { ReasoningSteps } from "./reasoning-steps";
+
+const reasoningMessages = [
+  "Reviewing the context",
+  "Finding the most useful details",
+  "Connecting ideas from your source",
+  "Preparing a clear answer",
+];
 
 export function renderCitations(content: string): string {
   if (!content) return content;
@@ -237,6 +243,21 @@ export function MessageBubble({
     },
   };
 
+  if (message.isLoading && !message.content) {
+    return (
+      <motion.article
+        variants={chatBubbleVariants}
+        initial="initial"
+        animate="animate"
+        className="py-3 sm:py-4"
+      >
+        <div className="chat-container">
+          <ReasoningSteps messages={reasoningMessages} />
+        </div>
+      </motion.article>
+    );
+  }
+
   return (
     <motion.article
       variants={chatBubbleVariants}
@@ -245,8 +266,8 @@ export function MessageBubble({
       className="group py-3 sm:py-4"
     >
       <div className={cn("chat-container flex gap-3 sm:gap-5", isUser && "flex-row-reverse")}>
-        {/* Avatar */}
-        <div className="mt-1 shrink-0">
+        {/* User avatar only; Lumora responses use clean content-first layout. */}
+        {isUser && <div className="mt-1 shrink-0">
           <div
             className={cn(
               "grid h-8 w-8 sm:h-9 sm:w-9 place-items-center rounded-xl border",
@@ -255,28 +276,18 @@ export function MessageBubble({
                 : "border-[rgba(139,156,247,0.20)] bg-[var(--accent-subtle)] text-[var(--accent)]",
             )}
           >
-            {isUser ? (
-              <User size={15} className="sm:w-[17px] sm:h-[17px]" />
-            ) : (
-              <Bot size={16} className="sm:w-[18px] sm:h-[18px]" />
-            )}
+            <User size={15} className="sm:w-[17px] sm:h-[17px]" />
           </div>
-        </div>
+        </div>}
 
         {/* Content */}
         <div className={cn("min-w-0 flex-1", isUser && "flex flex-col items-end")}>
           <div
             className={cn(isUser ? "w-fit max-w-[90%] sm:max-w-[75%] md:max-w-[65%]" : "w-full")}
           >
-            {/* Meta */}
-            <div className={cn("mb-2.5 flex items-center gap-2 px-1", isUser && "justify-end")}>
-              <span className="text-[13px] font-semibold text-[var(--text-primary)]/85">
-                {isUser ? "You" : "Lumora"}
-              </span>
-              <span className="text-[11px] text-[var(--text-muted)]">
-                {formatRelativeTime(message.createdAt)}
-              </span>
-            </div>
+            {isUser && <div className="mb-2.5 flex justify-end px-1">
+              <span className="text-[13px] font-semibold text-[var(--text-primary)]/85">You</span>
+            </div>}
 
             {/* Bubble */}
             <div
@@ -333,9 +344,7 @@ export function MessageBubble({
 
                         <span className="streaming-cursor" />
                       </div>
-                    ) : (
-                      <AITextLoading />
-                    )
+                    ) : null
                   ) : isUser ? (
                     <p className="whitespace-pre-wrap text-[16px] !text-[#111827] font-medium opacity-100">
                       {message.content}
