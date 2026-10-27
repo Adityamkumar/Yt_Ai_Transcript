@@ -10,7 +10,7 @@ import {
   Suspense,
 } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, Copy, RotateCcw, User, Pencil, SendHorizontal, X } from "lucide-react";
+import { Check, Copy, Pencil } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { chatBubbleVariants } from "@/animations/variants";
@@ -65,7 +65,6 @@ export function urlTransform(url: string): string {
 
 interface MessageBubbleProps {
   message: ChatMessage;
-  onRetry?: (messageId: string) => void;
   onEdit?: (messageId: string, content: string) => void;
   children?: React.ReactNode;
   isLatestAssistant?: boolean;
@@ -75,7 +74,6 @@ interface MessageBubbleProps {
 
 export function MessageBubble({
   message,
-  onRetry,
   onEdit,
   children,
   isLatestAssistant,
@@ -251,7 +249,7 @@ export function MessageBubble({
         animate="animate"
         className="py-3 sm:py-4"
       >
-        <div className="chat-container">
+        <div className="mx-auto w-[calc(100%-2rem)] max-w-[900px]">
           <ReasoningSteps messages={reasoningMessages} />
         </div>
       </motion.article>
@@ -265,72 +263,55 @@ export function MessageBubble({
       animate="animate"
       className="group py-3 sm:py-4"
     >
-      <div className={cn("chat-container flex gap-3 sm:gap-5", isUser && "flex-row-reverse")}>
-        {/* User avatar only; Lumora responses use clean content-first layout. */}
-        {isUser && <div className="mt-1 shrink-0">
+      <div className="mx-auto w-[calc(100%-2rem)] max-w-[900px]">
+        {/* Content */}
+        <div className={cn("min-w-0", isUser && "flex flex-col items-end")}>
           <div
             className={cn(
-              "grid h-8 w-8 sm:h-9 sm:w-9 place-items-center rounded-xl border",
               isUser
-                ? "border-[var(--border-soft)] bg-[var(--surface-3)] text-[var(--text-primary)]"
-                : "border-[rgba(139,156,247,0.20)] bg-[var(--accent-subtle)] text-[var(--accent)]",
+                ? isEditing
+                  ? "w-md max-w-full"
+                  : "w-fit max-w-[90%] sm:max-w-[85%]"
+                : "w-full max-w-[900px]",
             )}
           >
-            <User size={15} className="sm:w-[17px] sm:h-[17px]" />
-          </div>
-        </div>}
-
-        {/* Content */}
-        <div className={cn("min-w-0 flex-1", isUser && "flex flex-col items-end")}>
-          <div
-            className={cn(isUser ? "w-fit max-w-[90%] sm:max-w-[75%] md:max-w-[65%]" : "w-full")}
-          >
-            {isUser && <div className="mb-2.5 flex justify-end px-1">
-              <span className="text-[13px] font-semibold text-[var(--text-primary)]/85">You</span>
-            </div>}
-
-            {/* Bubble */}
-            <div
-              className={cn(
-                "relative rounded-2xl text-[16px] leading-relaxed transition-all",
-                isUser
-                  ? isEditing
-                    ? "bg-[var(--surface-3)] border border-[var(--border-medium)] p-1.5 w-full sm:min-w-[450px] lg:min-w-[550px]"
-                    : "bg-[var(--text-primary)] px-4 py-3 sm:px-5 sm:py-4 shadow-md w-full"
-                  : "px-1 py-1 text-[var(--text-primary)]/95",
-              )}
-            >
-              {isEditing ? (
-                <div className="flex flex-col gap-3 p-1">
+            {isEditing ? (
+              <>
                   <textarea
                     ref={textareaRef}
                     value={editValue}
                     onChange={(e) => setEditValue(e.target.value)}
-                    className="w-full bg-transparent p-3 text-[var(--text-primary)] outline-none resize-none min-h-[120px] text-[16px] leading-relaxed"
+                    className="min-h-0 w-md max-w-full resize-none rounded-[18px] border-0 bg-[#242424] px-3.5 py-2.5 text-[15px]/6 text-[#f0f2f7] outline-none focus-visible:ring-0"
                     placeholder="Edit your message..."
                     autoFocus
                   />
-                  <div className="flex items-center justify-end gap-3 p-3 border-t border-[var(--border-soft)]">
+                  <div className="flex items-center justify-end gap-1.5 self-end">
                     <button
                       onClick={handleCancel}
-                      className="inline-flex h-9 items-center gap-2 rounded-xl px-4 text-sm font-medium text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+                      className="inline-flex h-9 items-center rounded-full bg-[#252525] px-3 text-sm font-medium text-[#9ca3af] transition-colors hover:bg-[#303030]"
                     >
-                      <X size={15} />
                       Cancel
                     </button>
                     <button
                       onClick={handleSave}
                       disabled={!editValue.trim()}
-                      className="inline-flex h-9 items-center gap-2 rounded-xl bg-[var(--text-primary)] px-4 text-sm font-semibold text-[var(--canvas)] transition-all hover:opacity-90 disabled:opacity-40"
+                      className="inline-flex h-9 items-center rounded-full bg-[#e5e5e5] px-3.5 text-sm font-medium text-[#111827] transition-colors hover:bg-white disabled:opacity-40"
                     >
-                      <SendHorizontal size={15} />
-                      Save
+                      Send
                     </button>
                   </div>
-                </div>
-              ) : children ? (
-                children
-              ) : (
+              </>
+            ) : (
+              /* Starter chat-02 user bubble and clean assistant message. */
+              <div
+                className={cn(
+                  "relative rounded-[18px] text-[15px] leading-[1.5] transition-all",
+                  isUser
+                    ? "w-fit bg-[#242424] px-3.5 py-2.5 text-[#f0f2f7]"
+                    : "px-1 py-1 text-[var(--text-secondary)]",
+                )}
+              >
+                {children ? children : (
                 <>
                   {message.isLoading ? (
                     message.content ? (
@@ -346,7 +327,7 @@ export function MessageBubble({
                       </div>
                     ) : null
                   ) : isUser ? (
-                    <p className="whitespace-pre-wrap text-[16px] !text-[#111827] font-medium opacity-100">
+                    <p className="whitespace-pre-wrap text-[15px] leading-[1.5] !text-white font-medium opacity-100">
                       {message.content}
                     </p>
                   ) : (
@@ -360,8 +341,9 @@ export function MessageBubble({
                     </div>
                   )}
                 </>
-              )}
-            </div>
+                )}
+              </div>
+            )}
 
             {/* Follow-up Questions */}
             {!isUser && !message.isLoading && !isEditing && onSelectQuestion && (
@@ -380,35 +362,29 @@ export function MessageBubble({
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.2, delay: 0.1 }}
                   className={cn(
-                    "mt-2.5 flex items-center gap-3.5 px-1",
+                    "mt-2.5 flex items-center gap-0.5 px-1",
                     isUser ? "justify-end" : "justify-start",
                   )}
                 >
                   <button
+                    type="button"
                     onClick={copyToClipboard}
-                    className="flex items-center gap-1.5 text-[11px] font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--text-primary)]"
+                    aria-label={copied ? "Copied" : "Copy message"}
+                    title={copied ? "Copied" : "Copy"}
+                    className="inline-flex size-7 items-center justify-center rounded-md text-[#a3a3a3] transition-colors hover:bg-white/5 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
                   >
-                    {copied ? <Check size={13} /> : <Copy size={13} />}
-                    {copied ? "Copied" : "Copy"}
+                    {copied ? <Check size={14} /> : <Copy size={14} />}
                   </button>
 
                   {isUser && onEdit && (
                     <button
+                      type="button"
                       onClick={handleEdit}
-                      className="flex items-center gap-1.5 text-[11px] font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--text-primary)]"
+                      aria-label="Edit message"
+                      title="Edit"
+                      className="inline-flex size-7 items-center justify-center rounded-md text-[#a3a3a3] transition-colors hover:bg-white/5 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
                     >
-                      <Pencil size={13} />
-                      Edit
-                    </button>
-                  )}
-
-                  {message.error && onRetry && (
-                    <button
-                      onClick={() => onRetry(message._id)}
-                      className="flex items-center gap-1.5 text-[11px] font-medium text-[var(--danger)]/70 transition-colors hover:text-[var(--danger)]"
-                    >
-                      <RotateCcw size={13} />
-                      Retry
+                      <Pencil size={14} />
                     </button>
                   )}
                 </motion.div>

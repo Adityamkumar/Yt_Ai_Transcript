@@ -49,15 +49,15 @@ export function ChatInput({ onSend, onStop, disabled, isPending, placeholder }: 
   const canStop = Boolean(isPending && onStop);
 
   return (
-    <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 bg-linear-to-t from-[#060709] via-[#060709]/92 to-transparent pb-4 pt-12 sm:pb-6">
+    <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 pb-4 pt-6 sm:pb-6">
       <div className="chat-container pointer-events-auto">
         <div
           className={cn(
-            "premium-panel rounded-[var(--radius-2xl)] p-2 transition-all duration-200",
-            "focus-within:border-[rgba(157,165,255,0.28)] focus-within:shadow-[0_20px_70px_rgba(0,0,0,0.34),0_0_0_1px_rgba(157,165,255,0.06)]",
+            "rounded-[22px] border border-white/15 bg-[#151515] px-2 py-1.5 transition-colors",
+            "focus-within:border-white/25",
           )}
         >
-          <div className="flex items-end gap-2">
+          <div className="flex items-end gap-1.5">
             <textarea
               ref={textareaRef}
               value={value}
@@ -66,7 +66,7 @@ export function ChatInput({ onSend, onStop, disabled, isPending, placeholder }: 
               placeholder={placeholder ?? "Message AI..."}
               disabled={disabled || isPending}
               rows={1}
-              className="max-h-45 min-h-12 flex-1 resize-none bg-transparent px-3 py-2.5 text-[16px] leading-7 text-[var(--text-primary)] outline-none placeholder:text-[var(--text-muted)] disabled:cursor-not-allowed disabled:opacity-45 sm:px-4"
+              className="max-h-45 min-h-10 flex-1 resize-none bg-transparent px-2.5 py-2 text-[15px] leading-6 text-[var(--text-primary)] outline-none placeholder:text-[var(--text-muted)] disabled:cursor-not-allowed disabled:opacity-45 sm:px-3"
             />
 
             <button
@@ -74,10 +74,10 @@ export function ChatInput({ onSend, onStop, disabled, isPending, placeholder }: 
               disabled={!canSend && !canStop}
               aria-label={isPending ? "Generating answer" : "Send message"}
               className={cn(
-                "mb-1 grid h-10 w-10 shrink-0 place-items-center rounded-2xl transition-all",
+                "mb-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-full transition-all",
                 canSend || canStop
-                  ? "bg-[linear-gradient(135deg,#dfe3ff_0%,#87b8ff_100%)] text-[var(--canvas)] hover:scale-[1.03] hover:opacity-95 shadow-[0_14px_28px_rgba(110,127,255,0.18)]"
-                  : "cursor-not-allowed bg-[rgba(255,255,255,0.04)] text-[var(--text-muted)]",
+                  ? "bg-[#e8e8e8] text-[#141414] hover:bg-white"
+                  : "cursor-not-allowed bg-white/[0.06] text-[var(--text-muted)]",
               )}
             >
               {isPending ? <Square size={14} fill="currentColor" /> : <ArrowUp size={18} />}
